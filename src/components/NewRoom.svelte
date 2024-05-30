@@ -1,6 +1,6 @@
 <script>
   import { v4 as uuidv4 } from "uuid";
-  import { createNewRoom, joinARoom } from "../api/rooms";
+  import { createNewRoom } from "../api/rooms";
   import { navigate } from "svelte-routing";
 
   const makeNewRoom = () => {
@@ -10,16 +10,6 @@
     };
 
     createNewRoom(payload).then((response) => {
-      console.log(response);
-      const payload2 = {
-        roomId: response.id,
-        clientId: "123123123123",
-      };
-
-      joinARoom(payload2).then(() => {
-        navigate(`/room/${response.id}`);
-      });
-
       if (response.id === payload.id) {
         navigate(`/room/${payload.id}`, { replace: true });
       }
