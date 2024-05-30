@@ -1,6 +1,9 @@
 <script>
   import { onMount } from "svelte";
-  import { joinAWs } from "../api/rooms";
+  import { joinARoom, joinAWs } from "../api/rooms";
+  import { v4 as uuidv4 } from "uuid";
+  import { clientId } from "../../stores/auth_store";
+  import App from "../App.svelte";
 
   let pausedVid = true;
   let pausedAudio = true;
@@ -9,22 +12,43 @@
   let videoElement;
   let audioElement;
   let peerConnection;
+  const currentUrl = window.location.href;
+  const [, , , , roomId] = currentUrl.split("/");
 
   const ws = new WebSocket("ws://localhost:8080/ws");
+
+  ws.onmessage = (e) => {
+    console.log(e.data);
+  };
+
   ws.onopen = () => {
     console.log("Connected to server");
-    const currentUrl = window.location.href;
-    const [, , , , roomId] = currentUrl.split("/");
 
-    const payload = `${roomId}&123123123123`;
-    ws.send(payload);
+    ws.send(`1&${roomId}&${idValue}`);
   };
+
+  let idValue;
+
+  clientId.subscribe((value) => {
+    idValue = value;
+  });
+
+  const payload2 = {
+    roomId,
+    clientId: idValue,
+  };
+
+  joinARoom(payload2);
 
   onMount(() => {
     pausedVid = true;
     pausedAudio = true;
     videoElement = document.getElementById("video");
     audioElement = document.getElementById("audio");
+    const payload = {
+      roomId,
+      clientId,
+    };
 
     // joinAWs({ roomId });
   });
@@ -94,9 +118,14 @@
       micOn();
     }
   };
+
+  const sendTestMessage = () => {
+    ws.send(`0&${roomId}&${idValue}`);
+  };
 </script>
 
 <main>
+  <button on:click={sendTestMessage}>test button</button>
   <div>
     <video id="video" width="640" height="480" autoplay>
       <track kind="captions" />
