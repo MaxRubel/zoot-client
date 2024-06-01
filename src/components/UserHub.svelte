@@ -1,4 +1,6 @@
 <script>
+  // @ts-nocheck
+
   import { onMount } from "svelte";
   import { joinARoom, joinAWs } from "../api/rooms";
   import { v4 as uuidv4 } from "uuid";
@@ -11,20 +13,96 @@
   let streamAudio;
   let videoElement;
   let audioElement;
-  let peerConnection;
   const currentUrl = window.location.href;
   const [, , , , roomId] = currentUrl.split("/");
 
   const ws = new WebSocket("ws://localhost:8080/ws");
+  let peerConnection = new RTCPeerConnection();
 
-  ws.onmessage = (e) => {
-    console.log(e.data);
+  // ------start-negotiation---------
+
+  function sendOffer(offer) {
+    ws.send(`2&${roomId}&&${JSON.stringify({ ...offer })}`);
+  }
+
+  // Add event listener for when the negotiation is needed
+  const startCall = async () => {
+    try {
+      const offer = await peerConnection.createOffer();
+      console.log(offer);
+      await peerConnection.setLocalDescription(offer);
+      sendOffer(offer);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  // peerConnection.onicecandidate = (event) => {
+  //   if (event.candidate) {
+  //     // Send the ICE candidate to the other peer
+  //   }
+  // };
+
+  // peerConnection.onnegotiationneeded = async () => {
+  //   try {
+  //     // Create an offer and set it as the local description
+  //     await peerConnection.setLocalDescription(
+  //       await peerConnection.createOffer(),
+  //     );
+
+  //     // Send the offer to the other peer
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+
+  // peerConnection.ontrack = (event) => {
+  //   // Add the track to the DOM for example
+  //   // videoElement.srcObject = event.streams[0];
+  // };
+
+  // peerConnection.ondatachannel = (event) => {
+  //   const dataChannel = event.channel;
+  //   dataChannel.onmessage = (event) => {
+  //     console.log("Message received:", event.data);
+  //   };
+  // };
+
+  // const dataChannel = peerConnection.createDataChannel("myDataChannel");
+  // dataChannel.onopen = () => {
+  //   dataChannel.send("Hello, world!");
+  // };
+
+  // ----------end-negotiation--------
+
+  const addOffer = async (offer) => {
+    await peerConnection.setRemoteDescription(offer);
+    const answer = await peerConnection.createAnswer();
+    console.log("answer created:", answer);
   };
 
-  ws.onopen = () => {
+  ws.onmessage = (e) => {
+    if (e.data[0] === "{") {
+      console.log("received JSON");
+      const data = JSON.parse(e.data);
+      console.log("unpacked the JSON:", data);
+      if (data.type === "offer") {
+        addOffer(data);
+      }
+    }
+  };
+
+  const requestOffer = () => {
+    ws.send(`3&${roomId}&&`);
+  };
+
+  ws.onopen = async () => {
     console.log("Connected to server");
 
-    ws.send(`1&${roomId}&${idValue}`);
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    console.log("sending offer:", offer);
+    ws.send(`1&${roomId}&${idValue}&${JSON.stringify({ ...offer })}`);
+    // ws.send(`2&${roomId}&&${JSON.stringify({ ...offer })}`);
   };
 
   let idValue;
@@ -120,12 +198,14 @@
   };
 
   const sendTestMessage = () => {
-    ws.send(`0&${roomId}&${idValue}`);
+    ws.send(`0&${roomId}&${idValue}&`);
   };
 </script>
 
 <main>
   <button on:click={sendTestMessage}>test button</button>
+  <button on:click={startCall}>Send Offer</button>
+  <button on:click={requestOffer}>Receive Offer</button>
   <div>
     <video id="video" width="640" height="480" autoplay>
       <track kind="captions" />
