@@ -8,12 +8,13 @@
 </script>
 
 <main>
-  <Router>
+  <!-- <Router>
     <Route path="/"><NewRoom /></Route>
     <Route path="/rooms"><ViewRooms /></Route>
     <Route path="/error404"><Error /></Route>
     <Route path="/room/:Id"><UserHub /></Route>
-  </Router>
+  </Router> -->
+  <UserHub />
 </main>
 
 <style>
