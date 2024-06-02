@@ -2,11 +2,19 @@
   import { v4 as uuidv4 } from "uuid";
   import { createNewRoom } from "../api/rooms";
   import { navigate } from "svelte-routing";
+  import { clientId } from "../../stores/auth_store";
+
+  let idValue;
+
+  clientId.subscribe((value) => {
+    idValue = value;
+  });
 
   const makeNewRoom = () => {
     const payload = {
       id: uuidv4(),
       participants: 1,
+      hostId: idValue,
     };
 
     createNewRoom(payload).then((response) => {
