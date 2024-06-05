@@ -2,10 +2,7 @@
   // @ts-nocheck
 
   import { onMount } from "svelte";
-  import { joinARoom, joinAWs } from "../api/rooms";
-  import { v4 as uuidv4 } from "uuid";
   import { clientId } from "../../stores/auth_store";
-  import App from "../App.svelte";
 
   let pausedVid = true;
   let pausedAudio = true;
@@ -14,9 +11,14 @@
   let localVideo;
   let remoteVideo;
   let audioElement;
+  let peers = [];
 
   const ws = new WebSocket("ws://localhost:8080/ws");
   let peerConnection = new RTCPeerConnection();
+
+  window.addEventListener("beforeunload", function (event) {
+    ws.send(`3&${idValue}&0`);
+  });
 
   ws.onopen = () => {
     console.log("Connected to server");
@@ -104,15 +106,6 @@
     }
   };
 
-  // const handlePauseAudio = () => {
-  //   pausedAudio = !pausedAudio;
-  //   if (pausedAudio) {
-  //     micOff();
-  //   } else {
-  //     micOn();
-  //   }
-  // };
-
   const sendTestMessage = () => {
     ws.send(`0&${idValue}&0`);
   };
@@ -157,9 +150,26 @@
     remoteVideo.play();
   };
 
+  const addClientsToLocal = (arr) => {
+    for (let i = 1; i < arr.length; i++) {
+      console.log(peers.some((item) => item === arr[i]));
+      if (peers.some((item) => item === arr[i]) || arr[i] === idValue) {
+        continue;
+      } else {
+        peers.push(arr[[i]]);
+      }
+    }
+  };
+
   ws.onmessage = async (e) => {
-    console.log(e.data);
-    if (e.data[0] == "3") {
+    //receive array of client ids when you join!
+    if (e.data[0] === "4") {
+      console.log("array of clients: ", e.data);
+      const clientArr = e.data.split("&");
+      addClientsToLocal(clientArr);
+    }
+
+    if (e.data[0] === "3") {
       console.log("received offer");
       const [, senderId, data] = e.data.split("&");
 
@@ -203,6 +213,11 @@
     console.log("remote desc:", peerConnection.remoteDescription);
     console.log("local desc:", peerConnection.localDescription);
   };
+
+  const clearClients = () => {
+    ws.send("4&&");
+  };
+
   $: console.log("camera is paused: ", pausedVid);
 </script>
 
@@ -210,6 +225,7 @@
   <button on:click={sendTestMessage}>test button</button>
   <button on:click={startNegotiations}>Start</button>
   <button on:click={testConnection}>Test Connection</button>
+  <button on:click={clearClients}>Clear Clients</button>
   <div>
     <video id="localVideo" width="640" height="480" autoplay>
       <track kind="captions" />
