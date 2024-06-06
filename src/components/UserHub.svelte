@@ -20,6 +20,19 @@
   let noOfConnections = 0;
   let joined = false;
 
+  const iceServers = [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun.l.google.com:5349" },
+    { urls: "stun:stun1.l.google.com:3478" },
+    { urls: "stun:stun1.l.google.com:5349" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:5349" },
+    { urls: "stun:stun3.l.google.com:3478" },
+    { urls: "stun:stun3.l.google.com:5349" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:5349" },
+  ];
+
   const ws = new WebSocket("ws://localhost:8080/ws");
 
   window.addEventListener("beforeunload", () => {
@@ -106,24 +119,24 @@
       });
   };
 
-  const micOff = () => {
-    if (streamAudio) {
-      const tracks = streamAudio.getTracks();
-      tracks.forEach(function (track) {
-        track.stop();
-      });
-      audioElement.srcObject = null;
-    }
-  };
+  // const micOff = () => {
+  //   if (streamAudio) {
+  //     const tracks = streamAudio.getTracks();
+  //     tracks.forEach(function (track) {
+  //       track.stop();
+  //     });
+  //     audioElement.srcObject = null;
+  //   }
+  // };
 
-  const handlePauseVid = () => {
-    pausedVid = !pausedVid;
-    if (pausedVid) {
-      cameraOff();
-    } else {
-      cameraOn();
-    }
-  };
+  // const handlePauseVid = () => {
+  //   pausedVid = !pausedVid;
+  //   if (pausedVid) {
+  //     cameraOff();
+  //   } else {
+  //     cameraOn();
+  //   }
+  // };
 
   const sendTestMessage = () => {
     ws.send(`0&${myId}&0&`);
@@ -143,6 +156,12 @@
   }
 
   const init = () => {
+    console.log("init");
+    peerConnections = {};
+    if (peers.length === 0) {
+      console.log("one one else in the room");
+      return;
+    }
     for (let i = 0; i < peers.length; i++) {
       if (!checkPeerConnection(peerConnections, peers[i], myId)) {
         console.log("initializing negotiation with client: ", i + 1);
@@ -150,17 +169,90 @@
       }
     }
   };
-  const startNegotiations = async (peerId) => {
-    try {
-      const peerConnection = new RTCPeerConnection();
-      peerConnections[peerId] = peerConnection;
 
-      const stream = await getUserMedia();
-      console.log("stream: ", stream);
-      stream.getTracks().forEach((track) => {
-        console.log("track: ", track);
-        peerConnection.addTrack(track, stream);
-      });
+  const startNegotiations = async (answererId) => {
+    //create new peer connection
+    const peerConnection = new RTCPeerConnection({ iceServers });
+    peerConnections[answererId] = peerConnection;
+    console.log("new peer connection created: ", peerConnection);
+
+    //get media
+    const stream = await getUserMedia();
+    stream.getTracks().forEach((track) => {
+      console.log("track: ", track);
+      peerConnection.addTrack(track, stream);
+    });
+
+    const offer = await peerConnection.createOffer();
+
+    //create offer
+    console.log("created offer", offer);
+
+    await peerConnection.setLocalDescription(offer);
+    console.log("set local description:", offer);
+
+    //SEND IT -- OFFER --
+    ws.send(`2&${myId}&${answererId}&${JSON.stringify(offer)}`);
+    console.log("sent offer");
+
+    // Send the ICE CANDIDATES to answerer
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        const data = {
+          type: "iceCandidate",
+          candidate: event.candidate,
+        };
+        if (peerConnection.localDescription) {
+          console.log("sending ice candidate from offerer: ", data);
+          ws.send(`2&${myId}&${answererId}&${JSON.stringify(data)}`);
+        }
+      }
+    };
+    peerConnection.addEventListener("iceconnectionstatechange", () => {
+      console.log("ICE Connection State:", peerConnection.iceConnectionState);
+    });
+  };
+
+  ws.onmessage = async (e) => {
+    const dataType = e.data[0];
+    //TEST ping server
+    if (dataType === "0") {
+      console.log(e.data);
+      return;
+    }
+
+    //NEGOTIATIONS
+    if (dataType === "3") {
+      const [_, senderId, receiverId, data] = e.data.split("&");
+
+      //MESSAGE NOT FOR ME
+      if (senderId === myId || receiverId !== myId) {
+        return;
+      }
+
+      const parsed = JSON.parse(data);
+      console.log(`received ${parsed.type}`);
+
+      //ANSWERER MAKES NEW PEER CONNECTION
+      if (!peerConnections[senderId]) {
+        peerConnections[senderId] = new RTCPeerConnection({ iceServers });
+        console.log(
+          "creating new peer connection: ",
+          peerConnections[senderId],
+        );
+      }
+
+      const peerConnection = peerConnections[senderId];
+
+      // ICE CANDIDATES
+      if (parsed.type === "iceCandidate") {
+        console.log("receiving ice candidate: from ", senderId, parsed);
+
+        await peerConnection.addIceCandidate(parsed.candidate);
+        console.log("added ice candidate: ", parsed.candidate);
+        console.log("candidate status: ", peerConnection.iceConnectionState);
+        return;
+      }
 
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
@@ -168,115 +260,82 @@
             type: "iceCandidate",
             candidate: event.candidate,
           };
-          console.log("sending ice candidate: ", data);
-          ws.send(`2&${myId}&${peerId}&${JSON.stringify(data)}`);
+          if (peerConnection.localDescription) {
+            console.log("sending ice candidate from answerer: ", data);
+            ws.send(`2&${myId}&${senderId}&${JSON.stringify(data)}`);
+          }
         }
       };
 
-      const offer = await peerConnection.createOffer({
-        offerToReceiveVideo: true,
-        offerToSendVideo: true,
-      });
+      // ANSWERER MAKES ANSWER
+      if (parsed.type === "offer") {
+        if (peerConnection.remoteDescription) {
+          console.log("this sender is already in the peer connections array:");
+          return;
+        }
+        await peerConnection.setRemoteDescription(parsed);
+        peerConnection.addEventListener("iceconnectionstatechange", () => {
+          console.log(
+            "ICE Connection State:",
+            peerConnection.iceConnectionState,
+          );
+        });
+        const stream = await getUserMedia();
+        stream.getTracks().forEach((track) => {
+          console.log("adding answer track: ", track);
+          peerConnection.addTrack(track, stream);
+        });
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        console.log("setting answer to local description");
+        console.log("sending answer: ", answer);
+        console.log(
+          "finished negotiation, status: ",
+          peerConnection.iceConnectionState,
+        );
 
-      console.log("created offer", offer);
+        ws.send(`2&${myId}&${senderId}&${JSON.stringify(answer)}`);
+      }
 
-      await peerConnection.setLocalDescription(offer);
-      console.log("set local description");
+      // Handling 'answer' message type -- END
+      if (parsed.type === "answer") {
+        await peerConnection.setRemoteDescription(parsed);
+        console.log("setting answer to remote description");
+        console.log("Finished negotiation!");
+        console.log("candidate status: ", peerConnection.iceConnectionState);
+        peerConnection.onicecandidate = function (event) {
+          if (event.candidate) {
+            const data = {
+              type: "iceCandidate",
+              candidate: event.candidate,
+            };
 
-      ws.send(`2&${myId}&${peerId}&${JSON.stringify(offer)}`);
-      console.log("sent offer");
-    } catch (error) {
-      console.error("Error during negotiation: ", error);
+            console.log("adding ice candidate: ", event.candidate);
+            peerConnection.addIceCandidate(event.candidate);
+          }
+        };
+      }
     }
-  };
 
-  ws.onmessage = async (e) => {
-    if (e.data[0] === "0") {
-      console.log(e.data);
-    }
-
-    if (e.data[0] === "4") {
+    //receive array of peers upon JOINING
+    if (dataType === "4") {
       joined = false;
       console.log("array of clients: ", e.data);
       const clientArr = e.data.split("&");
       peers = addPeersToLocal(peers, myId, clientArr);
-    }
-
-    if (e.data[0] === "3") {
-      const [_, senderId, receiverId, data] = e.data.split("&");
-
-      const parsed = JSON.parse(data);
-
-      if (senderId === myId) {
-        return;
-      }
-
-      if (receiverId !== myId) {
-        return;
-      }
-
-      console.log(`receiving a ${parsed.type}`);
-
-      // Ensure peerConnections object is initialized
-      if (!peerConnections[senderId]) {
-        console.log("creating new peer connection:");
-        peerConnections[senderId] = new RTCPeerConnection();
-      }
-
-      const peerConnection = peerConnections[senderId];
-
-      // Handling 'offer' message type
-      if (parsed.type === "offer") {
-        if (peerConnection.remoteDescription) {
-          console.log("this sender is already in the peer connections array:");
-        } else {
-          peerConnection.setRemoteDescription(parsed);
-          const stream = await getUserMedia();
-          console.log("answer stream: ", stream);
-          stream.getTracks().forEach((track) => {
-            console.log("answer track: ", track);
-            peerConnection.addTrack(track, stream);
-          });
-          const answer = await peerConnection.createAnswer();
-          peerConnection.setLocalDescription(answer);
-          console.log("sending answer: ", answer);
-          ws.send(`2&${myId}&${senderId}&${JSON.stringify(answer)}`);
-        }
-      }
-
-      // Handling 'answer' message type
-      if (parsed.type === "answer") {
-        if (peerConnection.remoteDescription) {
-        } else {
-          peerConnection.setRemoteDescription(parsed);
-          console.log("I was the last to receive data!");
-        }
-      }
-
-      // Handling 'iceCandidate' message type
-      if (parsed.type === "iceCandidate") {
-        console.log("receiving ice candidate: ", parsed);
-        if (peerConnection.remoteDescription) {
-          peerConnection.addIceCandidate(parsed.candidate).then(() => {
-            console.log("added ice candidate--success");
-            // cameraOn();
-          });
-        }
-      }
+      return;
     }
   };
 
   const testConnection = () => {
     testAndPrint(peerConnections);
   };
+  //   ws.send("5&&&");
+  // };
 
-  const getServerIds = () => {
-    ws.send("5&&&");
-  };
-
-  const showMyId = () => {
-    console.log(myId);
-  };
+  // const showMyId = () => {
+  //   console.log(myId);
+  // };
 
   const clearClients = () => {
     ws.send("4&&&");
@@ -285,24 +344,28 @@
   $: console.log("camera is paused: ", pausedVid);
 
   $: {
-    console.log("need to connect to:", peers);
+    console.log("future connections:", peers);
   }
 
   $: noOfConnections = Object.values(peerConnections).length;
+
+  const showMyId = () => {
+    console.log(myId);
+  };
 </script>
 
 <main>
-  <button on:click={sendTestMessage}>test button</button>
-  <button on:click={init}>Start</button>
-  <button on:click={testConnection}>Test Connection</button>
   <button on:click={clearClients}>Refresh Server</button>
-  <button on:click={showMyId}>What is my id</button>
-  <button on:click={getServerIds}>What Ids are in the server</button>
-  <div>
-    <video id="localVideo" width="320" height="240" autoplay>
+  <button on:click={sendTestMessage}>Ping server</button>
+  <button on:click={init}>Connect {peers.length}</button>
+  <button on:click={testConnection}>Connection Details</button>
+  <button on:click={showMyId}>Show My Id</button>
+
+  <div class="top">
+    <video id="localVideo" width="160" height="120" autoplay>
       <track kind="captions" />
     </video>
-    <div id="video-container">
+    <div id="video-container" class="top">
       {#each Object.values(peerConnections) as connection}
         <PeerVideo {connection} />
       {/each}
@@ -321,7 +384,7 @@
 
 <style>
   .top {
-    margin-top: 20px;
+    margin-top: 50px;
   }
 
   #video-container {
