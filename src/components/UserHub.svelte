@@ -1,13 +1,14 @@
 <script>
   // @ts-nocheck
 
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { clientId } from "../../stores/auth_store";
   import { checkPeerConnection } from "../../utils/ws/checkPeerConnection";
+  import { testAndPrint } from "../../utils/hub/testAndPrint";
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
   import PeerVideo from "./PeerVideo.svelte";
 
-  let pausedVid = true;
+  let pausedVid = false;
   let pausedAudio = true;
   let streamVid;
   let streamAudio;
@@ -21,13 +22,17 @@
 
   const ws = new WebSocket("ws://localhost:8080/ws");
 
-  window.addEventListener("beforeunload", function (event) {
-    ws.send(`3&${myId}&0`);
+  window.addEventListener("beforeunload", () => {
+    ws.send(`3&${myId}&&`);
+    ws.close();
   });
-
   ws.onopen = () => {
     console.log("Connected to server");
     ws.send(`1&${myId}&0&`);
+  };
+
+  ws.onerror = function (event) {
+    console.error("WebSocket error:", event);
   };
 
   let myId;
@@ -42,12 +47,17 @@
     localVideo = document.getElementById("localVideo");
     remoteVideo = document.getElementById("remoteVideo");
     audioElement = document.getElementById("audio");
+    cameraOn();
+  });
+
+  onDestroy(() => {
+    ws.send("3&&&");
   });
 
   const cameraOn = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
-      .then(function (mediaStream) {
+      .then((mediaStream) => {
         streamVid = mediaStream;
         localVideo.srcObject = streamVid;
         streamVid.getTracks().forEach((t) => (t.enabled = true));
@@ -57,7 +67,7 @@
       });
     const connections = Object.values(peerConnections);
     connections.forEach((conn) => {
-      const videoSender = conn.getSenders().find(function (s) {
+      const videoSender = conn.getSenders().find((s) => {
         return s.track?.kind === "video";
       });
       if (videoSender) {
@@ -72,14 +82,15 @@
       streamVid.getTracks().forEach((t) => (t.enabled = false));
       localVideo.srcObject = null;
       pausedVid = true;
-
-      // Disable the video sender track
-      const videoSender = peerConnection.getSenders().find(function (s) {
-        return s.track?.kind === "video";
+      const connections = Object.values(peerConnections);
+      connections.forEach((conn) => {
+        const videoSender = conn.getSenders().find(function (s) {
+          return s.track?.kind === "video";
+        });
+        if (videoSender) {
+          videoSender.track.enabled = false;
+        }
       });
-      if (videoSender) {
-        videoSender.track.enabled = false;
-      }
     }
   };
 
@@ -141,55 +152,49 @@
   };
   const startNegotiations = async (peerId) => {
     try {
-      cameraOn();
-
-      peerConnections[peerId] = new RTCPeerConnection();
+      const peerConnection = new RTCPeerConnection();
+      peerConnections[peerId] = peerConnection;
 
       const stream = await getUserMedia();
+      console.log("stream: ", stream);
       stream.getTracks().forEach((track) => {
-        peerConnections[peerId].addTrack(track, stream);
+        console.log("track: ", track);
+        peerConnection.addTrack(track, stream);
       });
 
-      const offer = await peerConnections[peerId].createOffer();
-      console.log("offer: ", offer);
-      console.log("i have attached my media");
-
-      await peerConnections[peerId].setLocalDescription(offer);
-      console.log("i have set my offer: ", peerConnections[peerId]);
-
-      peerConnections[peerId].onicecandidate = (event) => {
+      peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
           const data = {
             type: "iceCandidate",
             candidate: event.candidate,
           };
-          console.log("sending ice candidate: ");
+          console.log("sending ice candidate: ", data);
           ws.send(`2&${myId}&${peerId}&${JSON.stringify(data)}`);
         }
       };
 
+      const offer = await peerConnection.createOffer({
+        offerToReceiveVideo: true,
+        offerToSendVideo: true,
+      });
+
+      console.log("created offer", offer);
+
+      await peerConnection.setLocalDescription(offer);
+      console.log("set local description");
+
       ws.send(`2&${myId}&${peerId}&${JSON.stringify(offer)}`);
+      console.log("sent offer");
     } catch (error) {
       console.error("Error during negotiation: ", error);
     }
   };
 
-  // peerConnection.onicecandidate = (event) => {
-  //   if (event.candidate) {
-  //     console.log("sending ice candidate:", event.candidate);
-  //     ws.send(
-  //       `2&${myId}&${peerId}&${JSON.stringify({ type: "iceCandidate", candidate: event.candidate })}`,
-  //     );
-  //   }
-  // };
-
   ws.onmessage = async (e) => {
-    // Test message received back from server
     if (e.data[0] === "0") {
       console.log(e.data);
     }
 
-    // Array of clients received from server when joining
     if (e.data[0] === "4") {
       joined = false;
       console.log("array of clients: ", e.data);
@@ -197,24 +202,16 @@
       peers = addPeersToLocal(peers, myId, clientArr);
     }
 
-    // RTCPeerConnection stuff:
     if (e.data[0] === "3") {
       const [_, senderId, receiverId, data] = e.data.split("&");
-      // console.log("sender Id: ", senderId);
 
-      // Parse and process the data
       const parsed = JSON.parse(data);
-      // console.log("incoming data type: ", parsed.type);
 
-      // This message came from me
       if (senderId === myId) {
-        // console.log(`this is my own ${parsed.type}. Ignoring...`);
         return;
       }
 
-      // This message is for someone else
       if (receiverId !== myId) {
-        // console.log(`i am: ${myId}, this ${parsed.type} is for ${receiverId}`);
         return;
       }
 
@@ -230,66 +227,47 @@
 
       // Handling 'offer' message type
       if (parsed.type === "offer") {
-        // console.log("parsed offer...", parsed);
         if (peerConnection.remoteDescription) {
           console.log("this sender is already in the peer connections array:");
         } else {
-          peerConnection.setRemoteDescription(
-            new RTCSessionDescription(parsed),
-          );
+          peerConnection.setRemoteDescription(parsed);
           const stream = await getUserMedia();
+          console.log("answer stream: ", stream);
           stream.getTracks().forEach((track) => {
+            console.log("answer track: ", track);
             peerConnection.addTrack(track, stream);
           });
           const answer = await peerConnection.createAnswer();
-          // console.log("i have attached my media");
           peerConnection.setLocalDescription(answer);
-          // console.log("sending answer...", answer);
-
+          console.log("sending answer: ", answer);
           ws.send(`2&${myId}&${senderId}&${JSON.stringify(answer)}`);
         }
       }
 
       // Handling 'answer' message type
       if (parsed.type === "answer") {
-        // console.log("i have received an answer: ", parsed);
         if (peerConnection.remoteDescription) {
-          // console.log("already have an answer bruh");
         } else {
-          peerConnection.setRemoteDescription(
-            new RTCSessionDescription(parsed),
-          );
+          peerConnection.setRemoteDescription(parsed);
           console.log("I was the last to receive data!");
         }
       }
 
       // Handling 'iceCandidate' message type
       if (parsed.type === "iceCandidate") {
-        console.log("receinving ice candidate");
+        console.log("receiving ice candidate: ", parsed);
         if (peerConnection.remoteDescription) {
-          peerConnection
-            .addIceCandidate(new RTCIceCandidate(parsed.candidate))
-            .then(() => {
-              console.log("success!");
-              cameraOn();
-            });
+          peerConnection.addIceCandidate(parsed.candidate).then(() => {
+            console.log("added ice candidate--success");
+            // cameraOn();
+          });
         }
       }
     }
   };
 
   const testConnection = () => {
-    const connections = Object.values(peerConnections);
-
-    console.log("number of connections: ", connections.length);
-    connections.forEach((conn, index) => {
-      const connObj = {
-        connection: index + 1,
-        localDescription: conn.localDescription,
-        remoteDescription: conn.remoteDescription,
-      };
-      console.log(connObj);
-    });
+    testAndPrint(peerConnections);
   };
 
   const getServerIds = () => {
@@ -317,11 +295,11 @@
   <button on:click={sendTestMessage}>test button</button>
   <button on:click={init}>Start</button>
   <button on:click={testConnection}>Test Connection</button>
-  <button on:click={clearClients}>Clear Clients</button>
+  <button on:click={clearClients}>Refresh Server</button>
   <button on:click={showMyId}>What is my id</button>
   <button on:click={getServerIds}>What Ids are in the server</button>
   <div>
-    <video id="localVideo" width="640" height="480" autoplay>
+    <video id="localVideo" width="320" height="240" autoplay>
       <track kind="captions" />
     </video>
     <div id="video-container">
@@ -332,9 +310,9 @@
     <audio id="audio" autoplay></audio>
   </div>
   <div class="top">
-    <button on:click={handlePauseVid}>
+    <!-- <button on:click={handlePauseVid}>
       {pausedVid ? "Turn On Camera" : "Turn Off Camera"}
-    </button>
+    </button> -->
     <!-- <button on:click={handlePauseAudio}>
       {pausedAudio ? "Turn On Microphone" : "Turn Off Microphone"}
     </button> -->
