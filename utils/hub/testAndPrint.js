@@ -1,14 +1,17 @@
+import { testSameCandidates } from "./testSameCandidates";
+
 export const testAndPrint = (peerConnections) => {
   const connections = Object.values(peerConnections);
 
   console.log("number of connections: ", connections.length);
   connections.forEach((conn, index) => {
+    testSameCandidates(conn)
     const connObj = {
       connection: index + 1,
       localDescription: conn.localDescription,
       remoteDescription: conn.remoteDescription,
     };
-    console.log("ice candidate: ", conn.iceConnectionState);
+    console.log("ice candidate status: ", conn.iceConnectionState);
     console.log(connObj);
     conn
       .getStats(null)

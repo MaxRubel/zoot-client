@@ -15,12 +15,17 @@
   });
 </script>
 
-<video bind:this={videoElement} width="640" height="480" autoplay muted>
-  <track kind="captions" />
-</video>
+<div class="border">
+  <video bind:this={videoElement} width="320" height="240" autoplay muted>
+    <track kind="captions" />
+  </video>
+</div>
 
 <style>
   video {
     margin: 10px;
+  }
+  .border {
+    border: 1px solid black;
   }
 </style>
