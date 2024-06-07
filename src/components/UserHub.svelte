@@ -8,6 +8,10 @@
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
   import PeerVideo from "./PeerVideo.svelte";
 
+  const currentUrl = window.location.href;
+  const url = new URL(currentUrl);
+  const param = url.pathname.split("/").pop();
+
   let pausedVid = false;
   let pausedAudio = true;
   let streamVid;
@@ -19,6 +23,7 @@
   let peerConnections = {};
   let noOfConnections = 0;
   let joined = false;
+  let roomId = param;
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -36,7 +41,7 @@
   const ws = new WebSocket("ws://localhost:8080/ws");
 
   window.addEventListener("beforeunload", () => {
-    ws.send(`3&${myId}&&`);
+    ws.send(`3&${roomId}&${myId}&&`);
     peerConnections.forEach((conn) => {
       peerConnections[conn].close();
     });
@@ -44,7 +49,7 @@
   });
   ws.onopen = () => {
     console.log("Connected to server");
-    ws.send(`1&${myId}&0&`);
+    ws.send(`1&${roomId}&${myId}&0&`);
   };
 
   ws.onerror = function (event) {
@@ -57,17 +62,8 @@
     myId = value;
   });
 
-  onMount(() => {
-    pausedVid = true;
-    pausedAudio = true;
-    localVideo = document.getElementById("localVideo");
-    remoteVideo = document.getElementById("remoteVideo");
-    audioElement = document.getElementById("audio");
-    cameraOn();
-  });
-
   onDestroy(() => {
-    ws.send("3&&&");
+    ws.send(`3&${roomId}&&&`);
   });
 
   const cameraOn = () => {
@@ -142,7 +138,7 @@
   // };
 
   const sendTestMessage = () => {
-    ws.send(`0&${myId}&0&`);
+    ws.send(`0&${roomId}&${myId}&0&`);
   };
 
   async function getUserMedia() {
@@ -173,6 +169,16 @@
     }
   };
 
+  onMount(() => {
+    pausedVid = true;
+    pausedAudio = true;
+    localVideo = document.getElementById("localVideo");
+    remoteVideo = document.getElementById("remoteVideo");
+    audioElement = document.getElementById("audio");
+    cameraOn();
+    init();
+  });
+
   const startNegotiations = async (answererId) => {
     //create new peer connection
     const peerConnection = new RTCPeerConnection({ iceServers });
@@ -195,7 +201,7 @@
     console.log("set local description:", offer);
 
     //SEND IT -- OFFER --
-    ws.send(`2&${myId}&${answererId}&${JSON.stringify(offer)}`);
+    ws.send(`2&${roomId}&${myId}&${answererId}&${JSON.stringify(offer)}`);
     console.log("sent offer");
 
     // Send the ICE CANDIDATES to answerer
@@ -207,7 +213,7 @@
         };
         if (peerConnection.localDescription) {
           console.log("sending ice candidate from offerer: ", data);
-          ws.send(`2&${myId}&${answererId}&${JSON.stringify(data)}`);
+          ws.send(`2&${roomId}&${myId}&${answererId}&${JSON.stringify(data)}`);
         }
       }
     };
@@ -226,7 +232,7 @@
 
     //NEGOTIATIONS
     if (dataType === "3") {
-      const [_, senderId, receiverId, data] = e.data.split("&");
+      const [_, roomId, senderId, receiverId, data] = e.data.split("&");
 
       //MESSAGE NOT FOR ME
       if (senderId === myId || receiverId !== myId) {
@@ -265,7 +271,7 @@
           };
           if (peerConnection.localDescription) {
             console.log("sending ice candidate from answerer: ", data);
-            ws.send(`2&${myId}&${senderId}&${JSON.stringify(data)}`);
+            ws.send(`2&${roomId}&${myId}&${senderId}&${JSON.stringify(data)}`);
           }
         }
       };
@@ -297,7 +303,7 @@
           peerConnection.iceConnectionState,
         );
 
-        ws.send(`2&${myId}&${senderId}&${JSON.stringify(answer)}`);
+        ws.send(`2&${roomId}&${myId}&${senderId}&${JSON.stringify(answer)}`);
       }
 
       // Handling 'answer' message type -- END
@@ -326,6 +332,7 @@
       console.log("array of clients: ", e.data);
       const clientArr = e.data.split("&");
       peers = addPeersToLocal(peers, myId, clientArr);
+      init();
       return;
     }
 
@@ -334,6 +341,7 @@
       if (!peerConnections[peerId]) {
         return;
       }
+      console.log("deleting peer connection");
       peerConnections[peerId].close();
       delete peerConnections[peerId];
       peerConnections = peerConnections;
@@ -351,7 +359,7 @@
   // };
 
   const clearClients = () => {
-    ws.send("4&&&");
+    ws.send("4&&&&");
   };
 
   $: console.log("camera is paused: ", pausedVid);
@@ -359,8 +367,6 @@
   $: {
     console.log("future connections:", peers);
   }
-
-  $: noOfConnections = Object.values(peerConnections).length;
 
   const showMyId = () => {
     console.log(myId);
@@ -401,7 +407,15 @@
   }
 
   #video-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 900px) {
+    #video-container {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+    }
   }
 </style>
