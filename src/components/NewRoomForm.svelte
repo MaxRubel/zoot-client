@@ -7,7 +7,7 @@
   const handleSubmit = (e) => {
     e.preventDefault();
     createNewRoom({ name }).then((roomId) => {
-      navigate(`/room/${roomId}`);
+      navigate(`/rooms/${roomId}`);
     });
   };
 </script>

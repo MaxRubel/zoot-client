@@ -8,6 +8,10 @@
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
   import PeerVideo from "./PeerVideo.svelte";
 
+  const currentUrl = window.location.href;
+  const url = new URL(currentUrl);
+  const param = url.pathname.split("/").pop();
+
   let pausedVid = false;
   let pausedAudio = true;
   let streamVid;
@@ -19,6 +23,7 @@
   let peerConnections = {};
   let noOfConnections = 0;
   let joined = false;
+  let roomId = param;
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -334,6 +339,7 @@
       if (!peerConnections[peerId]) {
         return;
       }
+      console.log("deleting peer connection");
       peerConnections[peerId].close();
       delete peerConnections[peerId];
       peerConnections = peerConnections;
