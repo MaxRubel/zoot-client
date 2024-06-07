@@ -20,8 +20,8 @@
   {#each rooms as room}
     <button
       on:click={() => {
-        joinRoom(room);
-      }}>{room}</button
+        navigate(`/room/${room.id}`);
+      }}>{room.name}</button
     >
   {/each}
   {#if rooms.length === 0}

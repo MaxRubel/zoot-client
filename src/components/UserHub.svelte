@@ -37,6 +37,9 @@
 
   window.addEventListener("beforeunload", () => {
     ws.send(`3&${myId}&&`);
+    peerConnections.forEach((conn) => {
+      peerConnections[conn].close();
+    });
     ws.close();
   });
   ws.onopen = () => {
@@ -325,6 +328,16 @@
       peers = addPeersToLocal(peers, myId, clientArr);
       return;
     }
+
+    if (dataType === "5") {
+      const [_, peerId] = e.data.split("&");
+      if (!peerConnections[peerId]) {
+        return;
+      }
+      peerConnections[peerId].close();
+      delete peerConnections[peerId];
+      peerConnections = peerConnections;
+    }
   };
 
   const testConnection = () => {
@@ -359,7 +372,7 @@
   <button on:click={sendTestMessage}>Ping server</button>
   <button on:click={init}>Connect {peers.length}</button>
   <button on:click={testConnection}>Connection Details</button>
-  <button on:click={showMyId}>Show My Id</button>
+  <!-- <button on:click={showMyId}>Show My Id</button> -->
 
   <div class="top">
     <video id="localVideo" width="160" height="120" autoplay>
