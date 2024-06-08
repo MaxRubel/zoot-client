@@ -7,6 +7,7 @@
   import { testAndPrint } from "../../utils/hub/testAndPrint";
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
   import PeerVideo from "./PeerVideo.svelte";
+  import DummyVideo from "./DummyVideo.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -21,7 +22,7 @@
   let audioElement;
   let peers = [];
   let peerConnections = {};
-  let noOfConnections = 0;
+  let dummyVidoes = [1];
   let joined = false;
   let roomId = param;
 
@@ -47,8 +48,9 @@
     });
     ws.close();
   });
+
+  //SEND ID TO SERVER WHEN CONNECTING
   ws.onopen = () => {
-    console.log("Connected to server");
     ws.send(`1&${roomId}&${myId}&0&`);
   };
 
@@ -180,12 +182,12 @@
   });
 
   const startNegotiations = async (answererId) => {
-    //create new peer connection
+    //CREATE CONNECTION OBJECT
     const peerConnection = new RTCPeerConnection({ iceServers });
     peerConnections[answererId] = peerConnection;
     console.log("new peer connection created: ", peerConnection);
 
-    //get media
+    //GET MEDIA
     const stream = await getUserMedia();
     stream.getTracks().forEach((track) => {
       console.log("track: ", track);
@@ -194,13 +196,13 @@
 
     const offer = await peerConnection.createOffer();
 
-    //create offer
+    //CREATE OFFER
     console.log("created offer", offer);
 
     await peerConnection.setLocalDescription(offer);
     console.log("set local description:", offer);
 
-    //SEND IT -- OFFER --
+    //SEND OFFER --
     ws.send(`2&${roomId}&${myId}&${answererId}&${JSON.stringify(offer)}`);
     console.log("sent offer");
 
@@ -374,30 +376,20 @@
 </script>
 
 <main>
-  <button on:click={clearClients}>Refresh Server</button>
   <button on:click={sendTestMessage}>Ping server</button>
-  <button on:click={init}>Connect {peers.length}</button>
+  <button on:click={init}>Connect with: {peers.length}</button>
   <button on:click={testConnection}>Connection Details</button>
-  <!-- <button on:click={showMyId}>Show My Id</button> -->
 
   <div class="top">
-    <video id="localVideo" width="160" height="120" autoplay>
-      <track kind="captions" />
-    </video>
     <div id="video-container" class="top">
+      <video id="localVideo" autoplay>
+        <track kind="captions" />
+      </video>
       {#each Object.values(peerConnections) as connection}
         <PeerVideo {connection} />
       {/each}
     </div>
     <audio id="audio" autoplay></audio>
-  </div>
-  <div class="top">
-    <!-- <button on:click={handlePauseVid}>
-      {pausedVid ? "Turn On Camera" : "Turn Off Camera"}
-    </button> -->
-    <!-- <button on:click={handlePauseAudio}>
-      {pausedAudio ? "Turn On Microphone" : "Turn Off Microphone"}
-    </button> -->
   </div>
 </main>
 
@@ -407,15 +399,27 @@
   }
 
   #video-container {
+    background-color: red;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 10px;
   }
-  @media (max-width: 900px) {
+
+  @media screen and (max-width: 600px) {
     #video-container {
-      display: grid;
-      gap: 10px;
       grid-template-columns: 1fr;
     }
+  }
+
+  @media screen and (min-width: 601px) and (max-width: 900px) {
+    #video-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 </style>
