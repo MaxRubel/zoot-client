@@ -8,6 +8,8 @@
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
   import PeerVideo from "./PeerVideo.svelte";
   import DummyVideo from "./DummyVideo.svelte";
+  import MicIcon from "../assets/MicIcon.svelte";
+  import CameraOn from "../assets/CameraOn.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -356,8 +358,7 @@
   //   ws.send("5&&&");
   // };
 
-  // const showMyId = () => {
-  //   console.log(myId);
+  // const showMyId = () => {micIcon
   // };
 
   const clearClients = () => {
@@ -377,10 +378,14 @@
 
 <main>
   <button on:click={sendTestMessage}>Ping server</button>
-  <button on:click={init}>Connect with: {peers.length}</button>
+  <!-- <button on:click={init}>Connect with: {peers.length}</button> -->
   <button on:click={testConnection}>Connection Details</button>
 
   <div class="top">
+    <div class="tool-bar">
+      <button class="mic"><MicIcon />Mic On</button>
+      <button class="camera"><CameraOn /> Camera On</button>
+    </div>
     <div id="video-container" class="top">
       <video id="localVideo" autoplay>
         <track kind="captions" />
@@ -399,10 +404,11 @@
   }
 
   #video-container {
-    background-color: red;
+    background-color: rgb(46, 46, 46);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
+    gap: 5px;
+    padding: 3px;
   }
 
   @media screen and (max-width: 600px) {
@@ -411,7 +417,7 @@
     }
   }
 
-  @media screen and (min-width: 601px) and (max-width: 900px) {
+  @media screen and (min-width: 601px) {
     #video-container {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -420,6 +426,25 @@
   video {
     width: 100%;
     height: 100%;
+    min-height: 250px;
     object-fit: cover;
+  }
+
+  .tool-bar {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .mic,
+  .camera {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 4px;
+    background-color: aliceblue;
+    color: black;
   }
 </style>
