@@ -14,7 +14,6 @@
     grid-template-columns: 1fr 2fr 1fr;
   }
   .logo {
-    padding-left: 8%;
     font-size: 24pt;
     display: flex;
     justify-content: left;
