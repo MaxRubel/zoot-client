@@ -10,6 +10,9 @@
   import DummyVideo from "./DummyVideo.svelte";
   import MicIcon from "../assets/MicIcon.svelte";
   import CameraOn from "../assets/CameraOn.svelte";
+  import MicOff from "../assets/MicOff.svelte";
+  import CameraOff from "../assets/CameraOff.svelte";
+  import { navigate } from "svelte-routing";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -27,6 +30,7 @@
   let dummyVidoes = [1];
   let joined = false;
   let roomId = param;
+  let cameraOn = false;
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -70,7 +74,7 @@
     ws.send(`3&${roomId}&&&`);
   });
 
-  const cameraOn = () => {
+  const turnOnCamera = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((mediaStream) => {
@@ -91,6 +95,7 @@
       }
     });
     pausedVid = false;
+    cameraOn = true;
   };
 
   const cameraOff = () => {
@@ -108,6 +113,7 @@
         }
       });
     }
+    cameraOn = false;
   };
 
   const micOn = () => {
@@ -179,7 +185,7 @@
     localVideo = document.getElementById("localVideo");
     remoteVideo = document.getElementById("remoteVideo");
     audioElement = document.getElementById("audio");
-    cameraOn();
+    turnOnCamera();
     init();
   });
 
@@ -195,7 +201,6 @@
       console.log("track: ", track);
       peerConnection.addTrack(track, stream);
     });
-
     const offer = await peerConnection.createOffer();
 
     //CREATE OFFER
@@ -350,6 +355,9 @@
       delete peerConnections[peerId];
       peerConnections = peerConnections;
     }
+    if (dataType === "6") {
+      navigate("/rooms/new");
+    }
   };
 
   const testConnection = () => {
@@ -365,11 +373,13 @@
     ws.send("4&&&&");
   };
 
-  $: console.log("camera is paused: ", pausedVid);
-
-  $: {
-    console.log("future connections:", peers);
-  }
+  const handleCamera = () => {
+    if (cameraOn) {
+      cameraOff();
+    } else {
+      turnOnCamera();
+    }
+  };
 
   const showMyId = () => {
     console.log(myId);
@@ -383,8 +393,21 @@
 
   <div class="top">
     <div class="tool-bar">
-      <button class="mic"><MicIcon />Mic On</button>
-      <button class="camera"><CameraOn /> Camera On</button>
+      <button class="mic">
+        <MicIcon />Mic On
+        <!-- {#if cameraOn}
+          <MicOff />Mic Off
+        {:else}
+          <MicIcon />Mic On
+        {/if} -->
+      </button>
+      <button class="camera" on:click={handleCamera}>
+        {#if cameraOn}
+          <CameraOn />Stop Video
+        {:else}
+          <CameraOff />Start Video
+        {/if}</button
+      >
     </div>
     <div id="video-container" class="top">
       <video id="localVideo" autoplay>

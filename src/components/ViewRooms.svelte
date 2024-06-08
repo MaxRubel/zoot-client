@@ -1,19 +1,37 @@
 <script>
-  import { onMount } from "svelte";
-  import { getAllRooms, joinARoom } from "../api/rooms";
   import { navigate } from "svelte-routing";
+  import { clientId } from "../../stores/auth_store";
 
   let rooms = [];
+  let myId = null;
 
-  onMount(() => {
-    getAllRooms().then((data) => {
-      console.log(data);
-      rooms = data;
-    });
+  clientId.subscribe((value) => {
+    myId = value;
+  });
+
+  window.addEventListener("beforeunload", () => {
+    ws.send(`7&&${myId}&&`);
+    ws.close();
   });
 
   const createRoom = () => {
     navigate("/rooms/new");
+  };
+
+  const ws = new WebSocket("ws://localhost:8080/ws");
+
+  ws.onopen = () => {
+    ws.send(`6&&${myId}&&`);
+  };
+
+  ws.onmessage = (e) => {
+    if (e.data[0] === "7") {
+      const [_, data] = e.data.split("&");
+
+      if (data !== "null") {
+        rooms = JSON.parse(data);
+      }
+    }
   };
 </script>
 
@@ -22,7 +40,7 @@
     <button on:click={createRoom}> Create Room </button>
   </div>
   {#if rooms.length === 0}
-    No rooms have been created...
+    No rooms are currently active...
   {:else}
     <div>
       <table>
