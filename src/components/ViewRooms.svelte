@@ -18,9 +18,10 @@
     navigate("/rooms/new");
   };
 
-  const ws = new WebSocket("ws://localhost:8080/ws");
+  const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
 
   ws.onopen = () => {
+    //add client to lobby/waiting room
     ws.send(`6&&${myId}&&`);
   };
 
@@ -29,7 +30,8 @@
       const [_, data] = e.data.split("&");
 
       if (data !== "null") {
-        rooms = JSON.parse(data);
+        rooms = Object.values(JSON.parse(data));
+        console.log(rooms);
       }
     }
   };
@@ -54,7 +56,11 @@
           {#each rooms as room}
             <tr>
               <td><a href="/rooms/{room.id}">{room.name}</a></td>
-              <td>{room.clients ? room.clients.length : "0"}</td>
+              <td
+                >{Object.values(room.clients)
+                  ? Object.values(room.clients).length
+                  : "0"}</td
+              >
             </tr>
           {/each}
         </tbody>

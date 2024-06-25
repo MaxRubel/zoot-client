@@ -45,7 +45,7 @@
     { urls: "stun:stun4.l.google.com:5349" },
   ];
 
-  const ws = new WebSocket("ws://localhost:8080/ws");
+  const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
 
   window.addEventListener("beforeunload", () => {
     ws.send(`3&${roomId}&${myId}&&`);
