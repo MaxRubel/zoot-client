@@ -47,13 +47,24 @@
 
   const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
 
-  window.addEventListener("beforeunload", () => {
+  const cleanup = () => {
     ws.send(`3&${roomId}&${myId}&&`);
     peerConnections.forEach((conn) => {
       peerConnections[conn].close();
     });
     ws.close();
+  };
+  window.addEventListener("beforeunload", () => {
+    cleanup();
   });
+  window.addEventListener("popstate", () => {
+    cleanup();
+  });
+
+  window.history.pushState(null, "", window.location.href);
+  window.onpopstate = function (e) {
+    cleanup();
+  };
 
   //SEND ID TO SERVER WHEN CONNECTING
   ws.onopen = () => {
