@@ -18,8 +18,6 @@
   const url = new URL(currentUrl);
   const param = url.pathname.split("/").pop();
 
-  let pausedVid = false;
-  let pausedAudio = true;
   let streamVid;
   let streamAudio;
   let localVideo;
@@ -109,7 +107,6 @@
         videoSender.track.enabled = true;
       }
     });
-    pausedVid = false;
     cameraOn = true;
   };
 
@@ -117,7 +114,6 @@
     if (streamVid) {
       streamVid.getTracks().forEach((t) => (t.enabled = false));
       localVideo.srcObject = null;
-      pausedVid = true;
       const connections = Object.values(peerConnections);
       connections.forEach((conn) => {
         const videoSender = conn.getSenders().find(function (s) {
@@ -219,8 +215,6 @@
   };
 
   onMount(() => {
-    pausedVid = true;
-    pausedAudio = true;
     localVideo = document.getElementById("localVideo");
     remoteVideo = document.getElementById("remoteVideo");
     audioElement = document.getElementById("audio");
