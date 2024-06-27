@@ -398,10 +398,6 @@
     testAndPrint(peerConnections);
   };
 
-  const clearClients = () => {
-    ws.send("4&&&&");
-  };
-
   const handleMic = () => {
     if (audioOn) {
       micOff();
