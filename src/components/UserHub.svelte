@@ -131,7 +131,13 @@
   const micOn = () => {
     console.log("running fun");
     navigator.mediaDevices
-      .getUserMedia({ audio: true })
+      .getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      })
       .then(function (mediaStream) {
         streamAudio = mediaStream;
         audioElement.srcObject = streamAudio;
@@ -171,8 +177,6 @@
     });
     audioOn = false;
   };
-
-  $: console.log(audioOn);
 
   const sendTestMessage = () => {
     ws.send(`0&${roomId}&${myId}&0&`);
@@ -431,8 +435,8 @@
           <CameraOn />Stop Video
         {:else}
           <CameraOff />Start Video
-        {/if}</button
-      >
+        {/if}
+      </button>
     </div>
     <div id="video-container" class="top">
       <video id="localVideo" autoplay>
@@ -488,6 +492,7 @@
   .mic,
   .camera {
     display: flex;
+    height: 90px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
