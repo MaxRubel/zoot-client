@@ -31,7 +31,7 @@
 
       if (data !== "null") {
         rooms = Object.values(JSON.parse(data));
-        console.log(rooms);
+        // console.log(rooms);
       }
     }
   };
