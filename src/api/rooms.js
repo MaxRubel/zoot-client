@@ -1,4 +1,7 @@
+//public:
 const endpoint = "https://zoot-server-tgsls4olia-uc.a.run.app";
+//local:
+// const endpoint = 'http://localhost:8080'
 
 const createNewRoom = (payload) =>
   new Promise((resolve, reject) => {

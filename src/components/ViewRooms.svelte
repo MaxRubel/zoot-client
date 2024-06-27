@@ -9,6 +9,17 @@
     myId = value;
   });
 
+  //public:
+  const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
+  //local:
+  // const ws = new WebSocket("ws://localhost:8080/ws");
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "'" && e.ctrlKey) {
+      ws.send("8&&&&");
+    }
+  });
+
   window.addEventListener("beforeunload", () => {
     ws.send(`7&&${myId}&&`);
     ws.close();
@@ -17,8 +28,6 @@
   const createRoom = () => {
     navigate("/rooms/new");
   };
-
-  const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
 
   ws.onopen = () => {
     //add client to lobby/waiting room

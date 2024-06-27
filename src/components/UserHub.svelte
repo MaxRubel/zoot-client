@@ -46,7 +46,10 @@
     { urls: "stun:stun4.l.google.com:5349" },
   ];
 
+  //public:
   const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
+  //local:
+  // const ws = new WebSocket("ws://localhost:8080/ws");
 
   const cleanup = () => {
     ws.send(`3&${roomId}&${myId}&&`);
@@ -129,7 +132,6 @@
   };
 
   const micOn = () => {
-    console.log("running fun");
     navigator.mediaDevices
       .getUserMedia({
         audio: {
@@ -138,22 +140,28 @@
           autoGainControl: true,
         },
       })
-      .then(function (mediaStream) {
+      .then((mediaStream) => {
         streamAudio = mediaStream;
-        audioElement.srcObject = streamAudio;
+
+        const audioTrack = mediaStream.getAudioTracks()[0];
+
+        audioTrack.enabled = true;
+
+        const connections = Object.values(peerConnections);
+        connections.forEach((conn) => {
+          const audioSender = conn
+            .getSenders()
+            .find((s) => s.track?.kind === "audio");
+          if (audioSender) {
+            audioSender.replaceTrack(audioTrack);
+          } else {
+            conn.addTrack(audioTrack, mediaStream);
+          }
+        });
       })
       .catch(function (error) {
         console.error("Error accessing the microphone:", error);
       });
-    const connections = Object.values(peerConnections);
-    connections.forEach((conn) => {
-      const audioSender = conn.getSenders().find((s) => {
-        return s.track?.kind === "audio";
-      });
-      if (audioSender) {
-        audioSender.track.enabled = true;
-      }
-    });
 
     audioOn = true;
   };

@@ -1,13 +1,9 @@
 <script>
   import { Route, Router } from "svelte-routing";
-  import NewRoom from "./components/NewRoom.svelte";
-  import Room from "./components/UserHub.svelte";
-  import Error from "./components/Error.svelte";
   import UserHub from "./components/UserHub.svelte";
   import ViewRooms from "./components/ViewRooms.svelte";
   import NewRoomForm from "./components/NewRoomForm.svelte";
   import NavBar from "./components/NavBar.svelte";
-  import Dashboard from "./components/Dashboard.svelte";
 </script>
 
 <main>

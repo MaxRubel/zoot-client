@@ -13,14 +13,23 @@
 </script>
 
 <main>
-  <form on:submit={handleSubmit}>
-    <div class="left">Room Name:</div>
-    <input type="text" bind:value={name} />
-    <button type="submit">Create</button>
-  </form>
+  <div class="form-container">
+    <form on:submit={handleSubmit} class="new-room-form">
+      <div class="left">Room Name:</div>
+      <input type="text" bind:value={name} />
+      <button type="submit">Create</button>
+    </form>
+  </div>
 </main>
 
 <style>
+  .form-container {
+    margin-top: 30px;
+    width: 50%;
+    min-width: 350px;
+    max-width: 100%;
+  }
+
   .left {
     text-align: left;
   }
