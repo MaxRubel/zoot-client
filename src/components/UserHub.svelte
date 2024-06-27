@@ -374,11 +374,6 @@
   const testConnection = () => {
     testAndPrint(peerConnections);
   };
-  //   ws.send("5&&&");
-  // };
-
-  // const showMyId = () => {micIcon
-  // };
 
   const clearClients = () => {
     ws.send("4&&&&");
