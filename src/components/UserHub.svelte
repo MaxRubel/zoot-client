@@ -31,6 +31,7 @@
   let joined = false;
   let roomId = param;
   let cameraOn = false;
+  let audioOn = false;
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -128,6 +129,7 @@
   };
 
   const micOn = () => {
+    console.log("running fun");
     navigator.mediaDevices
       .getUserMedia({ audio: true })
       .then(function (mediaStream) {
@@ -137,26 +139,40 @@
       .catch(function (error) {
         console.error("Error accessing the microphone:", error);
       });
+    const connections = Object.values(peerConnections);
+    connections.forEach((conn) => {
+      const audioSender = conn.getSenders().find((s) => {
+        return s.track?.kind === "audio";
+      });
+      if (audioSender) {
+        audioSender.track.enabled = true;
+      }
+    });
+
+    audioOn = true;
   };
 
-  // const micOff = () => {
-  //   if (streamAudio) {
-  //     const tracks = streamAudio.getTracks();
-  //     tracks.forEach(function (track) {
-  //       track.stop();
-  //     });
-  //     audioElement.srcObject = null;
-  //   }
-  // };
+  const micOff = () => {
+    if (streamAudio) {
+      const tracks = streamAudio.getTracks();
+      tracks.forEach(function (track) {
+        track.stop();
+      });
+      audioElement.srcObject = null;
+    }
+    const connections = Object.values(peerConnections);
+    connections.forEach((conn) => {
+      const audioSender = conn.getSenders().find(function (s) {
+        return s.track?.kind === "audio";
+      });
+      if (audioSender) {
+        audioSender.track.enabled = false;
+      }
+    });
+    audioOn = false;
+  };
 
-  // const handlePauseVid = () => {
-  //   pausedVid = !pausedVid;
-  //   if (pausedVid) {
-  //     cameraOff();
-  //   } else {
-  //     cameraOn();
-  //   }
-  // };
+  $: console.log(audioOn);
 
   const sendTestMessage = () => {
     ws.send(`0&${roomId}&${myId}&0&`);
@@ -197,6 +213,7 @@
     remoteVideo = document.getElementById("remoteVideo");
     audioElement = document.getElementById("audio");
     turnOnCamera();
+    micOn();
     init();
   });
 
@@ -209,7 +226,7 @@
     //GET MEDIA
     const stream = await getUserMedia();
     stream.getTracks().forEach((track) => {
-      console.log("track: ", track);
+      // console.log("track: ", track);
       peerConnection.addTrack(track, stream);
     });
     const offer = await peerConnection.createOffer();
@@ -379,6 +396,14 @@
     ws.send("4&&&&");
   };
 
+  const handleMic = () => {
+    if (audioOn) {
+      micOff();
+    } else {
+      micOn();
+    }
+  };
+
   const handleCamera = () => {
     if (cameraOn) {
       cameraOff();
@@ -390,18 +415,16 @@
 
 <main>
   <button on:click={sendTestMessage}>Ping server</button>
-  <!-- <button on:click={init}>Connect with: {peers.length}</button> -->
   <button on:click={testConnection}>Connection Details</button>
 
   <div class="top">
     <div class="tool-bar">
-      <button class="mic">
-        <MicIcon />Mic On
-        <!-- {#if cameraOn}
-          <MicOff />Mic Off
+      <button class="mic" on:click={handleMic}>
+        {#if audioOn}
+          <MicIcon />Mute Mic
         {:else}
-          <MicIcon />Mic On
-        {/if} -->
+          <MicOff />Activate Mic
+        {/if}
       </button>
       <button class="camera" on:click={handleCamera}>
         {#if cameraOn}
