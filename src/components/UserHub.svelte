@@ -13,6 +13,7 @@
   import MicOff from "../assets/MicOff.svelte";
   import CameraOff from "../assets/CameraOff.svelte";
   import { navigate } from "svelte-routing";
+  import { getAudioContext } from "../../stores/media/audioContext";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -30,6 +31,7 @@
   let roomId = param;
   let cameraOn = false;
   let audioOn = false;
+  let audioContext;
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -44,8 +46,13 @@
     { urls: "stun:stun4.l.google.com:5349" },
   ];
 
+  audioContext = getAudioContext();
+  $: console.log(audioContext);
+
   function setupAudioForPeer(peerIndex, stream) {
-    // Get the audio track from the stream
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
     const audioTrack = stream.getAudioTracks()[0];
 
     if (!audioTrack) {
@@ -69,7 +76,7 @@
     const peerConnection = peerConnections[peerId];
     if (peerConnection) {
       peerConnection.stream = stream;
-      setupAudioForPeer(peerIndex, stream);
+      setupAudioForPeer(peerId, stream);
     } else {
       console.error(`No peer connection found at with id ${peerId}`);
     }
@@ -82,7 +89,7 @@
 
   const cleanup = () => {
     ws.send(`3&${roomId}&${myId}&&`);
-    peerConnections.forEach((conn) => {
+    Object.values(peerConnections).forEach((conn) => {
       peerConnections[conn].close();
     });
     ws.close();
@@ -449,11 +456,16 @@
       turnOnCamera();
     }
   };
+
+  const testAudio = () => {
+    console.log(audioContext);
+  };
 </script>
 
 <main>
   <button on:click={sendTestMessage}>Ping server</button>
   <button on:click={testConnection}>Connection Details</button>
+  <button on:click={testAudio}>Test Audio</button>
 
   <div class="top">
     <div class="tool-bar">

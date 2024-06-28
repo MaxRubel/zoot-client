@@ -1,6 +1,8 @@
 <script>
   import { navigate } from "svelte-routing";
   import { clientId } from "../../stores/auth_store";
+  import { onDestroy, onMount } from "svelte";
+  import { createAudioContext } from "../../stores/media/audioContext";
 
   let rooms = [];
   let myId = null;
@@ -27,6 +29,11 @@
 
   const createRoom = () => {
     navigate("/rooms/new");
+    // resumeAudioContext();
+  };
+
+  const goToRoom = (id) => {
+    navigate(`/rooms/${id}`);
   };
 
   ws.onopen = () => {
@@ -44,11 +51,26 @@
       }
     }
   };
+
+  onMount(() => {
+    if (document.getElementById("gesture")) {
+      document.getElementById("gesture").addEventListener("click", () => {
+        createAudioContext();
+      });
+    }
+  });
+
+  onDestroy(() => {
+    document.getElementById("gesture").removeEventListener("click", () => {
+      const audioContext = new AudioContext();
+      createAudioContext();
+    });
+  });
 </script>
 
 <main>
   <div>
-    <button on:click={createRoom}> Create Room </button>
+    <button on:click={createRoom} id="gesture"> Create Room </button>
   </div>
   {#if rooms.length === 0}
     No rooms are currently active...
@@ -64,8 +86,17 @@
         <tbody>
           {#each rooms as room}
             <tr>
-              <td><a href="/rooms/{room.id}">{room.name}</a></td>
-              <td
+              <td>
+                <button
+                  id="gesture"
+                  class="not-button"
+                  on:click={() => {
+                    goToRoom(room.id);
+                  }}
+                >
+                  {room.name}
+                </button>
+              </td><td
                 >{Object.values(room.clients)
                   ? Object.values(room.clients).length
                   : "0"}</td
@@ -79,8 +110,10 @@
 </main>
 
 <style>
-  a {
+  .not-button {
+    background-color: transparent;
     color: black;
+    border: none;
   }
 
   table {
