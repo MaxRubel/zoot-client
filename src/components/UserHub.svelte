@@ -44,6 +44,37 @@
     { urls: "stun:stun4.l.google.com:5349" },
   ];
 
+  function setupAudioForPeer(peerIndex, stream) {
+    // Get the audio track from the stream
+    const audioTrack = stream.getAudioTracks()[0];
+
+    if (!audioTrack) {
+      console.error(`No audio track found for peer at index ${peerIndex}`);
+      return;
+    }
+
+    // Create a MediaStreamSource
+    const source = audioContext.createMediaStreamSource(
+      new MediaStream([audioTrack]),
+    );
+
+    // Connect the source to the audio context's destination
+    source.connect(audioContext.destination);
+
+    // Store the source in the peer connection object for potential later use
+    peerConnections[peerIndex].audioSource = source;
+  }
+
+  function handleNewAudio(peerId, stream) {
+    const peerConnection = peerConnections[peerId];
+    if (peerConnection) {
+      peerConnection.stream = stream;
+      setupAudioForPeer(peerIndex, stream);
+    } else {
+      console.error(`No peer connection found at with id ${peerId}`);
+    }
+  }
+
   //public:
   const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
   //local:
@@ -226,7 +257,12 @@
   const startNegotiations = async (answererId) => {
     //CREATE CONNECTION OBJECT
     const peerConnection = new RTCPeerConnection({ iceServers });
+
     peerConnections[answererId] = peerConnection;
+
+    peerConnection.ontrack = (e) => {
+      handleNewAudio(answererId, e.streams[0]);
+    };
     // console.log("new peer connection created: ", peerConnection);
 
     //GET MEDIA

@@ -25,6 +25,14 @@ export const testAndPrint = (peerConnections) => {
               console.log("Receiving video:", report.bytesReceived);
             }
           }
+          if (report.kind === "audio") {
+            console.log("audio connection: ", index + 1, report);
+            if (report.type === "outbound-rtp") {
+              console.log("Sending audio:", report.bytesSent);
+            } else if (report.type === "inbound-rtp") {
+              console.log("Receiving audio:", report.bytesReceived);
+            }
+          }
         });
       })
       .catch((error) => {
