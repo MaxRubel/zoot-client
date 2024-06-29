@@ -5,32 +5,32 @@
   import { clientId } from "../../stores/auth_store";
   import { checkPeerConnection } from "../../utils/ws/checkPeerConnection";
   import { testAndPrint } from "../../utils/hub/testAndPrint";
+  import { testIncomingMedia } from "../../utils/hub/testMedia";
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
   import PeerVideo from "./PeerVideo.svelte";
-  import DummyVideo from "./DummyVideo.svelte";
   import MicIcon from "../assets/MicIcon.svelte";
   import CameraOn from "../assets/CameraOn.svelte";
   import MicOff from "../assets/MicOff.svelte";
   import CameraOff from "../assets/CameraOff.svelte";
   import { navigate } from "svelte-routing";
-  import { getAudioContext } from "../../stores/media/audioContext";
+  import { micOn } from "../../utils/media/micOn";
+  import { micOff } from "../../utils/media/micOff";
+  import { cameraOn } from "../../utils/media/cameraOn";
+  import { cameraOff } from "../../utils/media/cameraOff";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
   const param = url.pathname.split("/").pop();
 
-  let streamVid;
-  let streamAudio;
+  let roomId = param;
+  let videoStream;
   let localVideo;
-  let remoteVideo;
   let audioElement;
   let peers = [];
   let peerConnections = {};
-  let dummyVidoes = [1];
   let joined = false;
-  let roomId = param;
-  let cameraOn = false;
-  let audioOn = false;
+  let videoOn = true;
+  let audioOn = true;
   let audioContext;
 
   const iceServers = [
@@ -46,46 +46,16 @@
     { urls: "stun:stun4.l.google.com:5349" },
   ];
 
-  audioContext = getAudioContext();
-  $: console.log(audioContext);
+  let myId;
 
-  function setupAudioForPeer(peerIndex, stream) {
-    if (audioContext.state === "suspended") {
-      audioContext.resume();
-    }
-    const audioTrack = stream.getAudioTracks()[0];
-
-    if (!audioTrack) {
-      console.error(`No audio track found for peer at index ${peerIndex}`);
-      return;
-    }
-
-    // Create a MediaStreamSource
-    const source = audioContext.createMediaStreamSource(
-      new MediaStream([audioTrack]),
-    );
-
-    // Connect the source to the audio context's destination
-    source.connect(audioContext.destination);
-
-    // Store the source in the peer connection object for potential later use
-    peerConnections[peerIndex].audioSource = source;
-  }
-
-  function handleNewAudio(peerId, stream) {
-    const peerConnection = peerConnections[peerId];
-    if (peerConnection) {
-      peerConnection.stream = stream;
-      setupAudioForPeer(peerId, stream);
-    } else {
-      console.error(`No peer connection found at with id ${peerId}`);
-    }
-  }
+  clientId.subscribe((value) => {
+    myId = value;
+  });
 
   //public:
-  const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
+  // const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
   //local:
-  // const ws = new WebSocket("ws://localhost:8080/ws");
+  const ws = new WebSocket("ws://localhost:8080/ws");
 
   const cleanup = () => {
     ws.send(`3&${roomId}&${myId}&&`);
@@ -106,7 +76,11 @@
     cleanup();
   };
 
-  //SEND ID TO SERVER WHEN CONNECTING
+  onDestroy(() => {
+    ws.send(`3&${roomId}&&&`);
+  });
+
+  //Send My Id to Server When Connecting
   ws.onopen = () => {
     ws.send(`1&${roomId}&${myId}&0&`);
   };
@@ -115,109 +89,8 @@
     console.error("WebSocket error:", event);
   };
 
-  let myId;
-
-  clientId.subscribe((value) => {
-    myId = value;
-  });
-
-  onDestroy(() => {
-    ws.send(`3&${roomId}&&&`);
-  });
-
-  const turnOnCamera = () => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((mediaStream) => {
-        streamVid = mediaStream;
-        localVideo.srcObject = streamVid;
-        streamVid.getTracks().forEach((t) => (t.enabled = true));
-      })
-      .catch(function (error) {
-        console.error("Error accessing the webcam:", error);
-      });
-    const connections = Object.values(peerConnections);
-    connections.forEach((conn) => {
-      const videoSender = conn.getSenders().find((s) => {
-        return s.track?.kind === "video";
-      });
-      if (videoSender) {
-        videoSender.track.enabled = true;
-      }
-    });
-    cameraOn = true;
-  };
-
-  const cameraOff = () => {
-    if (streamVid) {
-      streamVid.getTracks().forEach((t) => (t.enabled = false));
-      localVideo.srcObject = null;
-      const connections = Object.values(peerConnections);
-      connections.forEach((conn) => {
-        const videoSender = conn.getSenders().find(function (s) {
-          return s.track?.kind === "video";
-        });
-        if (videoSender) {
-          videoSender.track.enabled = false;
-        }
-      });
-    }
-    cameraOn = false;
-  };
-
-  const micOn = () => {
-    navigator.mediaDevices
-      .getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      })
-      .then((mediaStream) => {
-        streamAudio = mediaStream;
-
-        const audioTrack = mediaStream.getAudioTracks()[0];
-
-        audioTrack.enabled = true;
-
-        const connections = Object.values(peerConnections);
-        connections.forEach((conn) => {
-          const audioSender = conn
-            .getSenders()
-            .find((s) => s.track?.kind === "audio");
-          if (audioSender) {
-            audioSender.replaceTrack(audioTrack);
-          } else {
-            conn.addTrack(audioTrack, mediaStream);
-          }
-        });
-      })
-      .catch(function (error) {
-        console.error("Error accessing the microphone:", error);
-      });
-
-    audioOn = true;
-  };
-
-  const micOff = () => {
-    if (streamAudio) {
-      const tracks = streamAudio.getTracks();
-      tracks.forEach(function (track) {
-        track.stop();
-      });
-      audioElement.srcObject = null;
-    }
-    const connections = Object.values(peerConnections);
-    connections.forEach((conn) => {
-      const audioSender = conn.getSenders().find(function (s) {
-        return s.track?.kind === "audio";
-      });
-      if (audioSender) {
-        audioSender.track.enabled = false;
-      }
-    });
-    audioOn = false;
+  ws.onclose = () => {
+    ws.send(`3&${roomId}&${myId}&&`);
   };
 
   const sendTestMessage = () => {
@@ -225,72 +98,54 @@
   };
 
   async function getUserMedia() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      });
-      return stream;
-    } catch (error) {
-      console.error("Error accessing media devices:", error);
-      throw error;
-    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    });
+    return stream;
   }
 
   const init = () => {
-    // console.log("init");
-    peerConnections = {};
     if (peers.length === 0) {
-      // console.log("one one else in the room");
       return;
     }
     for (let i = 0; i < peers.length; i++) {
       if (!checkPeerConnection(peerConnections, peers[i], myId)) {
-        // console.log("initializing negotiation with client: ", i + 1);
         startNegotiations(peers[i]);
       }
     }
   };
 
-  onMount(() => {
+  onMount(async () => {
     localVideo = document.getElementById("localVideo");
-    remoteVideo = document.getElementById("remoteVideo");
     audioElement = document.getElementById("audio");
-    turnOnCamera();
-    micOn();
-    init();
+    videoStream = await cameraOn(peerConnections);
+    localVideo.srcObject = videoStream;
+    micOn(peerConnections);
   });
 
   const startNegotiations = async (answererId) => {
-    //CREATE CONNECTION OBJECT
+    //Create New Peer Connection
     const peerConnection = new RTCPeerConnection({ iceServers });
 
     peerConnections[answererId] = peerConnection;
 
-    peerConnection.ontrack = (e) => {
-      handleNewAudio(answererId, e.streams[0]);
-    };
-    // console.log("new peer connection created: ", peerConnection);
-
-    //GET MEDIA
+    //Get User's Media Stream
     const stream = await getUserMedia();
+
+    //Get Each Track from the Stream
     stream.getTracks().forEach((track) => {
-      // console.log("track: ", track);
       peerConnection.addTrack(track, stream);
     });
+
+    //Create Offer
     const offer = await peerConnection.createOffer();
-
-    //CREATE OFFER
-    // console.log("created offer", offer);
-
     await peerConnection.setLocalDescription(offer);
-    // console.log("set local description:", offer);
 
-    //SEND OFFER --
+    //Send Offer
     ws.send(`2&${roomId}&${myId}&${answererId}&${JSON.stringify(offer)}`);
-    // console.log("sent offer");
 
-    // Send the ICE CANDIDATES to answerer
+    // Send the Ice Candidates
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
         const data = {
@@ -298,124 +153,23 @@
           candidate: event.candidate,
         };
         if (peerConnection.localDescription) {
-          // console.log("sending ice candidate from offerer: ", data);
           ws.send(`2&${roomId}&${myId}&${answererId}&${JSON.stringify(data)}`);
         }
       }
     };
-    peerConnection.addEventListener("iceconnectionstatechange", () => {
-      // console.log("ICE Connection State:", peerConnection.iceConnectionState);
-    });
   };
 
   ws.onmessage = async (e) => {
     const dataType = e.data[0];
-    //TEST ping server
+    //Ping Server - Test
     if (dataType === "0") {
-      // console.log(e.data);
+      console.log(e.data);
       return;
     }
 
-    //NEGOTIATIONS
-    if (dataType === "3") {
-      const [_, roomId, senderId, receiverId, data] = e.data.split("&");
-
-      //MESSAGE NOT FOR ME
-      if (senderId === myId || receiverId !== myId) {
-        return;
-      }
-
-      const parsed = JSON.parse(data);
-      // console.log(`received ${parsed.type}`);
-
-      //ANSWERER MAKES NEW PEER CONNECTION
-      if (!peerConnections[senderId]) {
-        peerConnections[senderId] = new RTCPeerConnection({ iceServers });
-        // console.log(
-        //   "creating new peer connection: ",
-        //   peerConnections[senderId],
-        // );
-      }
-
-      const peerConnection = peerConnections[senderId];
-
-      // ICE CANDIDATES
-      if (parsed.type === "iceCandidate") {
-        // console.log("receiving ice candidate: from ", senderId, parsed);
-
-        await peerConnection.addIceCandidate(parsed.candidate);
-        // console.log("added ice candidate: ", parsed.candidate);
-        // console.log("candidate status: ", peerConnection.iceConnectionState);
-        return;
-      }
-
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          const data = {
-            type: "iceCandidate",
-            candidate: event.candidate,
-          };
-          if (peerConnection.localDescription) {
-            // console.log("sending ice candidate from answerer: ", data);
-            ws.send(`2&${roomId}&${myId}&${senderId}&${JSON.stringify(data)}`);
-          }
-        }
-      };
-
-      // ANSWERER MAKES ANSWER
-      if (parsed.type === "offer") {
-        if (peerConnection.remoteDescription) {
-          // console.log("this sender is already in the peer connections array:");
-          return;
-        }
-        await peerConnection.setRemoteDescription(parsed);
-        peerConnection.addEventListener("iceconnectionstatechange", () => {
-          // console.log(
-          //   "ICE Connection State:",
-          //   peerConnection.iceConnectionState,
-          // );
-        });
-        const stream = await getUserMedia();
-        stream.getTracks().forEach((track) => {
-          // console.log("adding answer track: ", track);
-          peerConnection.addTrack(track, stream);
-        });
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        // console.log("setting answer to local description");
-        // console.log("sending answer: ", answer);
-        // console.log(
-        //   "finished negotiation, status: ",
-        //   peerConnection.iceConnectionState,
-        // );
-
-        ws.send(`2&${roomId}&${myId}&${senderId}&${JSON.stringify(answer)}`);
-      }
-
-      // Handling 'answer' message type -- END
-      if (parsed.type === "answer") {
-        await peerConnection.setRemoteDescription(parsed);
-        // console.log("setting answer to remote description");
-        // console.log("Finished negotiation!");
-        // console.log("candidate status: ", peerConnection.iceConnectionState);
-        peerConnection.onicecandidate = function (event) {
-          if (event.candidate) {
-            const data = {
-              type: "iceCandidate",
-              candidate: event.candidate,
-            };
-
-            // console.log("adding ice candidate: ", event.candidate);
-            peerConnection.addIceCandidate(event.candidate);
-          }
-        };
-      }
-    }
-
-    //receive array of peers upon JOINING
+    // Receive Array of Peer Ids Upon Joining
     if (dataType === "4") {
       joined = false;
-      // console.log("array of clients: ", e.data);
       const clientArr = e.data.split("&");
       peers = addPeersToLocal(peers, myId, clientArr);
       init();
@@ -427,13 +181,80 @@
       if (!peerConnections[peerId]) {
         return;
       }
-      // console.log("deleting peer connection");
       peerConnections[peerId].close();
       delete peerConnections[peerId];
       peerConnections = peerConnections;
     }
     if (dataType === "6") {
       navigate("/rooms/new");
+    }
+
+    //---------------Negotiations----------------
+    if (dataType === "3") {
+      const [_, roomId, senderId, receiverId, data] = e.data.split("&");
+
+      //Message Not For Me
+      if (senderId === myId || receiverId !== myId) {
+        return;
+      }
+
+      const parsed = JSON.parse(data);
+
+      //Receiver Creates New Peer Connection
+      if (!peerConnections[senderId]) {
+        peerConnections[senderId] = new RTCPeerConnection({ iceServers });
+      }
+
+      const peerConnection = peerConnections[senderId];
+
+      // Ice Candidates
+      if (parsed.type === "iceCandidate") {
+        await peerConnection.addIceCandidate(parsed.candidate);
+        return;
+      }
+
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          const data = {
+            type: "iceCandidate",
+            candidate: event.candidate,
+          };
+          if (peerConnection.localDescription) {
+            ws.send(`2&${roomId}&${myId}&${senderId}&${JSON.stringify(data)}`);
+          }
+        }
+      };
+
+      // Receiver Makes Answer
+      if (parsed.type === "offer") {
+        if (peerConnection.remoteDescription) {
+          return;
+        }
+        await peerConnection.setRemoteDescription(parsed);
+
+        const stream = await getUserMedia();
+        stream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, stream);
+        });
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        ws.send(`2&${roomId}&${myId}&${senderId}&${JSON.stringify(answer)}`);
+      }
+
+      // Handling Final Answer
+      if (parsed.type === "answer") {
+        await peerConnection.setRemoteDescription(parsed);
+        peerConnection.onicecandidate = function (event) {
+          if (event.candidate) {
+            const data = {
+              type: "iceCandidate",
+              candidate: event.candidate,
+            };
+            peerConnection.addIceCandidate(event.candidate);
+          }
+        };
+      }
     }
   };
 
@@ -443,29 +264,34 @@
 
   const handleMic = () => {
     if (audioOn) {
-      micOff();
+      micOff(peerConnections);
+      audioOn = false;
     } else {
-      micOn();
+      micOn(peerConnections);
+      audioOn = true;
     }
   };
 
-  const handleCamera = () => {
-    if (cameraOn) {
-      cameraOff();
+  const handleCamera = async () => {
+    if (videoOn) {
+      cameraOff(peerConnections);
+      localVideo.srcObject = null;
+      videoOn = false;
     } else {
-      turnOnCamera();
+      localVideo.srcObject = await cameraOn(peerConnections);
+      videoOn = true;
     }
   };
 
-  const testAudio = () => {
-    console.log(audioContext);
+  const testMedia = () => {
+    testIncomingMedia(peerConnections);
   };
 </script>
 
 <main>
   <button on:click={sendTestMessage}>Ping server</button>
   <button on:click={testConnection}>Connection Details</button>
-  <button on:click={testAudio}>Test Audio</button>
+  <button on:click={testMedia}>Test Media</button>
 
   <div class="top">
     <div class="tool-bar">
@@ -477,7 +303,7 @@
         {/if}
       </button>
       <button class="camera" on:click={handleCamera}>
-        {#if cameraOn}
+        {#if videoOn}
           <CameraOn />Stop Video
         {:else}
           <CameraOff />Start Video

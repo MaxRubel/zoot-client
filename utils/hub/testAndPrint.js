@@ -1,10 +1,14 @@
 import { testSameCandidates } from "./testSameCandidates";
 
+let i = 1
+
 export const testAndPrint = (peerConnections) => {
   const connections = Object.values(peerConnections);
 
   console.log("number of connections: ", connections.length);
   connections.forEach((conn, index) => {
+    console.log(`connection ${i}: ${conn.connectionState}`)
+    i++
     testSameCandidates(conn)
     const connObj = {
       connection: index + 1,
