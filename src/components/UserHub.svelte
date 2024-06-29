@@ -17,6 +17,8 @@
   import { micOff } from "../../utils/media/micOff";
   import { cameraOn } from "../../utils/media/cameraOn";
   import { cameraOff } from "../../utils/media/cameraOff";
+  import { screenShareOn } from "../../utils/media/screenShareOn";
+  import ShareScreen from "../assets/ShareScreen.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -163,7 +165,8 @@
     const dataType = e.data[0];
     //Ping Server - Test
     if (dataType === "0") {
-      console.log(e.data);
+      const filtered = e.data.replace("0", "");
+      console.warn(filtered);
       return;
     }
 
@@ -283,6 +286,10 @@
     }
   };
 
+  const handleScreenShare = () => {
+    screenShareOn(peerConnections);
+  };
+
   const testMedia = () => {
     testIncomingMedia(peerConnections);
   };
@@ -295,19 +302,22 @@
 
   <div class="top">
     <div class="tool-bar">
-      <button class="mic" on:click={handleMic}>
+      <button class="clear" on:click={handleMic}>
         {#if audioOn}
           <MicIcon />Mute Mic
         {:else}
           <MicOff />Activate Mic
         {/if}
       </button>
-      <button class="camera" on:click={handleCamera}>
+      <button class="clear" on:click={handleCamera}>
         {#if videoOn}
           <CameraOn />Stop Video
         {:else}
           <CameraOff />Start Video
         {/if}
+      </button>
+      <button class="clear" on:click={handleScreenShare}>
+        <ShareScreen />Share Screen
       </button>
     </div>
     <div id="video-container" class="top">
@@ -361,8 +371,7 @@
     gap: 20px;
   }
 
-  .mic,
-  .camera {
+  .clear {
     display: flex;
     height: 90px;
     flex-direction: column;
