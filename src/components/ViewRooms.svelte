@@ -1,6 +1,8 @@
 <script>
   import { navigate } from "svelte-routing";
   import { clientId } from "../../stores/auth_store";
+  import { onDestroy, onMount } from "svelte";
+  import { createAudioContext } from "../../stores/media/audioContext";
 
   let rooms = [];
   let myId = null;
@@ -10,9 +12,9 @@
   });
 
   //public:
-  const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
+  // const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
   //local:
-  // const ws = new WebSocket("ws://localhost:8080/ws");
+  const ws = new WebSocket("ws://localhost:8080/ws");
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "'" && e.ctrlKey) {
@@ -26,11 +28,16 @@
   });
 
   const createRoom = () => {
+    createAudioContext();
     navigate("/rooms/new");
   };
 
+  const goToRoom = (id) => {
+    createAudioContext();
+    navigate(`/rooms/${id}`);
+  };
+
   ws.onopen = () => {
-    //add client to lobby/waiting room
     ws.send(`6&&${myId}&&`);
   };
 
@@ -40,7 +47,6 @@
 
       if (data !== "null") {
         rooms = Object.values(JSON.parse(data));
-        // console.log(rooms);
       }
     }
   };
@@ -48,7 +54,7 @@
 
 <main>
   <div>
-    <button on:click={createRoom}> Create Room </button>
+    <button id="gesture" on:click={createRoom}> Create Room </button>
   </div>
   {#if rooms.length === 0}
     No rooms are currently active...
@@ -64,8 +70,17 @@
         <tbody>
           {#each rooms as room}
             <tr>
-              <td><a href="/rooms/{room.id}">{room.name}</a></td>
-              <td
+              <td>
+                <button
+                  id="gesture"
+                  class="not-button"
+                  on:click={() => {
+                    goToRoom(room.id);
+                  }}
+                >
+                  {room.name}
+                </button>
+              </td><td
                 >{Object.values(room.clients)
                   ? Object.values(room.clients).length
                   : "0"}</td
@@ -79,8 +94,10 @@
 </main>
 
 <style>
-  a {
+  .not-button {
+    background-color: transparent;
     color: black;
+    border: none;
   }
 
   table {
