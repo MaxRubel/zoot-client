@@ -19,6 +19,10 @@
   import { cameraOff } from "../../utils/media/cameraOff";
   import { screenShareOn } from "../../utils/media/screenShareOn";
   import ShareScreen from "../assets/ShareScreen.svelte";
+  import ConfirmAudio from "./modals/ConfirmAudioModal.svelte";
+  import ConfirmAudioModal from "./modals/ConfirmAudioModal.svelte";
+  import { getAudioContext } from "../../stores/media/audioContext";
+  import { createAudioContext } from "../../stores/media/audioContext";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -34,6 +38,13 @@
   let videoOn = true;
   let audioOn = true;
   let audioContext;
+  let confirmAudio = false;
+
+  audioContext = getAudioContext();
+  $: console.log(audioContext);
+  if (!audioContext) {
+    confirmAudio = true;
+  }
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -86,7 +97,7 @@
   ws.onopen = () => {
     ws.send(`1&${roomId}&${myId}&0&`);
   };
-
+  // console.log("hi");
   ws.onerror = function (event) {
     console.error("WebSocket error:", event);
   };
@@ -108,6 +119,7 @@
   }
 
   const init = () => {
+    console.log("initializing...");
     if (peers.length === 0) {
       return;
     }
@@ -175,7 +187,9 @@
       joined = false;
       const clientArr = e.data.split("&");
       peers = addPeersToLocal(peers, myId, clientArr);
-      init();
+      if (audioContext) {
+        init();
+      }
       return;
     }
 
@@ -293,9 +307,21 @@
   const testMedia = () => {
     testIncomingMedia(peerConnections);
   };
+
+  const closeModal = () => {
+    cleanup();
+    navigate("/");
+  };
+
+  const hookUpAudioContext = () => {
+    createAudioContext();
+    confirmAudio = false;
+    init();
+  };
 </script>
 
-<main>
+<div id="user-hub">
+  <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
   <button on:click={sendTestMessage}>Ping server</button>
   <button on:click={testConnection}>Connection Details</button>
   <button on:click={testMedia}>Test Media</button>
@@ -330,7 +356,7 @@
     </div>
     <audio id="audio" autoplay></audio>
   </div>
-</main>
+</div>
 
 <style>
   .top {

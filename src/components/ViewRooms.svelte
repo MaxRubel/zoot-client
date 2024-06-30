@@ -1,7 +1,6 @@
 <script>
   import { navigate } from "svelte-routing";
   import { clientId } from "../../stores/auth_store";
-  import { onDestroy, onMount } from "svelte";
   import { createAudioContext } from "../../stores/media/audioContext";
 
   let rooms = [];

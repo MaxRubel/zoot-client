@@ -1,4 +1,15 @@
+import { getAudioContext } from "../../stores/media/audioContext";
+
 export const testIncomingMedia = (peerConnections) => {
+  const audioContext = getAudioContext()
+
+  if (audioContext){
+    console.log("Audio Conext is established: ", 
+      audioContext
+    )
+  } else {
+    console.log("Audio context is not established: ", audioContext)
+  }
   const connections = Object.values(peerConnections);
   console.log("number of connections: ", connections.length);
 
