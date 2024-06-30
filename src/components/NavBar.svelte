@@ -14,7 +14,7 @@
     grid-template-columns: 1fr 2fr 1fr;
   }
   .logo {
-    font-size: 24pt;
+    font-size: 30pt;
     display: flex;
     justify-content: left;
   }
@@ -24,6 +24,6 @@
     justify-content: space-between;
   }
   a {
-    color: black;
+    color: whitesmoke;
   }
 </style>

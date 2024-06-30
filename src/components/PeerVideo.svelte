@@ -28,7 +28,7 @@
   });
 </script>
 
-<video bind:this={videoElement} autoplay muted>
+<video bind:this={videoElement} autoplay playsinline muted>
   <track kind="captions" />
 </video>
 

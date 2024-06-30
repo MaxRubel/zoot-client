@@ -21,7 +21,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -39,12 +39,13 @@
   }
 
   .modal {
-    background-color: aliceblue;
+    background-color: rgba(17, 17, 17, 0.808);
     padding: 20px;
     border-radius: 5px;
     max-width: 80%;
     z-index: 2;
     position: relative;
+    border-radius: 15px;
   }
 
   button {
