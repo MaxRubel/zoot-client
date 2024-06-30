@@ -1,6 +1,5 @@
 export const cameraOn = async (peerConnections) => {
   let videoStream;
-  console.log("starting stream")
   try {
     videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
     videoStream.getTracks().forEach((t) => {

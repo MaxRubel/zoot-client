@@ -119,7 +119,6 @@
   }
 
   const init = () => {
-    console.log("initializing...");
     if (peers.length === 0) {
       return;
     }
