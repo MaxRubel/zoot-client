@@ -29,11 +29,9 @@
   });
 </script>
 
-<main>
-  <video bind:this={videoElement} autoplay muted>
-    <track kind="captions" />
-  </video>
-</main>
+<video bind:this={videoElement} autoplay muted>
+  <track kind="captions" />
+</video>
 
 <style>
   video {

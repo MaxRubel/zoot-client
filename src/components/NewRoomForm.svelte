@@ -12,15 +12,13 @@
   };
 </script>
 
-<main>
-  <div class="form-container">
-    <form on:submit={handleSubmit} class="new-room-form">
-      <div class="left">Room Name:</div>
-      <input type="text" bind:value={name} />
-      <button type="submit">Create</button>
-    </form>
-  </div>
-</main>
+<div class="form-container">
+  <form on:submit={handleSubmit} class="new-room-form">
+    <div class="left">Room Name:</div>
+    <input type="text" bind:value={name} />
+    <button type="submit">Create</button>
+  </form>
+</div>
 
 <style>
   .form-container {

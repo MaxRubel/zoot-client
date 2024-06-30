@@ -52,46 +52,45 @@
   };
 </script>
 
-<main>
+<div>
+  <button id="gesture" on:click={createRoom}> Create Room </button>
+</div>
+{#if rooms.length === 0}
+  No rooms are currently active...
+{:else}
   <div>
-    <button id="gesture" on:click={createRoom}> Create Room </button>
-  </div>
-  {#if rooms.length === 0}
-    No rooms are currently active...
-  {:else}
-    <div>
-      <table>
-        <thead>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 70%">Room</th>
+          <th>Number of Clients</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each rooms as room}
           <tr>
-            <th style="width: 70%">Room</th>
-            <th>Number of Clients</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each rooms as room}
-            <tr>
-              <td>
-                <button
-                  id="gesture"
-                  class="not-button"
-                  on:click={() => {
-                    goToRoom(room.id);
-                  }}
-                >
-                  {room.name}
-                </button>
-              </td><td
-                >{Object.values(room.clients)
-                  ? Object.values(room.clients).length
-                  : "0"}</td
+            <td>
+              <button
+                id="gesture"
+                class="not-button"
+                on:click={() => {
+                  goToRoom(room.id);
+                }}
               >
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
-</main>
+                {room.name}
+              </button>
+            </td>
+            <td
+              >{Object.values(room.clients)
+                ? Object.values(room.clients).length
+                : "0"}</td
+            >
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+{/if}
 
 <style>
   .not-button {

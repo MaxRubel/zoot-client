@@ -10,11 +10,8 @@
   <NavBar />
   <Router>
     <Route path="/"><ViewRooms /></Route>
-    <!-- <Route path="/rooms"><ViewRooms /></Route> -->
     <Route path="/rooms/:id"><UserHub /></Route>
     <Route path="/rooms/new"><NewRoomForm /></Route>
-    <!-- <Route path="/error404"><Error /></Route> -->
-    <!-- <Route path="/room/:Id"><UserHub /></Route> -->
   </Router>
 </main>
 
