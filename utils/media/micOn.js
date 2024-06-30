@@ -10,7 +10,6 @@ export function micOn(peerConnections) {
       })
       .then((mediaStream) => {
         const audioTrack = mediaStream.getAudioTracks()[0];
-        console.log("Local track active", audioTrack.enabled);
         audioTrack.enabled = true;
 
         const connections = Object.values(peerConnections);

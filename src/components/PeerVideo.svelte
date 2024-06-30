@@ -3,7 +3,6 @@
 
   import { onMount } from "svelte";
   import { getAudioContext } from "../../stores/media/audioContext";
-
   export let connection;
 
   let videoElement;
