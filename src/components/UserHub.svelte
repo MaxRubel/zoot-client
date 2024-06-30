@@ -37,11 +37,9 @@
   let joined = false;
   let videoOn = true;
   let audioOn = true;
-  let audioContext;
   let confirmAudio = false;
+  let audioContext = getAudioContext();
 
-  audioContext = getAudioContext();
-  $: console.log(audioContext);
   if (!audioContext) {
     confirmAudio = true;
   }
@@ -77,20 +75,17 @@
     });
     ws.close();
   };
-  window.addEventListener("beforeunload", () => {
-    cleanup();
-  });
-  window.addEventListener("popstate", () => {
+  window.addEventListener("beforeunload", (e) => {
     cleanup();
   });
 
-  window.history.pushState(null, "", window.location.href);
-  window.onpopstate = function (e) {
-    cleanup();
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.go(1);
   };
 
   onDestroy(() => {
-    ws.send(`3&${roomId}&&&`);
+    ws.send(`3&${roomId}&${myId}&&`);
   });
 
   //Send My Id to Server When Connecting
@@ -194,12 +189,14 @@
 
     if (dataType === "5") {
       const [_, peerId] = e.data.split("&");
-      if (!peerConnections[peerId]) {
+      if (!peerId) {
         return;
       }
+      console.log(peerId);
+      console.log(peerConnections[peerId]);
       peerConnections[peerId].close();
       delete peerConnections[peerId];
-      peerConnections = peerConnections;
+      peerConnections = { ...peerConnections };
     }
     if (dataType === "6") {
       navigate("/rooms/new");
@@ -317,13 +314,18 @@
     confirmAudio = false;
     init();
   };
+
+  const showPeerConnections = () => {
+    console.log(peerConnections);
+  };
 </script>
 
-<div id="user-hub">
+<div class="user-hub top">
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
   <button on:click={sendTestMessage}>Ping server</button>
   <button on:click={testConnection}>Connection Details</button>
   <button on:click={testMedia}>Test Media</button>
+  <button on:click={showPeerConnections}>Show Peer Connections</button>
 
   <div class="top">
     <div class="tool-bar">
@@ -349,8 +351,8 @@
       <video id="localVideo" autoplay>
         <track kind="captions" />
       </video>
-      {#each Object.values(peerConnections) as connection}
-        <PeerVideo {connection} />
+      {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
+        <PeerVideo {connection} {peerId} />
       {/each}
     </div>
     <audio id="audio" autoplay></audio>
@@ -403,7 +405,7 @@
     justify-content: center;
     align-items: center;
     margin: 0px 4px;
-    background-color: aliceblue;
-    color: black;
+    background-color: rgb(24, 59, 90);
+    color: rgb(255, 255, 255);
   }
 </style>

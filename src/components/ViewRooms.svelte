@@ -51,11 +51,11 @@
   };
 </script>
 
-<div>
-  <button id="gesture" on:click={createRoom}> Create Room </button>
+<div class="top">
+  <button on:click={createRoom}> Create Room </button>
 </div>
 {#if rooms.length === 0}
-  No rooms are currently active...
+  <div class="top">No rooms are currently active...</div>
 {:else}
   <div>
     <table>
@@ -70,7 +70,6 @@
           <tr>
             <td>
               <button
-                id="gesture"
                 class="not-button"
                 on:click={() => {
                   goToRoom(room.id);
