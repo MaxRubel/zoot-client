@@ -23,6 +23,7 @@
   import ConfirmAudioModal from "./modals/ConfirmAudioModal.svelte";
   import { getAudioContext } from "../../stores/media/audioContext";
   import { createAudioContext } from "../../stores/media/audioContext";
+  import BackIcon from "../assets/BackIcon.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -71,7 +72,9 @@
   const cleanup = () => {
     ws.send(`3&${roomId}&${myId}&&`);
     Object.values(peerConnections).forEach((conn) => {
-      peerConnections[conn].close();
+      if (peerConnections[conn]) {
+        peerConnections[conn].close();
+      }
     });
     ws.close();
   };
@@ -318,6 +321,10 @@
   const showPeerConnections = () => {
     console.log(peerConnections);
   };
+
+  const leaveRoom = () => {
+    navigate("/");
+  };
 </script>
 
 <div class="user-hub top">
@@ -328,7 +335,19 @@
   <button on:click={showPeerConnections}>Show Peer Connections</button>
 
   <div class="top">
-    <div class="tool-bar">
+    <div class="tool-bar"></div>
+    <div id="video-container" class="top">
+      <video id="localVideo" autoplay>
+        <track kind="captions" />
+      </video>
+      {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
+        <PeerVideo {connection} />
+      {/each}
+    </div>
+  </div>
+  <div class="bottom">
+    <div id="marginLeft" />
+    <div class="mid-bottom">
       <button class="clear" on:click={handleMic}>
         {#if audioOn}
           <MicIcon />Mute Mic
@@ -347,21 +366,15 @@
         <ShareScreen />Share Screen
       </button>
     </div>
-    <div id="video-container" class="top">
-      <video id="localVideo" autoplay>
-        <track kind="captions" />
-      </video>
-      {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-        <PeerVideo {connection} {peerId} />
-      {/each}
+    <div>
+      <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a>
     </div>
-    <audio id="audio" autoplay></audio>
   </div>
 </div>
 
 <style>
   .top {
-    margin-top: 50px;
+    margin-top: 30px;
   }
 
   #video-container {
@@ -370,6 +383,7 @@
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 5px;
     padding: 3px;
+    margin-bottom: 80px;
   }
 
   @media screen and (max-width: 600px) {
@@ -407,5 +421,29 @@
     margin: 0px 4px;
     background-color: rgb(24, 59, 90);
     color: rgb(255, 255, 255);
+  }
+
+  .red {
+    background-color: rgb(79, 0, 0);
+    border: none;
+  }
+
+  .bottom {
+    display: grid;
+    grid-template-columns: 1fr 4fr 1fr;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 110px;
+    width: 100vw;
+    min-width: 350px;
+  }
+
+  .mid-bottom {
+    display: flex;
+    justify-content: center;
   }
 </style>
