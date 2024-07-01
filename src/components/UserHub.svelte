@@ -41,6 +41,13 @@
   let isMicMuted = false;
   let confirmAudio = false;
   let audioContext = getAudioContext();
+  let mutedTrack = null;
+
+  async function initMutedTrack() {
+    mutedTrack = await silentAudioTrack();
+  }
+
+  initMutedTrack();
 
   if (!audioContext) {
     confirmAudio = true;
@@ -144,20 +151,18 @@
 
     //Get User's Media Stream
     const stream = await getUserMedia();
-
     //Get Each Track from the Stream
     for (const track of stream.getTracks()) {
-      if (track.kind === "audio") {
-        if (isMicMuted) {
-          console.log("mic is muted");
-          const silence = await silentAudioTrack();
-          peerConnection.addTrack(silence, stream);
-        } else {
-          console.log("mic is open");
+      switch (track.kind) {
+        case "audio":
+          if (isMicMuted) {
+            peerConnection.addTrack(mutedTrack, stream);
+          } else {
+            peerConnection.addTrack(track, stream);
+          }
+          break;
+        case "video":
           peerConnection.addTrack(track, stream);
-        }
-      } else if (track.kind === "video") {
-        peerConnection.addTrack(track, stream);
       }
     }
 
@@ -207,8 +212,6 @@
       if (!peerId) {
         return;
       }
-      console.log(peerId);
-      console.log(peerConnections[peerId]);
       peerConnections[peerId].close();
       delete peerConnections[peerId];
       peerConnections = { ...peerConnections };
@@ -262,16 +265,16 @@
 
         const stream = await getUserMedia();
         for (const track of stream.getTracks()) {
-          if (track.kind === "audio") {
-            if (isMicMuted) {
-              const silence = await silentAudioTrack();
-              peerConnection.addTrack(silence, stream);
-            } else {
-              console.log("mic is open");
+          switch (track.kind) {
+            case "audio":
+              if (isMicMuted) {
+                peerConnection.addTrack(mutedTrack, stream);
+              } else {
+                peerConnection.addTrack(track, stream);
+              }
+              break;
+            case "video":
               peerConnection.addTrack(track, stream);
-            }
-          } else if (track.kind === "video") {
-            peerConnection.addTrack(track, stream);
           }
         }
         const answer = await peerConnection.createAnswer();
@@ -309,6 +312,8 @@
       isMicMuted = false;
     }
   };
+
+  $: console.log(isMicMuted);
 
   const handleCamera = async () => {
     if (videoOn) {

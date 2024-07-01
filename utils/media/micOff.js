@@ -7,12 +7,15 @@ export const silentAudioTrack = async () => {
   return Object.assign(track, { enabled: false });
 }
 
-export async function micOff() {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  const audioTrack = stream.getAudioTracks()[0]
-
-  console.log(audioTrack)
-
-  audioTrack.enabled = false
-  console.log(audioTrack)
+export async function micOff(peerConnections) {
+  const connections = Object.values(peerConnections);
+  connections.forEach((conn) => {
+    const audioSender = conn
+      .getSenders()
+      .find((s) => s.track?.kind === "audio");
+    if (audioSender && audioSender.track) {
+      audioSender.track.enabled = false;
+      audioSender.track.dispatchEvent(new Event("mute"));
+    }
+  });
 }
