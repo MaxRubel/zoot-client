@@ -24,6 +24,7 @@
   import { getAudioContext } from "../../stores/media/audioContext";
   import { createAudioContext } from "../../stores/media/audioContext";
   import BackIcon from "../assets/BackIcon.svelte";
+  import SettingsSideways from "./menus/SettingsSideways.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -327,15 +328,16 @@
   };
 </script>
 
-<div class="user-hub top">
+<div class="user-hub">
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
-  <button on:click={sendTestMessage}>Ping server</button>
-  <button on:click={testConnection}>Connection Details</button>
-  <button on:click={testMedia}>Test Media</button>
-  <button on:click={showPeerConnections}>Show Peer Connections</button>
+  <SettingsSideways
+    {sendTestMessage}
+    {testConnection}
+    {testMedia}
+    {showPeerConnections}
+  />
 
   <div class="top">
-    <div class="tool-bar"></div>
     <div id="video-container" class="top">
       <video id="localVideo" autoplay>
         <track kind="captions" />
@@ -374,7 +376,7 @@
 
 <style>
   .top {
-    margin-top: 30px;
+    margin-top: 10px;
   }
 
   #video-container {
@@ -382,7 +384,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 5px;
-    padding: 3px;
+    padding: 0px 3px;
     margin-bottom: 80px;
   }
 
@@ -403,13 +405,6 @@
     height: 100%;
     min-height: 250px;
     object-fit: cover;
-  }
-
-  .tool-bar {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 20px;
   }
 
   .clear {
