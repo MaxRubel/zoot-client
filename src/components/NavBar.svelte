@@ -1,17 +1,11 @@
-<script>
-  import InvertedDucky from "../assets/InvertedDucky.svelte";
-</script>
-
-<main>
-  <div class="nav-container">
-    <div class="logo">
-      <a href="/">
-        <img class="ducky" src="/invertedDucky.png" alt="duckyyyyy" />ZOOT</a
-      >
-    </div>
-    <div class="links"></div>
+<div class="nav-container">
+  <div class="logo">
+    <a href="/">
+      <img class="ducky" src="/invertedDucky.png" alt="duckyyyyy" />ZOOT</a
+    >
   </div>
-</main>
+  <div class="links"></div>
+</div>
 
 <style>
   .ducky {
