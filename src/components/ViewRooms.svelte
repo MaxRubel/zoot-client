@@ -93,7 +93,7 @@
 <style>
   .not-button {
     background-color: transparent;
-    color: black;
+    color: white;
     border: none;
   }
 
