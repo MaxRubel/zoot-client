@@ -14,7 +14,7 @@
   import CameraOff from "../assets/CameraOff.svelte";
   import { navigate } from "svelte-routing";
   import { micOn } from "../../utils/media/micOn";
-  import { micOff } from "../../utils/media/micOff";
+  import { micOff, silentAudioTrack } from "../../utils/media/micOff";
   import { cameraOn } from "../../utils/media/cameraOn";
   import { cameraOff } from "../../utils/media/cameraOff";
   import { screenShareOn } from "../../utils/media/screenShareOn";
@@ -38,7 +38,7 @@
   let peerConnections = {};
   let joined = false;
   let videoOn = true;
-  let audioOn = true;
+  let isMicMuted = false;
   let confirmAudio = false;
   let audioContext = getAudioContext();
 
@@ -146,9 +146,20 @@
     const stream = await getUserMedia();
 
     //Get Each Track from the Stream
-    stream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, stream);
-    });
+    for (const track of stream.getTracks()) {
+      if (track.kind === "audio") {
+        if (isMicMuted) {
+          console.log("mic is muted");
+          const silence = await silentAudioTrack();
+          peerConnection.addTrack(silence, stream);
+        } else {
+          console.log("mic is open");
+          peerConnection.addTrack(track, stream);
+        }
+      } else if (track.kind === "video") {
+        peerConnection.addTrack(track, stream);
+      }
+    }
 
     //Create Offer
     const offer = await peerConnection.createOffer();
@@ -250,9 +261,19 @@
         await peerConnection.setRemoteDescription(parsed);
 
         const stream = await getUserMedia();
-        stream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, stream);
-        });
+        for (const track of stream.getTracks()) {
+          if (track.kind === "audio") {
+            if (isMicMuted) {
+              const silence = await silentAudioTrack();
+              peerConnection.addTrack(silence, stream);
+            } else {
+              console.log("mic is open");
+              peerConnection.addTrack(track, stream);
+            }
+          } else if (track.kind === "video") {
+            peerConnection.addTrack(track, stream);
+          }
+        }
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
 
@@ -280,12 +301,12 @@
   };
 
   const handleMic = () => {
-    if (audioOn) {
+    if (!isMicMuted) {
       micOff(peerConnections);
-      audioOn = false;
+      isMicMuted = true;
     } else {
       micOn(peerConnections);
-      audioOn = true;
+      isMicMuted = false;
     }
   };
 
@@ -351,7 +372,7 @@
     <div id="marginLeft" />
     <div class="mid-bottom">
       <button class="clear" on:click={handleMic}>
-        {#if audioOn}
+        {#if !isMicMuted}
           <MicIcon />Mute Mic
         {:else}
           <MicOff />Activate Mic
