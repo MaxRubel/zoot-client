@@ -386,6 +386,7 @@
     gap: 5px;
     padding: 0px 3px;
     margin-bottom: 80px;
+    /* border: 1px solid rgb(68, 68, 68); */
   }
 
   @media screen and (max-width: 600px) {
@@ -414,16 +415,17 @@
     justify-content: center;
     align-items: center;
     margin: 0px 4px;
-    background-color: rgb(24, 59, 90);
+    background-color: rgb(24, 59, 90, 0.7);
     color: rgb(255, 255, 255);
   }
 
   .red {
-    background-color: rgb(79, 0, 0);
+    background-color: rgb(79, 0, 0, 0.7);
     border: none;
   }
 
   .bottom {
+    border-top: 1px solid rgb(26, 26, 26);
     display: grid;
     grid-template-columns: 1fr 4fr 1fr;
     background-color: rgba(0, 0, 0, 0.3);
