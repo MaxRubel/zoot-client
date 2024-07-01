@@ -18,6 +18,7 @@
   import { cameraOn } from "../../utils/media/cameraOn";
   import { cameraOff } from "../../utils/media/cameraOff";
   import { screenShareOn } from "../../utils/media/screenShareOn";
+  import { getUserMedia } from "../../utils/media/getUserMedia";
   import ShareScreen from "../assets/ShareScreen.svelte";
   import ConfirmAudio from "./modals/ConfirmAudioModal.svelte";
   import ConfirmAudioModal from "./modals/ConfirmAudioModal.svelte";
@@ -42,14 +43,18 @@
   let confirmAudio = false;
   let audioContext = getAudioContext();
   let mutedTrack = null;
+  let myId;
 
+  // Make muted track to send when Mic is muted
   async function initMutedTrack() {
     mutedTrack = await silentAudioTrack();
   }
 
   initMutedTrack();
 
+  // Check if Audio Context (for audio playback) has already been created
   if (!audioContext) {
+    // Pull up "Create Audio Context" Modal
     confirmAudio = true;
   }
 
@@ -66,12 +71,12 @@
     { urls: "stun:stun4.l.google.com:5349" },
   ];
 
-  let myId;
-
+  // Initialize Client ID
   clientId.subscribe((value) => {
     myId = value;
   });
 
+  // !!  DANGER  !! exposed endpoint:
   //public:
   // const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
   //local:
@@ -103,7 +108,7 @@
   ws.onopen = () => {
     ws.send(`1&${roomId}&${myId}&0&`);
   };
-  // console.log("hi");
+
   ws.onerror = function (event) {
     console.error("WebSocket error:", event);
   };
@@ -115,14 +120,6 @@
   const sendTestMessage = () => {
     ws.send(`0&${roomId}&${myId}&0&`);
   };
-
-  async function getUserMedia() {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-    return stream;
-  }
 
   const init = () => {
     if (peers.length === 0) {
@@ -312,8 +309,6 @@
       isMicMuted = false;
     }
   };
-
-  $: console.log(isMicMuted);
 
   const handleCamera = async () => {
     if (videoOn) {
