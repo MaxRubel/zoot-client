@@ -10,11 +10,9 @@
     myId = value;
   });
 
-  //public:
-  // const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
-  //local:
-  const ws = new WebSocket("ws://localhost:8080/ws");
-
+  // const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
+  const ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
+  console.log();
   window.addEventListener("keydown", (e) => {
     if (e.key === "'" && e.ctrlKey) {
       ws.send("8&&&&");

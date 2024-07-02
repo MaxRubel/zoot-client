@@ -1,7 +1,5 @@
-//public:
-// const endpoint = "https://zoot-server-tgsls4olia-uc.a.run.app";
-//local:
-const endpoint = 'http://localhost:8080'
+const endpoint = import.meta.env.VITE_LOCAL_SERVER
+// const endpoint = import.meta.env.VITE_PUBLIC_SERVER
 
 const createNewRoom = (payload) =>
   new Promise((resolve, reject) => {
