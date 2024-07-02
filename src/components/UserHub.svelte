@@ -25,6 +25,7 @@
   import { createAudioContext } from "../../stores/media/audioContext";
   import BackIcon from "../assets/BackIcon.svelte";
   import SettingsSideways from "./menus/SettingsSideways.svelte";
+  import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -41,6 +42,7 @@
   let audioOn = true;
   let confirmAudio = false;
   let audioContext = getAudioContext();
+  let dataChannels = {};
 
   if (!audioContext) {
     confirmAudio = true;
@@ -74,6 +76,9 @@
       if (peerConnections[conn]) {
         peerConnections[conn].close();
       }
+    });
+    Object.values(dataChannels).forEach((chan) => {
+      chan.close();
     });
     ws.close();
   };
@@ -137,8 +142,14 @@
   const startNegotiations = async (answererId) => {
     //Create New Peer Connection
     const peerConnection = new RTCPeerConnection({ iceServers });
-
     peerConnections[answererId] = peerConnection;
+
+    //Create New data channel from direct communication
+    const dataChannel = peerConnection.createDataChannel(
+      `dataChannel-${answererId}`,
+    );
+
+    dataChannels[answererId] = dataChannel;
 
     //Get User's Media Stream
     const stream = await getUserMedia();
@@ -194,11 +205,12 @@
       if (!peerId) {
         return;
       }
-      console.log(peerId);
-      console.log(peerConnections[peerId]);
       peerConnections[peerId].close();
+      dataChannels[peerId].close();
       delete peerConnections[peerId];
+      delete dataChannels[peerId];
       peerConnections = { ...peerConnections };
+      dataChannels = { ...dataChannels };
     }
     if (dataType === "6") {
       navigate("/rooms/new");
@@ -221,6 +233,13 @@
       }
 
       const peerConnection = peerConnections[senderId];
+
+      //Create new data channel for direct communication
+      const dataChannel = peerConnection.createDataChannel(
+        `dataChannel-${senderId}`,
+      );
+
+      dataChannels[senderId] = dataChannel;
 
       // Ice Candidates
       if (parsed.type === "iceCandidate") {
@@ -288,13 +307,13 @@
   };
 
   const handleCamera = async () => {
-    console.log(videoOn);
     if (videoOn) {
       localVideo.srcObject = await cameraOff(peerConnections);
-      // localVideo.srcObject = null;
+      broadcastToRoom(dataChannels, "muted");
       videoOn = false;
     } else {
       localVideo.srcObject = await cameraOn(peerConnections);
+      broadcastToRoom(dataChannels, "live");
       videoOn = true;
     }
   };
@@ -379,7 +398,7 @@
   }
 
   #video-container {
-    background-color: rgb(46, 46, 46);
+    background-color: transparent;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 5px;
