@@ -40,6 +40,7 @@
   let joined = false;
   let videoOn = true;
   let audioOn = true;
+  let presenting = false;
   let confirmAudio = false;
   let audioContext = getAudioContext();
   let dataChannels = {};
@@ -99,7 +100,7 @@
   ws.onopen = () => {
     ws.send(`1&${roomId}&${myId}&0&`);
   };
-  // console.log("hi");
+
   ws.onerror = function (event) {
     console.error("WebSocket error:", event);
   };
@@ -162,6 +163,26 @@
     //Create Offer
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
+
+    //Send status report after joining
+    const report = JSON.stringify({
+      audioOn,
+      videoOn,
+      presenting,
+    });
+
+    //Send status report to new connection
+    peerConnection.addEventListener("iceconnectionstatechange", (e) => {
+      if (peerConnection.iceConnectionState === "connected") {
+        dataChannel.addEventListener(
+          "open",
+          () => {
+            dataChannel.send(`report-${report}`);
+          },
+          { once: true },
+        );
+      }
+    });
 
     //Send Offer
     ws.send(`2&${roomId}&${myId}&${answererId}&${JSON.stringify(offer)}`);
@@ -241,6 +262,25 @@
 
       dataChannels[senderId] = dataChannel;
 
+      const report = JSON.stringify({
+        audioOn,
+        videoOn,
+        presenting,
+      });
+
+      //Send status report to new connection
+      peerConnection.addEventListener("iceconnectionstatechange", (e) => {
+        if (peerConnection.iceConnectionState === "connected") {
+          dataChannel.addEventListener(
+            "open",
+            () => {
+              dataChannel.send(`report-${report}`);
+            },
+            { once: true },
+          );
+        }
+      });
+
       // Ice Candidates
       if (parsed.type === "iceCandidate") {
         await peerConnection.addIceCandidate(parsed.candidate);
@@ -299,9 +339,11 @@
   const handleMic = () => {
     if (audioOn) {
       micOff(peerConnections);
+      broadcastToRoom(dataChannels, "mic-muted");
       audioOn = false;
     } else {
       micOn(peerConnections);
+      broadcastToRoom(dataChannels, "mic-live");
       audioOn = true;
     }
   };
@@ -309,11 +351,11 @@
   const handleCamera = async () => {
     if (videoOn) {
       localVideo.srcObject = await cameraOff(peerConnections);
-      broadcastToRoom(dataChannels, "muted");
+      broadcastToRoom(dataChannels, "camera-muted");
       videoOn = false;
     } else {
       localVideo.srcObject = await cameraOn(peerConnections);
-      broadcastToRoom(dataChannels, "live");
+      broadcastToRoom(dataChannels, "camera-live");
       videoOn = true;
     }
   };
@@ -367,7 +409,7 @@
   </div>
   <div class="bottom">
     <div id="marginLeft" />
-    <div class="mid-bottom">
+    <div class="mid-bottom centered">
       <button class="clear" on:click={handleMic}>
         {#if audioOn}
           <MicIcon />Mute Mic
@@ -386,7 +428,7 @@
         <ShareScreen />Share Screen
       </button>
     </div>
-    <div>
+    <div class="centered">
       <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a>
     </div>
   </div>
@@ -429,13 +471,14 @@
 
   .clear {
     display: flex;
-    height: 90px;
+    height: 75px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin: 0px 4px;
-    background-color: rgb(24, 59, 90, 0.7);
+    background-color: rgba(24, 59, 90, 0.328);
     color: rgb(255, 255, 255);
+    border: 1px solid rgba(123, 123, 123, 0.593);
   }
 
   .red {
@@ -449,17 +492,11 @@
     grid-template-columns: 1fr 4fr 1fr;
     background-color: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
-    padding: 10px;
     position: fixed;
     bottom: 0;
     left: 0;
-    height: 110px;
+    height: 90px;
     width: 100vw;
     min-width: 350px;
-  }
-
-  .mid-bottom {
-    display: flex;
-    justify-content: center;
   }
 </style>
