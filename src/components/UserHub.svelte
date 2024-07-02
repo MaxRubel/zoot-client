@@ -65,10 +65,8 @@
     myId = value;
   });
 
-  //public:
-  // const ws = new WebSocket("wss://zoot-server-tgsls4olia-uc.a.run.app/ws");
-  //local:
-  const ws = new WebSocket("ws://localhost:8080/ws");
+  // const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
+  const ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
 
   const cleanup = () => {
     ws.send(`3&${roomId}&${myId}&&`);
@@ -290,9 +288,10 @@
   };
 
   const handleCamera = async () => {
+    console.log(videoOn);
     if (videoOn) {
-      cameraOff(peerConnections);
-      localVideo.srcObject = null;
+      localVideo.srcObject = await cameraOff(peerConnections);
+      // localVideo.srcObject = null;
       videoOn = false;
     } else {
       localVideo.srcObject = await cameraOn(peerConnections);
@@ -406,6 +405,7 @@
     height: 100%;
     min-height: 250px;
     object-fit: cover;
+    /* aspect-ratio: 4 / 3; */
   }
 
   .clear {
