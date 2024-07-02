@@ -18,3 +18,14 @@ a {
 .top {
   margin-top: 20px;
 }
+
+.glassy-black {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

@@ -3,14 +3,19 @@
 
   import { onDestroy, onMount } from "svelte";
   import { getAudioContext } from "../../stores/media/audioContext";
+  import MicOffRed from "../assets/MicOffRed.svelte";
   export let connection;
 
   let videoElement;
-  let streamPaused = false;
+  let videoPaused = false;
+  let micMuted = false;
+  let presenting = false;
+  let initialized = false;
 
   onMount(() => {
     const audioContext = getAudioContext();
 
+    //receive and connect to audio track:
     connection.ontrack = (event) => {
       if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
@@ -22,35 +27,93 @@
       }
     };
 
+    const unpackReport = (data) => {
+      const [_, report] = data.split("-");
+      const parsed = JSON.parse(report);
+      videoPaused = !parsed.videoOn;
+      micMuted = !parsed.audioOn;
+      presenting = parsed.presenting;
+      initialized = true;
+    };
+
+    //receive data from peer:
     connection.ondatachannel = (e) => {
-      const dataChannel = e.channel;
-      dataChannel.onmessage = (e) => {
-        if (e.data === "muted") {
-          streamPaused = true;
-        } else if (e.data === "live") {
-          streamPaused = false;
+      e.channel.onmessage = (m) => {
+        if (m.data.includes("report")) {
+          unpackReport(m.data);
+        }
+        switch (m.data) {
+          case "camera-muted":
+            videoPaused = true;
+            break;
+          case "camera-live":
+            videoPaused = false;
+            break;
+          case "mic-muted":
+            micMuted = true;
+            console.log("mic muted messg received");
+            break;
+          case "mic-live":
+            micMuted = false;
+            console.log("mic live msg received");
+            break;
         }
       };
     };
   });
 </script>
 
-<video
-  bind:this={videoElement}
-  style="display: {streamPaused ? 'none' : 'block'}"
-  autoplay
-  muted
+<div
+  class="peer-media-square"
+  style="display: {initialized ? 'block' : 'none'};"
 >
-  <track kind="captions" />
-</video>
+  <video
+    bind:this={videoElement}
+    style="display: {videoPaused ? 'none' : 'block'}"
+    autoplay
+    muted
+  >
+    <track kind="captions" />
+  </video>
 
-<img
-  src="/relax2.gif"
-  style="display: {streamPaused ? 'block' : 'none'}"
-  alt=""
-/>
+  <img
+    src="/relax2.gif"
+    style="display: {videoPaused ? 'block' : 'none'}"
+    alt=""
+  />
+  <div
+    class="mic-symbol centered"
+    style="display: {micMuted ? 'block' : 'none'}"
+  >
+    <MicOffRed />
+  </div>
+</div>
+
+<div
+  class="connecting centered"
+  style="display: {initialized ? 'none' : 'flex'};"
+>
+  Connecting...
+</div>
 
 <style>
+  .peer-media-square {
+    position: relative;
+  }
+
+  .mic-symbol {
+    color: rgb(189, 38, 38);
+    background-color: rgb(0, 0, 0, 0.8);
+    border-radius: 10px;
+    width: 28px;
+    height: 34px;
+    position: absolute;
+    bottom: 3px;
+    left: 10px;
+    padding-left: 3px;
+    padding-top: 1px;
+  }
+
   video {
     width: 100%;
     height: 100%;
