@@ -13,7 +13,6 @@
   let initialized = false;
   let pauseImage = "/relax2.webp";
 
-  $: console.log(pauseImage);
   onMount(() => {
     const audioContext = getAudioContext();
 
