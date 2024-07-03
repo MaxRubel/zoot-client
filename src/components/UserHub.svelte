@@ -7,7 +7,7 @@
   import { testAndPrint } from "../../utils/hub/testAndPrint";
   import { testIncomingMedia } from "../../utils/hub/testMedia";
   import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
-  import PeerVideo from "./PeerVideo.svelte";
+  import PeerMedia from "./PeerMedia.svelte";
   import MicIcon from "../assets/MicIcon.svelte";
   import CameraOn from "../assets/CameraOn.svelte";
   import MicOff from "../assets/MicOff.svelte";
@@ -27,6 +27,8 @@
   import SettingsSideways from "./menus/SettingsSideways.svelte";
   import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
   import { chooseGif } from "../../utils/media/chooseGif";
+  import MicOffRed from "../assets/MicOffRed.svelte";
+  import BottomToolBar from "./menus/BottomToolBar.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -39,13 +41,13 @@
   let peers = [];
   let peerConnections = {};
   let joined = false;
-  let videoOn = true;
-  let audioOn = true;
+  let videoOn = false;
+  let audioOn = false;
   let presenting = false;
   let confirmAudio = false;
   let audioContext = getAudioContext();
   let dataChannels = {};
-  let pauseImage = "/relax2.wepb";
+  let pauseImage = chooseGif();
 
   if (!audioContext) {
     confirmAudio = true;
@@ -279,6 +281,11 @@
             "open",
             () => {
               dataChannel.send(`report-${report}`);
+              if (audioOn) {
+                micOn(peerConnections);
+              } else {
+                micOff(peerConnections);
+              }
             },
             { once: true },
           );
@@ -404,54 +411,60 @@
 
   <div class="top">
     <div id="video-container" class="top">
-      <img
-        class="paused-image"
-        src={pauseImage}
-        alt="Camera Paused..."
-        style="display: {videoOn ? 'none' : 'block'};"
-      />
-      <video
-        id="localVideo"
-        autoplay
-        style="display: {videoOn ? 'block' : 'none'};"
-      >
-        <track kind="captions" />
-      </video>
+      <div class="local-video">
+        <img
+          class="paused-image"
+          src={pauseImage}
+          alt="Camera Paused..."
+          style="display: {videoOn ? 'none' : 'block'};"
+        />
+        <video
+          id="localVideo"
+          autoplay
+          style="display: {videoOn ? 'block' : 'none'};"
+        >
+          <track kind="captions" />
+        </video>
+        <div
+          class="mic-symbol centered"
+          style="display: {audioOn ? 'none' : 'block'}"
+        >
+          <MicOffRed />
+        </div>
+      </div>
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-        <PeerVideo {connection} />
+        <PeerMedia {connection} />
       {/each}
     </div>
   </div>
-  <div class="bottom">
-    <div id="marginLeft" />
-    <div class="mid-bottom centered">
-      <button class="clear" on:click={handleMic}>
-        {#if audioOn}
-          <MicIcon />Mute Mic
-        {:else}
-          <MicOff />Activate Mic
-        {/if}
-      </button>
-      <button class="clear" on:click={handleCamera}>
-        {#if videoOn}
-          <CameraOn />Stop Video
-        {:else}
-          <CameraOff />Start Video
-        {/if}
-      </button>
-      <button class="clear" on:click={handleScreenShare}>
-        <ShareScreen />Share Screen
-      </button>
-    </div>
-    <div class="centered">
-      <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a>
-    </div>
-  </div>
+  <BottomToolBar
+    {audioOn}
+    {videoOn}
+    {handleCamera}
+    {handleMic}
+    {handleScreenShare}
+  />
 </div>
 
 <style>
   .top {
     margin-top: 10px;
+  }
+
+  .local-video {
+    position: relative;
+  }
+
+  .mic-symbol {
+    position: absolute;
+    bottom: 3px;
+    left: 10px;
+    color: rgb(30, 30, 30);
+    background-color: rgb(248, 250, 285, 0.7);
+    border-radius: 7px;
+    padding: 1px 0px;
+    padding-bottom: 6px;
+    padding-left: 1px;
   }
 
   #video-container {
@@ -481,20 +494,6 @@
     height: 100%;
     min-height: 250px;
     object-fit: cover;
-    /* aspect-ratio: 4 / 3; */
-  }
-
-  .clear {
-    display: flex;
-    height: 78px;
-    font-size: 14pt;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 0px 4px;
-    background-color: rgba(24, 59, 90, 0.328);
-    color: rgb(255, 255, 255);
-    border: 1px solid rgba(123, 123, 123, 0.593);
   }
 
   .paused-image {
@@ -503,24 +502,5 @@
     width: 100%;
     height: 100%;
     object-fit: fill;
-  }
-
-  .red {
-    background-color: rgb(79, 0, 0, 0.7);
-    border: none;
-  }
-
-  .bottom {
-    /* border-top: 1px solid rgb(26, 26, 26); */
-    display: grid;
-    grid-template-columns: 1fr 4fr 1fr;
-    background-color: rgba(46, 46, 46, 0.3);
-    backdrop-filter: blur(10px);
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    height: 95px;
-    width: 100vw;
-    min-width: 350px;
   }
 </style>

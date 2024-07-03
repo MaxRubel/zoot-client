@@ -104,16 +104,15 @@
   }
 
   .mic-symbol {
-    color: rgb(189, 38, 38);
-    background-color: rgb(0, 0, 0, 0.8);
-    border-radius: 10px;
-    width: 28px;
-    height: 34px;
     position: absolute;
     bottom: 3px;
     left: 10px;
-    padding-left: 3px;
-    padding-top: 1px;
+    color: rgb(30, 30, 30);
+    background-color: rgb(248, 250, 285, 0.7);
+    border-radius: 7px;
+    padding: 1px 0px;
+    padding-bottom: 6px;
+    padding-left: 1px;
   }
 
   video {

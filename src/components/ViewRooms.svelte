@@ -94,6 +94,8 @@
     background-color: transparent;
     color: white;
     border: none;
+    font-size: 14pt;
+    padding: 0px;
   }
   .zoot {
     opacity: 50%;
@@ -113,9 +115,13 @@
 
   th,
   td {
-    padding: 8px;
+    padding: 8px !important;
     text-align: left;
     border-bottom: 1px solid #ddd;
+  }
+
+  td {
+    font-size: 14pt;
   }
 
   tr:hover {
