@@ -11,7 +11,9 @@
   let micMuted = false;
   let presenting = false;
   let initialized = false;
+  let pauseImage = "/relax2.webp";
 
+  $: console.log(pauseImage);
   onMount(() => {
     const audioContext = getAudioContext();
 
@@ -34,6 +36,8 @@
       micMuted = !parsed.audioOn;
       presenting = parsed.presenting;
       initialized = true;
+      pauseImage = parsed.pauseImage;
+      console.log(report);
     };
 
     //receive data from peer:
@@ -42,20 +46,20 @@
         if (m.data.includes("report")) {
           unpackReport(m.data);
         }
+        if (m.data.includes("camera-muted")) {
+          videoPaused = true;
+          const [, , parsed] = m.data.split("-");
+          pauseImage = parsed;
+        }
         switch (m.data) {
-          case "camera-muted":
-            videoPaused = true;
-            break;
           case "camera-live":
             videoPaused = false;
             break;
           case "mic-muted":
             micMuted = true;
-            console.log("mic muted messg received");
             break;
           case "mic-live":
             micMuted = false;
-            console.log("mic live msg received");
             break;
         }
       };
@@ -77,7 +81,7 @@
   </video>
 
   <img
-    src="/relax2.gif"
+    src={pauseImage}
     style="display: {videoPaused ? 'block' : 'none'}"
     alt=""
   />
@@ -124,7 +128,6 @@
     width: 480px;
     width: 100%;
     height: 100%;
-    /* min-height: 250px; */
     object-fit: fill;
   }
 </style>

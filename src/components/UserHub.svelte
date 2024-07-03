@@ -26,6 +26,7 @@
   import BackIcon from "../assets/BackIcon.svelte";
   import SettingsSideways from "./menus/SettingsSideways.svelte";
   import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
+  import { chooseGif } from "../../utils/media/chooseGif";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -44,6 +45,7 @@
   let confirmAudio = false;
   let audioContext = getAudioContext();
   let dataChannels = {};
+  let pauseImage = "/relax2.wepb";
 
   if (!audioContext) {
     confirmAudio = true;
@@ -169,6 +171,7 @@
       audioOn,
       videoOn,
       presenting,
+      pauseImage,
     });
 
     //Send status report to new connection
@@ -266,6 +269,7 @@
         audioOn,
         videoOn,
         presenting,
+        pauseImage,
       });
 
       //Send status report to new connection
@@ -351,7 +355,8 @@
   const handleCamera = async () => {
     if (videoOn) {
       localVideo.srcObject = await cameraOff(peerConnections);
-      broadcastToRoom(dataChannels, "camera-muted");
+      pauseImage = chooseGif();
+      broadcastToRoom(dataChannels, `camera-muted-${pauseImage}`);
       videoOn = false;
     } else {
       localVideo.srcObject = await cameraOn(peerConnections);
@@ -399,7 +404,17 @@
 
   <div class="top">
     <div id="video-container" class="top">
-      <video id="localVideo" autoplay>
+      <img
+        class="paused-image"
+        src={pauseImage}
+        alt="Camera Paused..."
+        style="display: {videoOn ? 'none' : 'block'};"
+      />
+      <video
+        id="localVideo"
+        autoplay
+        style="display: {videoOn ? 'block' : 'none'};"
+      >
         <track kind="captions" />
       </video>
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
@@ -471,7 +486,8 @@
 
   .clear {
     display: flex;
-    height: 75px;
+    height: 85px;
+    font-size: 14pt;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -481,21 +497,29 @@
     border: 1px solid rgba(123, 123, 123, 0.593);
   }
 
+  .paused-image {
+    aspect-ratio: 4/3;
+    width: 480px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+  }
+
   .red {
     background-color: rgb(79, 0, 0, 0.7);
     border: none;
   }
 
   .bottom {
-    border-top: 1px solid rgb(26, 26, 26);
+    /* border-top: 1px solid rgb(26, 26, 26); */
     display: grid;
     grid-template-columns: 1fr 4fr 1fr;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(46, 46, 46, 0.3);
     backdrop-filter: blur(10px);
     position: fixed;
     bottom: 0;
     left: 0;
-    height: 90px;
+    height: 95px;
     width: 100vw;
     min-width: 350px;
   }
