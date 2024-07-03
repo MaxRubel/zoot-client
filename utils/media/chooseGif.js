@@ -1,5 +1,5 @@
 export const chooseGif = () => {
-    const val = Math.floor(Math.random() * 8)
+    const val = Math.floor(Math.random() * 9)
 
     switch(val){
         case 0:
@@ -18,5 +18,7 @@ export const chooseGif = () => {
             return '/relax7.webp'
         case 7:
             return '/relax8.webp'
+        case 8:
+            return '/relax9.webp'
     }
 }
