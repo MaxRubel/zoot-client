@@ -26,6 +26,7 @@
   import BackIcon from "../assets/BackIcon.svelte";
   import SettingsSideways from "./menus/SettingsSideways.svelte";
   import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
+  import { chooseGif } from "../../utils/media/chooseGif";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -351,7 +352,7 @@
   const handleCamera = async () => {
     if (videoOn) {
       localVideo.srcObject = await cameraOff(peerConnections);
-      broadcastToRoom(dataChannels, "camera-muted");
+      broadcastToRoom(dataChannels, `camera-muted-${chooseGif()}`);
       videoOn = false;
     } else {
       localVideo.srcObject = await cameraOn(peerConnections);
@@ -399,7 +400,11 @@
 
   <div class="top">
     <div id="video-container" class="top">
-      <video id="localVideo" autoplay>
+      <video
+        id="localVideo"
+        autoplay
+        style="display: {videoOn ? 'block' : 'none'};"
+      >
         <track kind="captions" />
       </video>
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
@@ -471,7 +476,8 @@
 
   .clear {
     display: flex;
-    height: 75px;
+    height: 85px;
+    font-size: 14pt;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -495,7 +501,7 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    height: 90px;
+    height: 95px;
     width: 100vw;
     min-width: 350px;
   }
