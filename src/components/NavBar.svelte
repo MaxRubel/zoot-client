@@ -16,7 +16,7 @@
   }
   .nav-container {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 200px 2fr 1fr;
   }
   .logo {
     font-size: 30pt;

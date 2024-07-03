@@ -1,10 +1,15 @@
 body {
   padding: 4%;
+  height: 90vh;
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+}
+
+td {
+  padding: 0px !important;
 }
 
 a {
