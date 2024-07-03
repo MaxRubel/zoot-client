@@ -19,7 +19,6 @@ export const cameraOff = async (peerConnections) => {
  video.muted = true;
 
  const createFallbackStream = () => {
-   console.log("Creating fallback stream");
    const canvas = document.createElement('canvas');
    canvas.width = 640;
    canvas.height = 480;
@@ -41,7 +40,6 @@ export const cameraOff = async (peerConnections) => {
    // Capture the stream from the video
    // @ts-ignore
    stream = video.captureStream();
-   console.log("Stream captured");
  } catch (error) {
    console.error('Error loading or playing video:', error.name, error.message);
    stream = createFallbackStream();
@@ -55,8 +53,6 @@ export const cameraOff = async (peerConnections) => {
      await videoSender.replaceTrack(videoTrack)
    }
  }
-
- console.log("Peer connections updated");
 
  return stream;
 
