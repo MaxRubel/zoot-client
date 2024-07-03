@@ -486,7 +486,7 @@
 
   .clear {
     display: flex;
-    height: 85px;
+    height: 78px;
     font-size: 14pt;
     flex-direction: column;
     justify-content: center;

@@ -49,18 +49,19 @@
   };
 </script>
 
-<div class="top">
+<div class="top relative">
   <button on:click={createRoom}> Create Room </button>
 </div>
+<img src="/angryZoot.png" alt="Angry Zoot mfer" class="zoot" />
 {#if rooms.length === 0}
   <div class="top">No rooms are currently active...</div>
 {:else}
-  <div>
+  <div class="top">
     <table>
       <thead>
         <tr>
           <th style="width: 70%">Room</th>
-          <th>Number of Clients</th>
+          <th>Clients</th>
         </tr>
       </thead>
       <tbody>
@@ -94,7 +95,17 @@
     color: white;
     border: none;
   }
-
+  .zoot {
+    opacity: 50%;
+    height: 150px;
+    position: absolute;
+    bottom: 20px;
+    right: 5%;
+    transform: rotate(4deg);
+    transition: all ease 1s;
+    z-index: 0;
+    display: none;
+  }
   table {
     border-collapse: collapse;
     width: 100%;
@@ -109,5 +120,9 @@
 
   tr:hover {
     background-color: #f5f5f5;
+  }
+
+  .relative {
+    position: relative;
   }
 </style>
