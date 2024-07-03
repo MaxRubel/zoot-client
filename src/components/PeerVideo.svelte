@@ -37,7 +37,6 @@
       presenting = parsed.presenting;
       initialized = true;
       pauseImage = parsed.pauseImage;
-      console.log(report);
     };
 
     //receive data from peer:
