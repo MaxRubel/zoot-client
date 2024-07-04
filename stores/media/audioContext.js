@@ -2,6 +2,7 @@
 import { writable } from 'svelte/store';
 
 export const audioContextStore = writable(null);
+export const loudestPeer = writable(null)
 
 export function getAudioContext() {
   let context;
@@ -13,7 +14,7 @@ export function getAudioContext() {
 
 export function createAudioContext() {
   let context = getAudioContext()
-  if(!context){
+  if (!context) {
     const context = new AudioContext();
     audioContextStore.set(context);
   }

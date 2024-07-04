@@ -4,7 +4,10 @@
   import { onDestroy, onMount } from "svelte";
   import { getAudioContext } from "../../stores/media/audioContext";
   import MicOffRed from "../assets/MicOffRed.svelte";
+  import { loudestPeer } from "../../stores/media/audioContext";
   export let connection;
+  export let updatePresenter;
+  export let peerId;
 
   let videoElement;
   let videoPaused = false;
@@ -12,10 +15,26 @@
   let presenting = false;
   let initialized = false;
   let pauseImage = "/relax2.webp";
+  let loudest;
+
+  const unsubscribe = loudestPeer.subscribe((value) => {
+    loudest = value;
+  });
+
+  $: {
+    if (videoElement) {
+      if (loudest?.id === peerId && loudest?.level > 0.03) {
+        videoElement.style.border = "3px solid green";
+      } else {
+        videoElement.style.border = "none";
+      }
+    }
+  }
+
+  onDestroy(unsubscribe);
 
   onMount(() => {
     const audioContext = getAudioContext();
-
     //receive and connect to audio track:
     connection.ontrack = (event) => {
       if (event.track.kind === "audio") {
@@ -49,6 +68,10 @@
           const [, , parsed] = m.data.split("-");
           pauseImage = parsed;
         }
+        if (m.data.includes("startScreenShare")) {
+          const [, id] = m.data.split("-");
+          updatePresenter(id);
+        }
         switch (m.data) {
           case "camera-live":
             videoPaused = false;
@@ -58,6 +81,9 @@
             break;
           case "mic-live":
             micMuted = false;
+            break;
+          case "stopScreenShare":
+            updatePresenter(null);
             break;
         }
       };

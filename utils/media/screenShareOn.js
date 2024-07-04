@@ -1,6 +1,6 @@
 import { screenShareOff } from "./screenShareOff";
 
-export async function screenShareOn(peerConnections) {
+export async function screenShareOn(peerConnections, dataChannels, id) {
 
   const stream = await navigator.mediaDevices.getDisplayMedia({
     video: true
@@ -8,7 +8,7 @@ export async function screenShareOn(peerConnections) {
 
   const screenTrack = stream.getVideoTracks()[0];
   screenTrack.addEventListener('ended', () => {
-    screenShareOff(peerConnections);
+    screenShareOff(peerConnections, dataChannels);
   });
 
   for (const connection of Object.values(peerConnections)) {
@@ -19,4 +19,7 @@ export async function screenShareOn(peerConnections) {
     }
   }
 
+  Object.values(dataChannels).forEach((chan) => {
+    chan.send(`startScreenShare-${id}`)
+  })
 }
