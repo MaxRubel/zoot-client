@@ -38,6 +38,11 @@
     updateUserPreferences,
   } from "../../stores/media/userPreferences";
   import UserPreferenceMenu from "./menus/UserPreferenceMenu.svelte";
+  import PresenterView from "./views/PresenterView.svelte";
+  import {
+    analyzeAudioLevels,
+    stopAnalyzingAudioLevels,
+  } from "../../utils/media/analyzeAudioLevels";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -58,6 +63,7 @@
   let audioOn;
   let myId;
   let userPrefs = {};
+  let presenter = null;
 
   //Audio Context Modal
   if (!audioContext) {
@@ -122,6 +128,10 @@
 
   onDestroy(() => {
     ws.send(`3&${roomId}&${myId}&&`);
+    stopAnalyzingAudioLevels();
+    unsubscribe();
+    unsubscribe2();
+    unsubscribe3();
   });
 
   //Send My Id to Server When Connecting
@@ -166,6 +176,12 @@
     localVideo.srcObject = videoStream;
     micOn(peerConnections);
   });
+
+  //analyze audio levels:
+  $: {
+    stopAnalyzingAudioLevels();
+    analyzeAudioLevels(peerConnections);
+  }
 
   const startNegotiations = async (answererId) => {
     //Create New Peer Connection
@@ -400,7 +416,12 @@
   };
 
   const handleScreenShare = () => {
-    screenShareOn(peerConnections);
+    if (presenter) {
+      window.alert("Oops! Somone is already presenting.");
+      return;
+    }
+    presenter = myId;
+    screenShareOn(peerConnections, dataChannels, myId);
   };
 
   const testMedia = () => {
@@ -425,11 +446,14 @@
   const leaveRoom = () => {
     navigate("/");
   };
-
+  $: console.log(presenter);
   const updateUserPrefs = (userPrefs) => {
     updateUserPreferences(userPrefs);
   };
-  const presenter = null;
+
+  const updatePresenter = (value) => {
+    presenter = value;
+  };
 </script>
 
 <div class="user-hub">
@@ -467,9 +491,14 @@
           <MicOffRed />
         </div>
       </div>
+
+      <!-- {#if presenter}
+        <PresenterView {peerConnections} {updatePresenter} {presenter} />
+      {:else} -->
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-        <PeerMedia {connection} />
+        <PeerMedia {connection} {peerId} {updatePresenter} />
       {/each}
+      <!-- {/if} -->
     </div>
   </div>
   <BottomToolBar

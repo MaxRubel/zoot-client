@@ -1,4 +1,4 @@
-export async function screenShareOff(peerConnections) {
+export async function screenShareOff(peerConnections, dataChannels) {
   const cameraStream = await navigator.mediaDevices.getUserMedia({
     video: true
   });
@@ -14,4 +14,7 @@ export async function screenShareOff(peerConnections) {
       await videoSender.replaceTrack(cameraTrack);
     }
   }
+  Object.values(dataChannels).forEach((chan) => {
+    chan.send(`stopScreenShare`)
+  })
 }
