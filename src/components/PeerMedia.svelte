@@ -10,6 +10,7 @@
   export let peerId;
 
   let videoElement;
+  let square;
   let videoPaused = false;
   let micMuted = false;
   let presenting = false;
@@ -21,17 +22,37 @@
     loudest = value;
   });
 
+  let timeout;
+  let borderActive = false;
+  $: console.log(borderActive);
+  let timeoutActive = false;
+
   $: {
-    if (videoElement) {
-      if (loudest?.id === peerId && loudest?.level > 0.03) {
-        videoElement.style.border = "3px solid green";
+    if (square) {
+      if (loudest?.id === peerId && loudest?.level > 0.007) {
+        clearTimeout(timeout);
+        timeoutActive = false;
+        if (!borderActive) {
+          borderActive = true;
+          square.style.border = "3px solid rgb(240, 248, 255, .4)";
+        }
       } else {
-        videoElement.style.border = "none";
+        if (!timeoutActive) {
+          timeoutActive = true;
+          timeout = setTimeout(() => {
+            square.style.border = "red"; // Changed to "red" as per your comment
+            borderActive = false;
+            timeoutActive = false;
+          }, 400);
+        }
       }
     }
   }
 
-  onDestroy(unsubscribe);
+  onDestroy(() => {
+    unsubscribe();
+    clearTimeout(timeout);
+  });
 
   onMount(() => {
     const audioContext = getAudioContext();
@@ -95,6 +116,7 @@
   class="peer-media-square"
   style="display: {initialized ? 'block' : 'none'};"
 >
+  <div class="border" bind:this={square}></div>
   <video
     bind:this={videoElement}
     style="display: {videoPaused ? 'none' : 'block'}"
@@ -127,6 +149,14 @@
 <style>
   .peer-media-square {
     position: relative;
+  }
+
+  .border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .mic-symbol {

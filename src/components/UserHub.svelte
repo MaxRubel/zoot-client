@@ -64,6 +64,7 @@
   let myId;
   let userPrefs = {};
   let presenter = null;
+
   //Audio Context Modal
   if (!audioContext) {
     confirmAudio = true;
@@ -464,12 +465,6 @@
     {showPeerConnections}
   /> -->
   <UserPreferenceMenu {userPrefs} {presenter} />
-  <button
-    on:click={() => {
-      analyzeAudioLevels(peerConnections);
-    }}>analyze audio</button
-  >
-  <button on:click={stopAnalyzingAudioLevels}>stop analyzing audio</button>
   <div class="top">
     <div id="video-container" class="top">
       <div

@@ -29,7 +29,7 @@ let intervalId
 export const analyzeAudioLevels = (peerConnections) => {
   intervalId = setInterval(() => {
     analyze(peerConnections)
-  }, 250)
+  }, 300)
 }
 
 export const stopAnalyzingAudioLevels = () => {
