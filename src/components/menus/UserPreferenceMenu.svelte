@@ -8,7 +8,6 @@
   let isExpanded = false;
 
   const handleUpdate = (e) => {
-    console.log(e.target.id);
     switch (e.target.id) {
       case "selfView":
         userPrefs = { ...userPrefs, hideSelf: !userPrefs.hideSelf };
@@ -22,7 +21,7 @@
 </script>
 
 <nav
-  class="user-prefs top"
+  class="user-prefs"
   class:expanded={isExpanded}
   class:collapsed={!isExpanded}
 >

@@ -53,6 +53,7 @@
   let localVideo;
   let peers = [];
   let peerConnections = {};
+  let peerStates = {};
   let dataChannels = {};
   let joined = false;
   let presenting = false;
@@ -446,13 +447,17 @@
   const leaveRoom = () => {
     navigate("/");
   };
-  $: console.log(presenter);
   const updateUserPrefs = (userPrefs) => {
     updateUserPreferences(userPrefs);
   };
 
   const updatePresenter = (value) => {
     presenter = value;
+  };
+
+  const updatePeerStates = (id, value) => {
+    peerStates[id] = value;
+    peerStates = { ...peerStates };
   };
 </script>
 
@@ -465,7 +470,16 @@
     {showPeerConnections}
   /> -->
   <UserPreferenceMenu {userPrefs} {presenter} />
-  <div class="top">
+  <PresenterView
+    {peerConnections}
+    {audioOn}
+    {videoOn}
+    {userPrefs}
+    {pauseImage}
+    {updatePeerStates}
+    {peerStates}
+  />
+  <!-- <div class="top">
     <div id="video-container" class="top">
       <div
         class="local-video"
@@ -492,15 +506,15 @@
         </div>
       </div>
 
-      <!-- {#if presenter}
+      {#if presenter}
         <PresenterView {peerConnections} {updatePresenter} {presenter} />
-      {:else} -->
+      {:else}
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMedia {connection} {peerId} {updatePresenter} />
       {/each}
-      <!-- {/if} -->
+      {/if}
     </div>
-  </div>
+  </div> -->
   <BottomToolBar
     {audioOn}
     {videoOn}
@@ -511,7 +525,7 @@
 </div>
 
 <style>
-  .top {
+  /* .top {
     margin-top: 10px;
   }
 
@@ -539,9 +553,9 @@
     padding: 0px 3px;
     margin-bottom: 80px;
     /* border: 1px solid rgb(68, 68, 68); */
-  }
+  /* } */
 
-  @media screen and (max-width: 600px) {
+  /* @media screen and (max-width: 600px) {
     #video-container {
       grid-template-columns: 1fr;
     }
@@ -566,5 +580,5 @@
     width: 100%;
     height: 100%;
     object-fit: fill;
-  }
+  }  */
 </style>

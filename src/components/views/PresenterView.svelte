@@ -1,9 +1,22 @@
 <script>
   import LefttArrow from "../../assets/LefttArrow.svelte";
+  import MicOffRed from "../../assets/MicOffRed.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
-  import BottomToolBar from "../menus/BottomToolBar.svelte";
+  import BigSpeaker from "../BigSpeaker.svelte";
+  import PeerMedia from "../PeerMedia.svelte";
 
-  const array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 9, 9];
+  export let peerConnections;
+  export let audioOn;
+  export let videoOn;
+  export let pauseImage;
+  export let userPrefs;
+  export let updatePeerStates;
+  export let peerStates;
+
+  let presenterId = null;
+  let presenter = null;
+
+  const small = true;
 
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
@@ -14,6 +27,22 @@
     const container = document.querySelector(".scroll-container");
     container.scrollBy({ left: 450, behavior: "smooth" });
   }
+
+  const iAmSpeaking = (id) => {
+    presenterId = id;
+  };
+
+  $: {
+    if (presenterId) {
+      Object.entries(peerConnections).forEach(([peerId, peer]) => {
+        if (peerId === presenterId) {
+          presenter = peer;
+        }
+      });
+    }
+  }
+
+  $: console.log(presenter);
 </script>
 
 <div class="presenter-view-container">
@@ -21,19 +50,59 @@
     <button class="scroll-button left-scroll centered" on:click={scrollLeft}>
       <LefttArrow />
     </button>
+
     <div class="scroll-container">
-      {#each array as num}
-        <img src="/relax2.webp" alt="" />
+      <div
+        class="self-view-small"
+        style="display: {userPrefs.hideSelf ? 'none' : 'block'};"
+      >
+        <img
+          class="paused-image"
+          src={pauseImage}
+          alt="Camera Paused..."
+          style="display: {videoOn ? 'none' : 'block'};"
+        />
+        <video
+          id="localVideo"
+          autoplay
+          style="display: {videoOn ? 'block' : 'none'};"
+        >
+          <track kind="captions" />
+        </video>
+        <div
+          class="mic-symbol centered"
+          style="display: {audioOn ? 'none' : 'block'}"
+        >
+          <MicOffRed />
+        </div>
+      </div>
+      {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
+        <PeerMedia
+          small={true}
+          {connection}
+          {peerId}
+          {iAmSpeaking}
+          {updatePeerStates}
+          {peerStates}
+        />
       {/each}
     </div>
+
     <button class="scroll-button right-scroll centered" on:click={scrollRight}>
       <RightArrow />
     </button>
   </div>
+
   <div class="speaker-div">
-    <img class="speaker-vid" src="/relax1.webp" alt="" />
+    {#if presenter}
+      <BigSpeaker
+        {peerStates}
+        connection={presenter}
+        peerId={presenterId}
+        small={false}
+      />
+    {/if}
   </div>
-  <BottomToolBar />
 </div>
 
 <style>
@@ -65,6 +134,31 @@
     aspect-ratio: 4/3;
   }
 
+  #localVideo {
+    flex: 0 0 auto;
+    width: 200px;
+    max-height: 18vh;
+    min-height: 125px;
+    margin-right: 10px;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+  }
+
+  .self-view-small {
+    position: relative;
+  }
+
+  .mic-symbol {
+    position: absolute;
+    bottom: 4px;
+    left: 2px;
+    position: absolute;
+    color: rgb(30, 30, 30);
+    background-color: rgb(248, 250, 285, 0.7);
+    border-radius: 7px;
+    padding-bottom: 3px;
+  }
+
   .scroll-button {
     position: absolute;
     top: 50%;
@@ -91,12 +185,6 @@
 
   .speaker-div {
     width: 100%; /* Adjust as needed */
-    height: 59vh; /* Adjust as needed */
-  }
-
-  .speaker-vid {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* This makes the image cover the entire div */
+    height: 50vh; /* Adjust as needed */
   }
 </style>

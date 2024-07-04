@@ -5,9 +5,13 @@
   import { getAudioContext } from "../../stores/media/audioContext";
   import MicOffRed from "../assets/MicOffRed.svelte";
   import { loudestPeer } from "../../stores/media/audioContext";
+
   export let connection;
-  export let updatePresenter;
   export let peerId;
+  export let small;
+  export let iAmSpeaking;
+  export let updatePeerStates;
+  export let peerStates;
 
   let videoElement;
   let square;
@@ -24,7 +28,6 @@
 
   let timeout;
   let borderActive = false;
-  $: console.log(borderActive);
   let timeoutActive = false;
 
   $: {
@@ -35,12 +38,13 @@
         if (!borderActive) {
           borderActive = true;
           square.style.border = "3px solid rgb(240, 248, 255, .4)";
+          iAmSpeaking(peerId);
         }
       } else {
         if (!timeoutActive) {
           timeoutActive = true;
           timeout = setTimeout(() => {
-            square.style.border = "red"; // Changed to "red" as per your comment
+            square.style.border = "none";
             borderActive = false;
             timeoutActive = false;
           }, 400);
@@ -56,7 +60,6 @@
 
   onMount(() => {
     const audioContext = getAudioContext();
-    //receive and connect to audio track:
     connection.ontrack = (event) => {
       if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
@@ -76,6 +79,7 @@
       presenting = parsed.presenting;
       initialized = true;
       pauseImage = parsed.pauseImage;
+      updatePeerStates(peerId, parsed);
     };
 
     //receive data from peer:
@@ -88,6 +92,11 @@
           videoPaused = true;
           const [, , parsed] = m.data.split("-");
           pauseImage = parsed;
+          updatePeerStates(peerId, {
+            ...peerStates[peerId],
+            pauseImage: parsed,
+            videoOn: !peerStates[peerId].videoOn,
+          });
         }
         if (m.data.includes("startScreenShare")) {
           const [, id] = m.data.split("-");
@@ -96,6 +105,10 @@
         switch (m.data) {
           case "camera-live":
             videoPaused = false;
+            updatePeerStates(peerId, {
+              ...peerStates[peerId],
+              videoOn: !peerStates[peerId].videoOn,
+            });
             break;
           case "mic-muted":
             micMuted = true;
@@ -116,8 +129,9 @@
   class="peer-media-square"
   style="display: {initialized ? 'block' : 'none'};"
 >
-  <div class="border" bind:this={square}></div>
+  <div class="border {small && 'small'}" bind:this={square}></div>
   <video
+    class={small ? "video-small" : "video-normal"}
     bind:this={videoElement}
     style="display: {videoPaused ? 'none' : 'block'}"
     autoplay
@@ -128,6 +142,7 @@
 
   <img
     src={pauseImage}
+    class={small && "small"}
     style="display: {videoPaused ? 'block' : 'none'}"
     alt=""
   />
@@ -140,8 +155,8 @@
 </div>
 
 <div
-  class="connecting centered"
-  style="display: {initialized ? 'none' : 'flex'};"
+  class="connecting centered {small && 'small-text'}"
+  style="display: {initialized ? 'none' : 'flex'};{small && 'font-size: 10pt;'}"
 >
   Connecting...
 </div>
@@ -171,10 +186,26 @@
     padding-left: 1px;
   }
 
-  video {
+  .video-normal {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .video-small {
+    width: 200px;
+    max-height: 18vh;
+    min-height: 125px;
+    margin-right: 10px;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+  }
+  .small-text {
+    font-size: 10pt;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
   }
   img {
     aspect-ratio: 4/3;
@@ -182,5 +213,8 @@
     width: 100%;
     height: 100%;
     object-fit: fill;
+  }
+  .small {
+    width: 200px;
   }
 </style>
