@@ -64,7 +64,7 @@
     margin: 0px 4px;
     background-color: rgba(24, 59, 90, 0.328);
     color: rgb(255, 255, 255);
-    border: 1px solid rgba(123, 123, 123, 0.593);
+    /* border: 1px solid rgba(123, 123, 123, 0.593); */
   }
 
   .red {

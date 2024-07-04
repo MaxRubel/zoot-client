@@ -24,11 +24,20 @@
   import { getAudioContext } from "../../stores/media/audioContext";
   import { createAudioContext } from "../../stores/media/audioContext";
   import BackIcon from "../assets/BackIcon.svelte";
-  import SettingsSideways from "./menus/SettingsSideways.svelte";
+  import DebugMenu from "./menus/DebugMenu.svelte";
   import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
   import { chooseGif } from "../../utils/media/chooseGif";
   import MicOffRed from "../assets/MicOffRed.svelte";
   import BottomToolBar from "./menus/BottomToolBar.svelte";
+  import {
+    userSelection,
+    updateUserSelection,
+  } from "../../stores/media/mediaSelection";
+  import {
+    userPreferences,
+    updateUserPreferences,
+  } from "../../stores/media/userPreferences";
+  import UserPreferenceMenu from "./menus/UserPreferenceMenu.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -37,21 +46,42 @@
   let roomId = param;
   let videoStream;
   let localVideo;
-  let audioElement;
   let peers = [];
   let peerConnections = {};
+  let dataChannels = {};
   let joined = false;
-  let videoOn = false;
-  let audioOn = false;
   let presenting = false;
   let confirmAudio = false;
   let audioContext = getAudioContext();
-  let dataChannels = {};
   let pauseImage = chooseGif();
+  let videoOn;
+  let audioOn;
+  let myId;
+  let userPrefs = {};
 
+  //Audio Context Modal
   if (!audioContext) {
     confirmAudio = true;
   }
+
+  //Svelte Stores
+  //whether your camera/audio was turned on last time
+  const unsubscribe = userSelection.subscribe((value) => {
+    audioOn = value.audioOn;
+    videoOn = value.videoOn;
+  });
+
+  //userId
+  const unsubscribe2 = clientId.subscribe((value) => {
+    myId = value;
+  });
+
+  //
+  const unsubscribe3 = userPreferences.subscribe((value) => {
+    userPrefs = value;
+  });
+
+  onDestroy(unsubscribe, unsubscribe2, unsubscribe3);
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -65,12 +95,6 @@
     { urls: "stun:stun4.l.google.com:19302" },
     { urls: "stun:stun4.l.google.com:5349" },
   ];
-
-  let myId;
-
-  clientId.subscribe((value) => {
-    myId = value;
-  });
 
   // const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
   const ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
@@ -138,7 +162,6 @@
 
   onMount(async () => {
     localVideo = document.getElementById("localVideo");
-    audioElement = document.getElementById("audio");
     videoStream = await cameraOn(peerConnections);
     localVideo.srcObject = videoStream;
     micOn(peerConnections);
@@ -352,10 +375,12 @@
       micOff(peerConnections);
       broadcastToRoom(dataChannels, "mic-muted");
       audioOn = false;
+      updateUserSelection(audioOn, videoOn);
     } else {
       micOn(peerConnections);
       broadcastToRoom(dataChannels, "mic-live");
       audioOn = true;
+      updateUserSelection(audioOn, videoOn);
     }
   };
 
@@ -365,10 +390,12 @@
       pauseImage = chooseGif();
       broadcastToRoom(dataChannels, `camera-muted-${pauseImage}`);
       videoOn = false;
+      updateUserSelection(audioOn, videoOn);
     } else {
       localVideo.srcObject = await cameraOn(peerConnections);
       broadcastToRoom(dataChannels, "camera-live");
       videoOn = true;
+      updateUserSelection(audioOn, videoOn);
     }
   };
 
@@ -398,20 +425,28 @@
   const leaveRoom = () => {
     navigate("/");
   };
+
+  const updateUserPrefs = (userPrefs) => {
+    updateUserPreferences(userPrefs);
+  };
+  const presenter = null;
 </script>
 
 <div class="user-hub">
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
-  <SettingsSideways
+  <!-- <DebugMenu
     {sendTestMessage}
     {testConnection}
     {testMedia}
     {showPeerConnections}
-  />
-
+  /> -->
+  <UserPreferenceMenu {userPrefs} {presenter} />
   <div class="top">
     <div id="video-container" class="top">
-      <div class="local-video">
+      <div
+        class="local-video"
+        style="display: {userPrefs.hideSelf ? 'none' : 'block'};"
+      >
         <img
           class="paused-image"
           src={pauseImage}
