@@ -106,9 +106,6 @@
     overflow: hidden;
   }
 
-  .small-row-square {
-  }
-
   .image-small {
     flex: 0 0 auto;
     width: 200px;
