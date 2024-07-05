@@ -1,13 +1,17 @@
-export const micOff = (peerConnections) => {
-    const connections = Object.values(peerConnections);
-    connections.forEach((conn) => {
-      const audioSender = conn
-        .getSenders()
-        .find((s) => s.track?.kind === "audio");
-      if (audioSender && audioSender.track) {
-        audioSender.track.enabled = false;
-        // Optionally, dispatch a mute event
-        audioSender.track.dispatchEvent(new Event("mute"));
-      }
-    });
-  };
+export const micOff = (peerConnections, stream) => {
+  //Mute local audio
+  const audioTrack = stream.getAudioTracks()[0];
+  if (audioTrack) {
+    audioTrack.enabled = false;
+  }
+
+  // Mute all peer connections
+  Object.values(peerConnections).forEach((conn) => {
+    const audioSender = conn
+      .getSenders()
+      .find((s) => s.track?.kind === "audio");
+    if (audioSender && audioSender.track) {
+      audioSender.track.enabled = false;
+    }
+  });
+};

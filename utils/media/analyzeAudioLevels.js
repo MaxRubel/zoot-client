@@ -1,4 +1,5 @@
-import { getAudioContext, loudestPeer } from "../../stores/media/audioContext"
+import { loudestPeer } from "../../stores/media/audioContext"
+import { getUserSelection } from "../../stores/media/mediaSelection";
 
 
 
@@ -29,20 +30,25 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
       sourceNode.connect(localAnalyserNode);
       localAnalyserNode.fftSize = 256;
       localDataArray = new Uint8Array(localAnalyserNode.frequencyBinCount);
+      console.log("local audio: ", audioTrack)
     }
   }
 
+  const { audioOn } = getUserSelection()
+
   if (localAnalyserNode && localDataArray) {
-    localAnalyserNode.getByteFrequencyData(localDataArray);
-    const average = localDataArray.reduce((sum, value) => sum + value, 0) / localDataArray.length;
-    const volume = average / 255;
-    levels[myId] = volume;
+    if (audioOn) {
+      localAnalyserNode.getByteFrequencyData(localDataArray);
+      const average = localDataArray.reduce((sum, value) => sum + value, 0) / localDataArray.length;
+      const volume = average / 255;
+      levels[myId] = volume;
+    } else {
+      levels[myId] = 0;
+    }
   }
-  console.log(levels)
   // Find the loudest peer
   let maxLevelPeerId = null;
   let maxLevel = -Infinity;
-
   Object.entries(levels).forEach(([peerId, level]) => {
     if (level > maxLevel) {
       maxLevel = level;
@@ -54,8 +60,6 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
 };
 
 export const analyzeAudioLevels = (peerConnections, localStream, myId, audioContext) => {
-  stopAnalyzingAudioLevels();
-
   analyzerLoop = setInterval(() => {
     analyze(peerConnections, localStream, myId, audioContext);
   }, 250);

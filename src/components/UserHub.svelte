@@ -22,9 +22,10 @@
   import ConfirmAudio from "./modals/ConfirmAudioModal.svelte";
   import ConfirmAudioModal from "./modals/ConfirmAudioModal.svelte";
   import {
+    audioContextStore,
     getAudioContext,
-    createAudioContext,
   } from "../../stores/media/audioContext";
+  import { createAudioContext } from "../../stores/media/audioContext";
   import BackIcon from "../assets/BackIcon.svelte";
   import DebugMenu from "./menus/DebugMenu.svelte";
   import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
@@ -45,10 +46,6 @@
     analyzeAudioLevels,
     stopAnalyzingAudioLevels,
   } from "../../utils/media/analyzeAudioLevels";
-  import {
-    userMediaStore,
-    updateUserMediaStore,
-  } from "../../stores/media/userMedia";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -64,7 +61,7 @@
   let joined = false;
   let presenting = false;
   let confirmAudio = false;
-  let audioContext = getAudioContext();
+  let audioContext;
   let pauseImage = chooseGif();
   let videoOn;
   let audioOn;
@@ -95,27 +92,16 @@
     userPrefs = value;
   });
 
-  const unsubscribe4 = userMediaStore.subscribe((value) => {
-    stream = value;
+  const unsubscribe4 = audioContextStore.subscribe((value) => {
+    audioContext = value;
   });
 
-  async function getUserMedia() {
-    if (stream) {
-      return;
-    } else {
-      const fetchedStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      });
-      //cache stream
-      updateUserMediaStore(fetchedStream);
-      stream = fetchedStream;
-    }
-  }
+  onDestroy(unsubscribe, unsubscribe2, unsubscribe3, unsubscribe4);
 
-  getUserMedia();
-
-  onDestroy(unsubscribe, unsubscribe2, unsubscribe3);
+  const alignUserSelection = () => {
+    audioOn ? micOn(peerConnections, stream) : micOff(peerConnections, stream);
+    videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
+  };
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -160,8 +146,6 @@
     unsubscribe();
     unsubscribe2();
     unsubscribe3();
-    unsubscribe4();
-    getUserMedia();
   });
 
   //Send My Id to Server When Connecting
@@ -180,6 +164,25 @@
   const sendTestMessage = () => {
     ws.send(`0&${roomId}&${myId}&0&`);
   };
+
+  async function getUserMedia() {
+    const fetchedStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    });
+    return fetchedStream;
+  }
+
+  async function initStream() {
+    stream = await getUserMedia();
+  }
+
+  $: {
+    if (!stream) {
+      initStream();
+    }
+  }
+
   const init = () => {
     if (peers.length === 0) {
       return;
@@ -195,14 +198,13 @@
     localVideo = document.getElementById("localVideo");
     videoStream = await cameraOn(peerConnections);
     localVideo.srcObject = videoStream;
-    micOn(peerConnections);
+    stream = await getUserMedia();
   });
 
   //analyze audio levels:
   $: {
     stopAnalyzingAudioLevels();
     analyzeAudioLevels(peerConnections, stream, myId, audioContext);
-    console.log(audioContext);
   }
 
   const startNegotiations = async (answererId) => {
@@ -216,8 +218,9 @@
     );
 
     dataChannels[answererId] = dataChannel;
-    console.log(stream);
     //Get Each Track from the Stream
+
+    stream = await getUserMedia();
     stream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, stream);
     });
@@ -237,6 +240,7 @@
     //Send status report to new connection
     peerConnection.addEventListener("iceconnectionstatechange", (e) => {
       if (peerConnection.iceConnectionState === "connected") {
+        alignUserSelection();
         dataChannel.addEventListener(
           "open",
           () => {
@@ -278,7 +282,7 @@
       joined = false;
       const clientArr = e.data.split("&");
       peers = addPeersToLocal(peers, myId, clientArr);
-      if (audioContext && stream) {
+      if (audioContext) {
         init();
       }
       return;
@@ -335,14 +339,15 @@
       //Send status report to new connection
       peerConnection.addEventListener("iceconnectionstatechange", (e) => {
         if (peerConnection.iceConnectionState === "connected") {
+          alignUserSelection();
           dataChannel.addEventListener(
             "open",
             () => {
               dataChannel.send(`report-${report}`);
               if (audioOn) {
-                micOn(peerConnections);
+                micOn(peerConnections, stream);
               } else {
-                micOff(peerConnections);
+                micOff(peerConnections, stream);
               }
             },
             { once: true },
@@ -374,7 +379,7 @@
           return;
         }
         await peerConnection.setRemoteDescription(parsed);
-
+        stream = await getUserMedia();
         stream.getTracks().forEach((track) => {
           peerConnection.addTrack(track, stream);
         });
@@ -406,12 +411,12 @@
 
   const handleMic = () => {
     if (audioOn) {
-      micOff(peerConnections);
+      micOff(peerConnections, stream);
       broadcastToRoom(dataChannels, "mic-muted");
       audioOn = false;
       updateUserSelection(audioOn, videoOn);
     } else {
-      micOn(peerConnections);
+      micOn(peerConnections, stream);
       broadcastToRoom(dataChannels, "mic-live");
       audioOn = true;
       updateUserSelection(audioOn, videoOn);
@@ -454,6 +459,7 @@
   const hookUpAudioContext = () => {
     createAudioContext();
     confirmAudio = false;
+    init();
   };
 
   const showPeerConnections = () => {
