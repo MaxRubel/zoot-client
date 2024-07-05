@@ -2,50 +2,53 @@
   // @ts-nocheck
 
   import { onDestroy, onMount } from "svelte";
-  import { clientId } from "../../stores/auth_store";
-  import { checkPeerConnection } from "../../utils/ws/checkPeerConnection";
-  import { testAndPrint } from "../../utils/hub/testAndPrint";
-  import { testIncomingMedia } from "../../utils/hub/testMedia";
-  import { addPeersToLocal } from "../../utils/hub/addClientsToLocal";
-  import PeerMedia from "./PeerMedia.svelte";
-  import MicIcon from "../assets/MicIcon.svelte";
-  import CameraOn from "../assets/CameraOn.svelte";
-  import MicOff from "../assets/MicOff.svelte";
-  import CameraOff from "../assets/CameraOff.svelte";
+  import { clientId } from "../../../stores/auth_store";
+  import { checkPeerConnection } from "../../../utils/ws/checkPeerConnection";
+  import { testAndPrint } from "../../../utils/hub/testAndPrint";
+  import { testIncomingMedia } from "../../../utils/hub/testMedia";
+  import { addPeersToLocal } from "../../../utils/hub/addClientsToLocal";
+  import PeerMedia from "../media/PeerMedia.svelte";
+  import MicIcon from "../../assets/MicIcon.svelte";
+  import CameraOn from "../../assets/CameraOn.svelte";
+  import MicOff from "../../assets/MicOff.svelte";
+  import CameraOff from "../../assets/CameraOff.svelte";
   import { navigate } from "svelte-routing";
-  import { micOn } from "../../utils/media/micOn";
-  import { micOff } from "../../utils/media/micOff";
-  import { cameraOn } from "../../utils/media/cameraOn";
-  import { cameraOff } from "../../utils/media/cameraOff";
-  import { screenShareOn } from "../../utils/media/screenShareOn";
-  import ShareScreen from "../assets/ShareScreen.svelte";
-  import ConfirmAudio from "./modals/ConfirmAudioModal.svelte";
-  import ConfirmAudioModal from "./modals/ConfirmAudioModal.svelte";
+  import { micOn } from "../../../utils/media/micOn";
+  import { micOff } from "../../../utils/media/micOff";
+  import { cameraOn } from "../../../utils/media/cameraOn";
+  import { cameraOff } from "../../../utils/media/cameraOff";
+  import { screenShareOn } from "../../../utils/media/screenShareOn";
+  import ShareScreen from "../../assets/ShareScreen.svelte";
+  import ConfirmAudio from "../modals/ConfirmAudioModal.svelte";
+  import ConfirmAudioModal from "../modals/ConfirmAudioModal.svelte";
   import {
     audioContextStore,
     getAudioContext,
-  } from "../../stores/media/audioContext";
-  import { createAudioContext } from "../../stores/media/audioContext";
-  import BackIcon from "../assets/BackIcon.svelte";
-  import DebugMenu from "./menus/DebugMenu.svelte";
-  import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
-  import { chooseGif } from "../../utils/media/chooseGif";
-  import MicOffRed from "../assets/MicOffRed.svelte";
-  import BottomToolBar from "./menus/BottomToolBar.svelte";
+  } from "../../../stores/media/audioContext";
+  import { createAudioContext } from "../../../stores/media/audioContext";
+  import BackIcon from "../../assets/BackIcon.svelte";
+  import DebugMenu from "../menus/DebugMenu.svelte";
+  import { broadcastToRoom } from "../../../utils/dataChannels/broadcastToRoom";
+  import { chooseGif } from "../../../utils/media/chooseGif";
+  import MicOffRed from "../../assets/MicOffRed.svelte";
+  import BottomToolBar from "../menus/BottomToolBar.svelte";
   import {
     userSelection,
     updateUserSelection,
-  } from "../../stores/media/mediaSelection";
+  } from "../../../stores/media/mediaSelection";
   import {
     userPreferences,
     updateUserPreferences,
-  } from "../../stores/media/userPreferences";
-  import UserPreferenceMenu from "./menus/UserPreferenceMenu.svelte";
-  import PresenterView from "./views/PresenterView.svelte";
+  } from "../../../stores/media/userPreferences";
+  import UserPreferenceMenu from "../menus/UserPreferenceMenu.svelte";
+  import PresenterView from "./SpeakerView.svelte";
   import {
     analyzeAudioLevels,
     stopAnalyzingAudioLevels,
-  } from "../../utils/media/analyzeAudioLevels";
+  } from "../../../utils/media/analyzeAudioLevels";
+  import ViewRooms from "./ViewRooms.svelte";
+  import GalleryView from "./GalleryView.svelte";
+  import SpeakerView from "./SpeakerView.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -89,6 +92,7 @@
 
   const unsubscribe3 = userPreferences.subscribe((value) => {
     userPrefs = value;
+    console.log(value);
   });
 
   const unsubscribe4 = audioContextStore.subscribe((value) => {
@@ -470,62 +474,46 @@
     peerStates[id] = value;
     peerStates = { ...peerStates };
   };
+
+  $: console.log(userPrefs);
 </script>
 
 <div class="user-hub">
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
-  <!-- <DebugMenu
-    {sendTestMessage}
-    {testConnection}
-    {testMedia}
-    {showPeerConnections}
-  /> -->
   <UserPreferenceMenu {userPrefs} {presenter} />
-  <PresenterView
-    {peerConnections}
-    {audioOn}
-    {videoOn}
-    {pauseImage}
-    {updatePeerStates}
-    {peerStates}
-    {videoStream}
-  />
-  <!-- <div class="top">
-    <div id="video-container" class="top">
-      <div
-        class="local-video"
-        style="display: {userPrefs.hideSelf ? 'none' : 'block'};"
-      >
-        <img
-          class="paused-image"
-          src={pauseImage}
-          alt="Camera Paused..."
-          style="display: {videoOn ? 'none' : 'block'};"
-        />
-        <video
-          id="localVideo"
-          autoplay
-          style="display: {videoOn ? 'block' : 'none'};"
-        >
-          <track kind="captions" />
-        </video>
-        <div
-          class="mic-symbol centered"
-          style="display: {audioOn ? 'none' : 'block'}"
-        >
-          <MicOffRed />
-        </div>
-      </div>
+  {#if userPrefs.debug}
+    <DebugMenu
+      {sendTestMessage}
+      {testConnection}
+      {testMedia}
+      {showPeerConnections}
+    />
+  {/if}
+  {#if userPrefs.view === "speaker"}
+    <SpeakerView
+      {peerConnections}
+      {audioOn}
+      {videoOn}
+      {pauseImage}
+      {updatePeerStates}
+      {peerStates}
+      {videoStream}
+      {myId}
+    />
+  {/if}
+  {#if userPrefs.view === "gallery"}
+    <GalleryView
+      {myId}
+      {audioOn}
+      {videoOn}
+      {pauseImage}
+      {peerStates}
+      {peerConnections}
+      {updatePeerStates}
+      {videoStream}
+    />
+  {/if}
 
-      {#if presenter}
-        <PresenterView {peerConnections} {updatePresenter} {presenter} />
-      {:else}
-      {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-        <PeerMedia {connection} {peerId} {updatePresenter} />
-      {/each}
-      {/if}
-    </div>
-  </div> -->
   <BottomToolBar
     {audioOn}
     {videoOn}
@@ -534,62 +522,3 @@
     {handleScreenShare}
   />
 </div>
-
-<style>
-  /* .top {
-    margin-top: 10px;
-  }
-
-  .local-video {
-    position: relative;
-  }
-
-  .mic-symbol {
-    position: absolute;
-    bottom: 3px;
-    left: 10px;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding: 1px 0px;
-    padding-bottom: 6px;
-    padding-left: 1px;
-  }
-
-  #video-container {
-    background-color: transparent;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 5px;
-    padding: 0px 3px;
-    margin-bottom: 80px;
-    /* border: 1px solid rgb(68, 68, 68); */
-  /* } */
-
-  /* @media screen and (max-width: 600px) {
-    #video-container {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media screen and (min-width: 601px) {
-    #video-container {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  video {
-    width: 100%;
-    height: 100%;
-    min-height: 250px;
-    object-fit: cover;
-  }
-
-  .paused-image {
-    aspect-ratio: 4/3;
-    width: 480px;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-  }  */
-</style>

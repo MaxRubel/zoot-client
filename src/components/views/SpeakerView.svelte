@@ -1,11 +1,11 @@
 <script>
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
-  import BigSpeaker from "../BigSpeaker.svelte";
-  import LocalVideo from "../LocalVideo.svelte";
-  import PeerMedia from "../PeerMedia.svelte";
-  import { clientId } from "../../../stores/auth_store";
-  import { onDestroy, onMount } from "svelte";
+  import BigSpeaker from "../media/BigSpeaker.svelte";
+  import LocalVideo from "../media/LocalVideo.svelte";
+  import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
+  import LocalVideoSpeaking from "../media/LocalVideoSpeaking.svelte";
+  import PeerMedia from "../media/PeerMedia.svelte";
 
   export let peerConnections;
   export let audioOn;
@@ -14,16 +14,10 @@
   export let updatePeerStates;
   export let peerStates;
   export let videoStream;
+  export let myId;
 
   let presenterId = null;
   let presenter = null;
-  let myId;
-
-  const unsubscribe = clientId.subscribe((value) => {
-    myId = value;
-  });
-
-  onDestroy(unsubscribe);
 
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
@@ -54,7 +48,6 @@
 
   $: {
     if (videoStream) {
-      console.log("cloning");
       videoStream1 = videoStream.clone();
       videoStream2 = videoStream.clone();
     }
@@ -68,8 +61,7 @@
     </button>
 
     <div class="scroll-container">
-      <LocalVideo
-        small={true}
+      <LocalVideoSmall
         {iAmSpeaking}
         {audioOn}
         {videoOn}
@@ -78,6 +70,7 @@
       />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMedia
+          gallery={false}
           small={true}
           {connection}
           {peerId}
@@ -95,13 +88,12 @@
 
   <div class="speaker-div">
     {#if presenterId && presenterId === myId}
-      <LocalVideo
-        small={false}
+      <LocalVideoSpeaking
         {audioOn}
         {videoOn}
         {pauseImage}
         videoStream={videoStream2}
-        {iAmSpeaking}
+        {myId}
       />
     {:else}
       <BigSpeaker
@@ -130,7 +122,7 @@
     display: flex;
     overflow-x: auto;
     gap: 10px;
-    /* background-color: transparent; */
+    padding: 0px 35px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     max-height: 18vh;

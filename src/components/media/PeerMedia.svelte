@@ -2,9 +2,9 @@
   // @ts-nocheck
 
   import { onDestroy, onMount } from "svelte";
-  import { getAudioContext } from "../../stores/media/audioContext";
-  import MicOffRed from "../assets/MicOffRed.svelte";
-  import { loudestPeer } from "../../stores/media/audioContext";
+  import { getAudioContext } from "../../../stores/media/audioContext";
+  import MicOffRed from "../../assets/MicOffRed.svelte";
+  import { loudestPeer } from "../../../stores/media/audioContext";
 
   export let connection;
   export let peerId;
@@ -12,6 +12,7 @@
   export let iAmSpeaking;
   export let updatePeerStates;
   export let peerStates;
+  export let gallery;
 
   let videoElement;
   let square;
@@ -26,36 +27,19 @@
     loudest = value;
   });
 
-  let timeout;
-  let borderActive = false;
-  let timeoutActive = false;
-
   $: {
     if (square) {
       if (loudest?.id === peerId && loudest?.level > 0.007) {
-        clearTimeout(timeout);
-        timeoutActive = false;
-        if (!borderActive) {
-          borderActive = true;
-          square.style.border = "3px solid rgb(240, 248, 255, .4)";
-          iAmSpeaking(peerId);
-        }
+        square.style.border = "3px solid rgb(240, 248, 255, .4)";
+        iAmSpeaking(peerId);
       } else {
-        if (!timeoutActive) {
-          timeoutActive = true;
-          timeout = setTimeout(() => {
-            square.style.border = "none";
-            borderActive = false;
-            timeoutActive = false;
-          }, 400);
-        }
+        square.style.border = "none";
       }
     }
   }
 
   onDestroy(() => {
     unsubscribe();
-    clearTimeout(timeout);
   });
 
   onMount(() => {

@@ -1,7 +1,7 @@
 <script>
   import { navigate } from "svelte-routing";
-  import { clientId } from "../../stores/auth_store";
-  import { createAudioContext } from "../../stores/media/audioContext";
+  import { clientId } from "../../../stores/auth_store";
+  import { createAudioContext } from "../../../stores/media/audioContext";
 
   let rooms = [];
   let myId = null;

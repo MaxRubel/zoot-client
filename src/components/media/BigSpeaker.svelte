@@ -1,5 +1,5 @@
 <script>
-  import MicOffRed from "../assets/MicOffRed.svelte";
+  import MicOffRed from "../../assets/MicOffRed.svelte";
 
   export let connection;
   export let peerId;

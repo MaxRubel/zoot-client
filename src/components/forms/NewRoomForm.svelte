@@ -1,6 +1,6 @@
 <script>
   import { navigate } from "svelte-routing";
-  import { createNewRoom } from "../api/rooms";
+  import { createNewRoom } from "../../api/rooms";
 
   let name = "";
 
