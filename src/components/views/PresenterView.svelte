@@ -41,8 +41,6 @@
       });
     }
   }
-
-  $: console.log(presenter);
 </script>
 
 <div class="presenter-view-container">

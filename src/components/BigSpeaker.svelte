@@ -1,13 +1,9 @@
 <script>
-  import { onDestroy, onMount } from "svelte";
   import MicOffRed from "../assets/MicOffRed.svelte";
-  import { loudestPeer } from "../../stores/media/audioContext";
-
   export let connection;
   export let peerId;
   export let small;
   export let peerStates;
-  // export let iAmSpeaking;
 
   let videoElement;
   let square;
@@ -15,8 +11,7 @@
   let micMuted = false;
   let pauseImage = "/relax2.webp";
 
-  $: if (connection && peerStates) {
-    console.log("changing");
+  $: if (connection && peerStates && videoElement) {
     updateVideoStream();
   }
 

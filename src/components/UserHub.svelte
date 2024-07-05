@@ -21,8 +21,10 @@
   import ShareScreen from "../assets/ShareScreen.svelte";
   import ConfirmAudio from "./modals/ConfirmAudioModal.svelte";
   import ConfirmAudioModal from "./modals/ConfirmAudioModal.svelte";
-  import { getAudioContext } from "../../stores/media/audioContext";
-  import { createAudioContext } from "../../stores/media/audioContext";
+  import {
+    getAudioContext,
+    createAudioContext,
+  } from "../../stores/media/audioContext";
   import BackIcon from "../assets/BackIcon.svelte";
   import DebugMenu from "./menus/DebugMenu.svelte";
   import { broadcastToRoom } from "../../utils/dataChannels/broadcastToRoom";
@@ -43,6 +45,10 @@
     analyzeAudioLevels,
     stopAnalyzingAudioLevels,
   } from "../../utils/media/analyzeAudioLevels";
+  import {
+    userMediaStore,
+    updateUserMediaStore,
+  } from "../../stores/media/userMedia";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -65,6 +71,7 @@
   let myId;
   let userPrefs = {};
   let presenter = null;
+  let stream = null;
 
   //Audio Context Modal
   if (!audioContext) {
@@ -87,6 +94,26 @@
   const unsubscribe3 = userPreferences.subscribe((value) => {
     userPrefs = value;
   });
+
+  const unsubscribe4 = userMediaStore.subscribe((value) => {
+    stream = value;
+  });
+
+  async function getUserMedia() {
+    if (stream) {
+      return;
+    } else {
+      const fetchedStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
+      //cache stream
+      updateUserMediaStore(fetchedStream);
+      stream = fetchedStream;
+    }
+  }
+
+  getUserMedia();
 
   onDestroy(unsubscribe, unsubscribe2, unsubscribe3);
 
@@ -133,6 +160,8 @@
     unsubscribe();
     unsubscribe2();
     unsubscribe3();
+    unsubscribe4();
+    getUserMedia();
   });
 
   //Send My Id to Server When Connecting
@@ -151,15 +180,11 @@
   const sendTestMessage = () => {
     ws.send(`0&${roomId}&${myId}&0&`);
   };
-
-  async function getUserMedia() {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-    return stream;
+  $: {
+    if (audioContext && stream && peers.length > 0) {
+      init();
+    }
   }
-
   const init = () => {
     if (peers.length === 0) {
       return;
@@ -181,7 +206,8 @@
   //analyze audio levels:
   $: {
     stopAnalyzingAudioLevels();
-    analyzeAudioLevels(peerConnections);
+    analyzeAudioLevels(peerConnections, stream, myId, audioContext);
+    console.log(audioContext);
   }
 
   const startNegotiations = async (answererId) => {
@@ -195,10 +221,7 @@
     );
 
     dataChannels[answererId] = dataChannel;
-
-    //Get User's Media Stream
-    const stream = await getUserMedia();
-
+    console.log(stream);
     //Get Each Track from the Stream
     stream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, stream);
@@ -260,7 +283,7 @@
       joined = false;
       const clientArr = e.data.split("&");
       peers = addPeersToLocal(peers, myId, clientArr);
-      if (audioContext) {
+      if (audioContext && stream) {
         init();
       }
       return;
@@ -357,7 +380,6 @@
         }
         await peerConnection.setRemoteDescription(parsed);
 
-        const stream = await getUserMedia();
         stream.getTracks().forEach((track) => {
           peerConnection.addTrack(track, stream);
         });
@@ -437,7 +459,6 @@
   const hookUpAudioContext = () => {
     createAudioContext();
     confirmAudio = false;
-    init();
   };
 
   const showPeerConnections = () => {
