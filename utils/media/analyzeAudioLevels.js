@@ -62,7 +62,7 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
 export const analyzeAudioLevels = (peerConnections, localStream, myId, audioContext) => {
   analyzerLoop = setInterval(() => {
     analyze(peerConnections, localStream, myId, audioContext);
-  }, 300);
+  }, 150);
 };
 
 export const stopAnalyzingAudioLevels = () => {

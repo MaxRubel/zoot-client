@@ -30,7 +30,7 @@
     transition:
       visibility 0s,
       opacity 0.3s;
-    z-index: 1;
+    z-index: 9999;
   }
 
   .modal-overlay.active {

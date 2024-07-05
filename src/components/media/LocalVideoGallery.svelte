@@ -8,7 +8,6 @@
   export let pauseImage;
   export let videoOn;
   export let audioOn;
-  export let iAmSpeaking;
   export let videoStream;
 
   let myId;
@@ -35,7 +34,6 @@
     if (square) {
       if (loudest?.id === myId && loudest?.level > 0.1) {
         square.style.border = "3px solid rgb(240, 248, 255, .4)";
-        iAmSpeaking(myId);
       } else {
         square.style.border = "none";
       }

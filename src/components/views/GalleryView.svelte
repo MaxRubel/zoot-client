@@ -12,32 +12,15 @@
   export let peerStates;
   export let videoStream;
 
-  let presenter;
   let presenterId = null;
-
-  const iAmSpeaking = (id) => {
-    presenterId = id;
-  };
 </script>
 
 <div class="top">
   <div id="video-container" class="top">
-    <LocalVideoGallery
-      {iAmSpeaking}
-      {audioOn}
-      {videoOn}
-      {pauseImage}
-      {videoStream}
-    />
+    <LocalVideoGallery {audioOn} {videoOn} {pauseImage} {videoStream} />
 
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-      <PeerMediaGallery
-        {connection}
-        {peerId}
-        {iAmSpeaking}
-        {updatePeerStates}
-        {peerStates}
-      />
+      <PeerMediaGallery {connection} {peerId} {updatePeerStates} {peerStates} />
     {/each}
   </div>
 </div>

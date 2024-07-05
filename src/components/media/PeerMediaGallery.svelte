@@ -8,7 +8,6 @@
 
   export let connection;
   export let peerId;
-  export let iAmSpeaking;
   export let updatePeerStates;
   export let peerStates;
 
@@ -21,6 +20,8 @@
   let pauseImage = "/relax2.webp";
   let loudest;
 
+  $: console.log("peer id: ", peerId);
+
   const unsubscribe = loudestPeer.subscribe((value) => {
     loudest = value;
   });
@@ -29,7 +30,6 @@
     if (square) {
       if (loudest?.id === peerId && loudest?.level > 0.007) {
         square.style.border = "3px solid rgb(240, 248, 255, .4)";
-        iAmSpeaking(peerId);
       } else {
         square.style.border = "none";
       }
@@ -152,6 +152,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 3;
   }
 
   .mic-symbol {

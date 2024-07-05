@@ -474,8 +474,6 @@
     peerStates[id] = value;
     peerStates = { ...peerStates };
   };
-
-  $: console.log(userPrefs);
 </script>
 
 <div class="user-hub">

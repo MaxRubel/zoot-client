@@ -1,11 +1,11 @@
 <script>
+  import { onDestroy } from "svelte";
+  import { userPreferences } from "../../../stores/media/userPreferences";
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
   import BigSpeaker from "../media/BigSpeaker.svelte";
-  import LocalVideo from "../media/LocalVideo.svelte";
   import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
   import LocalVideoSpeaking from "../media/LocalVideoSpeaking.svelte";
-  import PeerMedia from "../media/PeerMedia.svelte";
   import PeerMediaSmall from "../media/PeerMediaSmall.svelte";
 
   export let peerConnections;
@@ -19,6 +19,7 @@
 
   let presenterId = null;
   let presenter = null;
+  let userPrefs;
 
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
@@ -29,6 +30,12 @@
     const container = document.querySelector(".scroll-container");
     container.scrollBy({ left: 450, behavior: "smooth" });
   }
+
+  const unsubscribe = userPreferences.subscribe((value) => {
+    userPrefs = value;
+  });
+
+  onDestroy(unsubscribe);
 
   const iAmSpeaking = (id) => {
     presenterId = id;
@@ -86,7 +93,7 @@
   </div>
 
   <div class="speaker-div">
-    {#if presenterId && presenterId === myId}
+    {#if presenterId && presenterId === myId && !userPrefs.hideSelf}
       <LocalVideoSpeaking
         {audioOn}
         {videoOn}
@@ -106,11 +113,9 @@
 
 <style>
   .presenter-view-container {
-    border: 2px solid rgb(51, 51, 51);
     margin-top: 5px;
   }
   .scroll-wrapper {
-    border-bottom: 2px solid rgb(51, 51, 51);
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -119,7 +124,7 @@
   .scroll-container {
     display: flex;
     overflow-x: auto;
-    gap: 10px;
+    gap: 15px;
     padding: 0px 35px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
@@ -152,6 +157,7 @@
   }
 
   .speaker-div {
+    margin-top: 20px;
     width: 100%;
     height: 50vh;
   }
