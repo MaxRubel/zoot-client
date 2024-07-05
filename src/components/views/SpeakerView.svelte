@@ -6,6 +6,7 @@
   import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
   import LocalVideoSpeaking from "../media/LocalVideoSpeaking.svelte";
   import PeerMedia from "../media/PeerMedia.svelte";
+  import PeerMediaSmall from "../media/PeerMediaSmall.svelte";
 
   export let peerConnections;
   export let audioOn;
@@ -69,9 +70,7 @@
         videoStream={videoStream1}
       />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-        <PeerMedia
-          gallery={false}
-          small={true}
+        <PeerMediaSmall
           {connection}
           {peerId}
           {iAmSpeaking}
@@ -93,7 +92,6 @@
         {videoOn}
         {pauseImage}
         videoStream={videoStream2}
-        {myId}
       />
     {:else}
       <BigSpeaker

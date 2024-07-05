@@ -8,7 +8,6 @@
 
   export let connection;
   export let peerId;
-  export let small;
   export let iAmSpeaking;
   export let updatePeerStates;
   export let peerStates;
@@ -108,27 +107,25 @@
   });
 </script>
 
-<div
-  class="peer-media-square"
-  style="display: {initialized ? 'block' : 'none'};"
->
-  <div class="border {small && 'small'}" bind:this={square}></div>
-  <video
-    class={small ? "video-small" : "video-normal"}
-    bind:this={videoElement}
-    style="display: {videoPaused ? 'none' : 'block'}"
-    autoplay
-    muted
-  >
-    <track kind="captions" />
-  </video>
-
-  <img
-    src={pauseImage}
-    class={small ? "small" : "large"}
-    style="display: {videoPaused ? 'block' : 'none'}"
-    alt=""
-  />
+<div class="peer-media-square">
+  <div class="border" bind:this={square}></div>
+  <div class="media-container">
+    <video
+      class="video-normal"
+      class:fade-out={videoPaused}
+      bind:this={videoElement}
+      autoplay
+      muted
+    >
+      <track kind="captions" />
+    </video>
+    <img
+      src={pauseImage}
+      class="pause-image"
+      class:fade-out={!videoPaused}
+      alt=""
+    />
+  </div>
   <div
     class="mic-symbol centered"
     style="display: {micMuted ? 'block' : 'none'}"
@@ -138,8 +135,8 @@
 </div>
 
 <div
-  class="connecting centered {small && 'small-text'}"
-  style="display: {initialized ? 'none' : 'flex'};{small && 'font-size: 10pt;'}"
+  class="connecting centered"
+  style="display: {initialized ? 'none' : 'flex'}"
 >
   Connecting...
 </div>
@@ -169,39 +166,34 @@
     padding-left: 1px;
   }
 
+  .media-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
   .video-normal {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
   }
 
-  .video-small {
-    width: 200px;
-    max-height: 18vh;
-    min-height: 125px;
-    /* margin-right: 10px; */
-    aspect-ratio: 4/3;
-    object-fit: cover;
-  }
-  .small-text {
-    font-size: 10pt;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 200px;
-  }
   img {
     aspect-ratio: 4/3;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 480px;
     width: 100%;
     height: 100%;
-  }
-  .small {
-    width: 200px;
     object-fit: fill;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
   }
 
-  .large {
-    object-fit: contain;
+  .fade-out {
+    opacity: 0;
   }
 </style>

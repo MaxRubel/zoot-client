@@ -2,12 +2,12 @@
   import LocalVideo from "../media/LocalVideo.svelte";
   import LocalVideoGallery from "../media/LocalVideoGallery.svelte";
   import PeerMedia from "../media/PeerMedia.svelte";
+  import PeerMediaGallery from "../media/PeerMediaGallery.svelte";
 
   export let peerConnections;
   export let audioOn;
   export let videoOn;
   export let pauseImage;
-  export let myId;
   export let updatePeerStates;
   export let peerStates;
   export let videoStream;
@@ -31,11 +31,9 @@
     />
 
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-      <PeerMedia
-        gallery={true}
+      <PeerMediaGallery
         {connection}
         {peerId}
-        small={false}
         {iAmSpeaking}
         {updatePeerStates}
         {peerStates}

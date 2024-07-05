@@ -8,7 +8,6 @@
 
   export let connection;
   export let peerId;
-  export let small;
   export let iAmSpeaking;
   export let updatePeerStates;
   export let peerStates;
@@ -112,23 +111,20 @@
   class="peer-media-square"
   style="display: {initialized ? 'block' : 'none'};"
 >
-  <div class="border {small && 'small'}" bind:this={square}></div>
-  <video
-    class={small ? "video-small" : "video-normal"}
-    bind:this={videoElement}
-    style="display: {videoPaused ? 'none' : 'block'}"
-    autoplay
-    muted
-  >
-    <track kind="captions" />
-  </video>
+  <div class="border small" bind:this={square}></div>
+  <div class="media-container">
+    <video
+      class="video-small"
+      bind:this={videoElement}
+      autoplay
+      muted
+      class:fade-in={!videoPaused}
+    >
+      <track kind="captions" />
+    </video>
 
-  <img
-    src={pauseImage}
-    class={small ? "small" : "large"}
-    style="display: {videoPaused ? 'block' : 'none'}"
-    alt=""
-  />
+    <img src={pauseImage} class="small" alt="" class:fade-out={!videoPaused} />
+  </div>
   <div
     class="mic-symbol centered"
     style="display: {micMuted ? 'block' : 'none'}"
@@ -138,8 +134,8 @@
 </div>
 
 <div
-  class="connecting centered {small && 'small-text'}"
-  style="display: {initialized ? 'none' : 'flex'};{small && 'font-size: 10pt;'}"
+  class="connecting centered small-text"
+  style="display: {initialized ? 'none;' : 'flex;'}; font-size: 10pt;}"
 >
   Connecting...
 </div>
@@ -147,6 +143,12 @@
 <style>
   .peer-media-square {
     position: relative;
+  }
+
+  .media-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
 
   .border {
@@ -169,19 +171,14 @@
     padding-left: 1px;
   }
 
-  .video-normal {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
   .video-small {
     width: 200px;
     max-height: 18vh;
     min-height: 125px;
-    /* margin-right: 10px; */
     aspect-ratio: 4/3;
     object-fit: cover;
+    transition: ease-in 0.5s;
+    transition: ease-out 0s;
   }
   .small-text {
     font-size: 10pt;
@@ -191,17 +188,24 @@
     width: 200px;
   }
   img {
+    position: absolute;
+    top: 0;
+    left: 0;
     aspect-ratio: 4/3;
     width: 480px;
     width: 100%;
     height: 100%;
+    opacity: 1;
+    transition: ease-out 0.5s;
+  }
+  .fade-in {
+    opacity: 1;
+  }
+  .fade-out {
+    opacity: 0;
   }
   .small {
     width: 200px;
     object-fit: fill;
-  }
-
-  .large {
-    object-fit: contain;
   }
 </style>
