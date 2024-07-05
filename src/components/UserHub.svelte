@@ -180,11 +180,6 @@
   const sendTestMessage = () => {
     ws.send(`0&${roomId}&${myId}&0&`);
   };
-  $: {
-    if (audioContext && stream && peers.length > 0) {
-      init();
-    }
-  }
   const init = () => {
     if (peers.length === 0) {
       return;
