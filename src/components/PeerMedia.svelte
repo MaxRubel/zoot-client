@@ -142,7 +142,7 @@
 
   <img
     src={pauseImage}
-    class={small && "small"}
+    class={small ? "small" : "large"}
     style="display: {videoPaused ? 'block' : 'none'}"
     alt=""
   />
@@ -196,7 +196,7 @@
     width: 200px;
     max-height: 18vh;
     min-height: 125px;
-    margin-right: 10px;
+    /* margin-right: 10px; */
     aspect-ratio: 4/3;
     object-fit: cover;
   }
@@ -212,9 +212,13 @@
     width: 480px;
     width: 100%;
     height: 100%;
-    object-fit: fill;
   }
   .small {
     width: 200px;
+    object-fit: fill;
+  }
+
+  .large {
+    object-fit: contain;
   }
 </style>

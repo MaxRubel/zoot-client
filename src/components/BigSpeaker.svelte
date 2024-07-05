@@ -1,5 +1,6 @@
 <script>
   import MicOffRed from "../assets/MicOffRed.svelte";
+
   export let connection;
   export let peerId;
   export let small;
@@ -40,6 +41,7 @@
   <img
     src={pauseImage}
     style="display: {videoPaused ? 'block' : 'none'}"
+    class={small ? "image-small" : "image-large"}
     alt=""
   />
   <div
@@ -78,12 +80,16 @@
     padding-left: 1px;
   }
 
+  .image-large {
+    object-fit: contain;
+  }
+
   .video-big {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
   }
 

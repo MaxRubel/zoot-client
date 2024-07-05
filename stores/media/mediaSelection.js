@@ -9,7 +9,6 @@ const getInitialState = () => {
 export const userSelection = writable(getInitialState());
 
 export const updateUserSelection = (audioOn, videoOn) => {
-    console.log("updating user selection, audio: ", audioOn)
     userSelection.set({ audioOn, videoOn });
     localStorage.setItem('userSelection', JSON.stringify({ audioOn, videoOn }));
 };

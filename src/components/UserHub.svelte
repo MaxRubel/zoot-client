@@ -53,6 +53,7 @@
 
   let roomId = param;
   let videoStream;
+  let audioStream;
   let localVideo;
   let peers = [];
   let peerConnections = {};
@@ -68,14 +69,13 @@
   let myId;
   let userPrefs = {};
   let presenter = null;
-  let stream = null;
 
   //Audio Context Modal
   if (!audioContext) {
     confirmAudio = true;
   }
 
-  //Svelte Stores
+  //----Svelte Stores-----
   //whether your camera/audio was turned on last time
   const unsubscribe = userSelection.subscribe((value) => {
     audioOn = value.audioOn;
@@ -87,7 +87,6 @@
     myId = value;
   });
 
-  //
   const unsubscribe3 = userPreferences.subscribe((value) => {
     userPrefs = value;
   });
@@ -99,7 +98,9 @@
   onDestroy(unsubscribe, unsubscribe2, unsubscribe3, unsubscribe4);
 
   const alignUserSelection = () => {
-    audioOn ? micOn(peerConnections, stream) : micOff(peerConnections, stream);
+    audioOn
+      ? micOn(peerConnections, audioStream)
+      : micOff(peerConnections, audioStream);
     videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
   };
 
@@ -173,16 +174,6 @@
     return fetchedStream;
   }
 
-  async function initStream() {
-    stream = await getUserMedia();
-  }
-
-  $: {
-    if (!stream) {
-      initStream();
-    }
-  }
-
   const init = () => {
     if (peers.length === 0) {
       return;
@@ -195,16 +186,14 @@
   };
 
   onMount(async () => {
-    localVideo = document.getElementById("localVideo");
     videoStream = await cameraOn(peerConnections);
-    localVideo.srcObject = videoStream;
-    stream = await getUserMedia();
+    audioStream = await getUserMedia();
   });
 
   //analyze audio levels:
   $: {
     stopAnalyzingAudioLevels();
-    analyzeAudioLevels(peerConnections, stream, myId, audioContext);
+    analyzeAudioLevels(peerConnections, audioStream, myId, audioContext);
   }
 
   const startNegotiations = async (answererId) => {
@@ -220,9 +209,9 @@
     dataChannels[answererId] = dataChannel;
     //Get Each Track from the Stream
 
-    stream = await getUserMedia();
-    stream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, stream);
+    audioStream = await getUserMedia();
+    audioStream.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, audioStream);
     });
 
     //Create Offer
@@ -345,9 +334,9 @@
             () => {
               dataChannel.send(`report-${report}`);
               if (audioOn) {
-                micOn(peerConnections, stream);
+                micOn(peerConnections, audioStream);
               } else {
-                micOff(peerConnections, stream);
+                micOff(peerConnections, audioStream);
               }
             },
             { once: true },
@@ -379,9 +368,9 @@
           return;
         }
         await peerConnection.setRemoteDescription(parsed);
-        stream = await getUserMedia();
-        stream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, stream);
+        audioStream = await getUserMedia();
+        audioStream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, audioStream);
         });
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
@@ -411,12 +400,12 @@
 
   const handleMic = () => {
     if (audioOn) {
-      micOff(peerConnections, stream);
+      micOff(peerConnections, audioStream);
       broadcastToRoom(dataChannels, "mic-muted");
       audioOn = false;
       updateUserSelection(audioOn, videoOn);
     } else {
-      micOn(peerConnections, stream);
+      micOn(peerConnections, audioStream);
       broadcastToRoom(dataChannels, "mic-live");
       audioOn = true;
       updateUserSelection(audioOn, videoOn);
@@ -425,13 +414,13 @@
 
   const handleCamera = async () => {
     if (videoOn) {
-      localVideo.srcObject = await cameraOff(peerConnections);
+      videoStream = await cameraOff(peerConnections);
       pauseImage = chooseGif();
       broadcastToRoom(dataChannels, `camera-muted-${pauseImage}`);
       videoOn = false;
       updateUserSelection(audioOn, videoOn);
     } else {
-      localVideo.srcObject = await cameraOn(peerConnections);
+      videoStream = await cameraOn(peerConnections);
       broadcastToRoom(dataChannels, "camera-live");
       videoOn = true;
       updateUserSelection(audioOn, videoOn);
@@ -496,10 +485,10 @@
     {peerConnections}
     {audioOn}
     {videoOn}
-    {userPrefs}
     {pauseImage}
     {updatePeerStates}
     {peerStates}
+    {videoStream}
   />
   <!-- <div class="top">
     <div id="video-container" class="top">

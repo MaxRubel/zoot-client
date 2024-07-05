@@ -55,7 +55,7 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
       maxLevelPeerId = peerId;
     }
   });
-
+  // console.log(levels)
   loudestPeer.set({ level: maxLevel, id: maxLevelPeerId });
 };
 

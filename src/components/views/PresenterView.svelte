@@ -1,22 +1,29 @@
 <script>
   import LefttArrow from "../../assets/LefttArrow.svelte";
-  import MicOffRed from "../../assets/MicOffRed.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
   import BigSpeaker from "../BigSpeaker.svelte";
+  import LocalVideo from "../LocalVideo.svelte";
   import PeerMedia from "../PeerMedia.svelte";
+  import { clientId } from "../../../stores/auth_store";
+  import { onDestroy, onMount } from "svelte";
 
   export let peerConnections;
   export let audioOn;
   export let videoOn;
   export let pauseImage;
-  export let userPrefs;
   export let updatePeerStates;
   export let peerStates;
+  export let videoStream;
 
   let presenterId = null;
   let presenter = null;
+  let myId;
 
-  const small = true;
+  const unsubscribe = clientId.subscribe((value) => {
+    myId = value;
+  });
+
+  onDestroy(unsubscribe);
 
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
@@ -41,6 +48,17 @@
       });
     }
   }
+
+  let videoStream1;
+  let videoStream2;
+
+  $: {
+    if (videoStream) {
+      console.log("cloning");
+      videoStream1 = videoStream.clone();
+      videoStream2 = videoStream.clone();
+    }
+  }
 </script>
 
 <div class="presenter-view-container">
@@ -50,30 +68,14 @@
     </button>
 
     <div class="scroll-container">
-      <div
-        class="self-view-small"
-        style="display: {userPrefs.hideSelf ? 'none' : 'block'};"
-      >
-        <img
-          class="paused-image"
-          src={pauseImage}
-          alt="Camera Paused..."
-          style="display: {videoOn ? 'none' : 'block'};"
-        />
-        <video
-          id="localVideo"
-          autoplay
-          style="display: {videoOn ? 'block' : 'none'};"
-        >
-          <track kind="captions" />
-        </video>
-        <div
-          class="mic-symbol centered"
-          style="display: {audioOn ? 'none' : 'block'}"
-        >
-          <MicOffRed />
-        </div>
-      </div>
+      <LocalVideo
+        small={true}
+        {iAmSpeaking}
+        {audioOn}
+        {videoOn}
+        {pauseImage}
+        videoStream={videoStream1}
+      />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMedia
           small={true}
@@ -92,7 +94,16 @@
   </div>
 
   <div class="speaker-div">
-    {#if presenter}
+    {#if presenterId && presenterId === myId}
+      <LocalVideo
+        small={false}
+        {audioOn}
+        {videoOn}
+        {pauseImage}
+        videoStream={videoStream2}
+        {iAmSpeaking}
+      />
+    {:else}
       <BigSpeaker
         {peerStates}
         connection={presenter}
@@ -118,43 +129,12 @@
   .scroll-container {
     display: flex;
     overflow-x: auto;
+    gap: 10px;
+    /* background-color: transparent; */
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     max-height: 18vh;
     min-height: 125px;
-  }
-
-  .scroll-container img {
-    flex: 0 0 auto;
-    width: 200px;
-    height: auto;
-    margin-right: 10px;
-    aspect-ratio: 4/3;
-  }
-
-  #localVideo {
-    flex: 0 0 auto;
-    width: 200px;
-    max-height: 18vh;
-    min-height: 125px;
-    margin-right: 10px;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-  }
-
-  .self-view-small {
-    position: relative;
-  }
-
-  .mic-symbol {
-    position: absolute;
-    bottom: 4px;
-    left: 2px;
-    position: absolute;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding-bottom: 3px;
   }
 
   .scroll-button {
@@ -182,7 +162,7 @@
   }
 
   .speaker-div {
-    width: 100%; /* Adjust as needed */
-    height: 50vh; /* Adjust as needed */
+    width: 100%;
+    height: 50vh;
   }
 </style>
