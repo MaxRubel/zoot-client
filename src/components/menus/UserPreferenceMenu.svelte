@@ -8,12 +8,24 @@
   let isExpanded = false;
 
   const handleUpdate = (e) => {
-    console.log(e.target.id);
-    switch (e.target.id) {
+    const { id } = e.target;
+    let newPrefs = { ...userPrefs };
+
+    switch (id) {
       case "selfView":
-        userPrefs = { ...userPrefs, hideSelf: !userPrefs.hideSelf };
-        updateUserPreferences(userPrefs);
+        newPrefs.hideSelf = !newPrefs.hideSelf;
+        break;
+      case "debug-menu":
+        newPrefs.debug = !newPrefs.debug;
+        break;
+      case "viewOptions":
+        newPrefs.view = newPrefs.view === "gallery" ? "speaker" : "gallery";
+        break;
+      default:
+        return;
     }
+
+    updateUserPreferences(newPrefs);
   };
 
   function toggleMenu() {
@@ -22,7 +34,7 @@
 </script>
 
 <nav
-  class="user-prefs top"
+  class="user-prefs"
   class:expanded={isExpanded}
   class:collapsed={!isExpanded}
 >
@@ -31,13 +43,16 @@
   </button>
   <div class="nav-buttons">
     <button class="clear" id="viewOptions" on:click={handleUpdate}>
-      {userPrefs.speakerView ? "Gallery View" : "Speaker View"}
+      {userPrefs.view === "speaker" ? "Gallery View" : "Speaker View"}
     </button>
     <button class="clear" id="selfView" on:click={handleUpdate}>
       {userPrefs.hideSelf ? "Show Self" : "Hide Self"}
     </button>
     <button class="clear" id="presentView" on:click={handleUpdate}>
       {userPrefs.watchPresenter && presenter ? "Stop Watching" : "Watch"}
+    </button>
+    <button class="clear" id="debug-menu" on:click={handleUpdate}>
+      {userPrefs.debug ? "Hide Debugger" : "Debug"}
     </button>
   </div>
 </nav>
@@ -61,15 +76,16 @@
   }
 
   .expanded {
-    width: 465px;
+    width: 600px;
     transition: all ease 0.5s;
   }
 
   .clear {
     display: flex;
-    height: 60px;
+    height: 40px;
     padding: 5px 2px !important;
-    font-size: 16px;
+    background-color: rgba(24, 59, 90, 0.328);
+    font-size: 14px;
     flex-direction: column;
     justify-content: center;
     align-items: center;

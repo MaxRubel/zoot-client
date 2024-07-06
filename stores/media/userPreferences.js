@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 
 const getInitialState = () => {
     const stored = localStorage.getItem('userPrefs');
-    return stored ? JSON.parse(stored) : { hideSelf : false};
+    return stored ? JSON.parse(stored) : { hideSelf: false, view: "speaker", debug: false };
 };
 
 export const userPreferences = writable(getInitialState());
@@ -10,6 +10,7 @@ export const userPreferences = writable(getInitialState());
 export const updateUserPreferences = (prefs) => {
     userPreferences.set(prefs);
     localStorage.setItem('userPrefs', JSON.stringify(prefs));
+    console.log(prefs)
 };
 
 userPreferences.subscribe(value => {

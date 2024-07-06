@@ -1,8 +1,9 @@
 import { writable } from 'svelte/store';
+import { get } from 'svelte/store';
 
 const getInitialState = () => {
     const stored = localStorage.getItem('userSelection');
-    return stored ? JSON.parse(stored) : { audioOn: false, videoOn: false};
+    return stored ? JSON.parse(stored) : { audioOn: false, videoOn: false };
 };
 
 export const userSelection = writable(getInitialState());
@@ -10,8 +11,13 @@ export const userSelection = writable(getInitialState());
 export const updateUserSelection = (audioOn, videoOn) => {
     userSelection.set({ audioOn, videoOn });
     localStorage.setItem('userSelection', JSON.stringify({ audioOn, videoOn }));
+    console.log("received change")
 };
 
 userSelection.subscribe(value => {
     localStorage.setItem('userSelection', JSON.stringify(value));
 });
+
+export function getUserSelection() {
+    return get(userSelection);
+}
