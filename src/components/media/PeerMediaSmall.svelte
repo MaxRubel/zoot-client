@@ -55,7 +55,6 @@
       .getReceivers()
       .find((receiver) => receiver.track.kind === "video")?.track;
     if (videoTrack) {
-      console.log("video reset");
       videoElement.srcObject = new MediaStream([videoTrack]);
       videoElement.autoplay = true;
     }
@@ -73,7 +72,6 @@
   onMount(() => {
     const audioContext = getAudioContext();
     connection.ontrack = (event) => {
-      console.log("setting up peer media");
       if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
         const sourceNode = audioContext.createMediaStreamSource(audioStream);
@@ -100,7 +98,6 @@
     //receive data from peer:
     connection.ondatachannel = (e) => {
       e.channel.onmessage = (m) => {
-        console.log("receiving new data from peer", m.data);
         if (m.data.includes("report")) {
           unpackReport(m.data);
         }
@@ -148,21 +145,11 @@
 
   if (peerStates[peerId]?.initialized) {
     initialized = true;
-    console.log("initialized");
   }
-
-  onMount(() => {
-    console.log("mounted a peer in gallery view");
-  });
 
   $: if (connection) {
     videoElement = videoElement;
   }
-
-  const showInfo = () => {
-    console.log("initialized: ", initialized);
-    console.log("video :");
-  };
 </script>
 
 <div class="peer-media-square">
@@ -244,7 +231,6 @@
   }
 
   .video-normal {
-    /* width: 100%; */
     height: 100%;
     width: 200px;
     object-fit: cover;

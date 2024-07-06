@@ -106,10 +106,6 @@
     videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
   };
 
-  $: {
-    console.log("top level peerState: ", peerStates);
-  }
-
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun.l.google.com:5349" },

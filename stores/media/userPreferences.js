@@ -10,7 +10,6 @@ export const userPreferences = writable(getInitialState());
 export const updateUserPreferences = (prefs) => {
     userPreferences.set(prefs);
     localStorage.setItem('userPrefs', JSON.stringify(prefs));
-    console.log(prefs)
 };
 
 userPreferences.subscribe(value => {
