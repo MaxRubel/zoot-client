@@ -12,8 +12,6 @@
   export let audioOn;
   export let videoOn;
   export let pauseImage;
-  export let updatePeerStates;
-  export let peerStates;
   export let videoStream;
   export let myId;
 
@@ -60,6 +58,12 @@
       videoStream2 = videoStream.clone();
     }
   }
+
+  $: console.log(
+    "there are ",
+    Object.values(peerConnections).length,
+    "other peers in this speaker view",
+  );
 </script>
 
 <div class="presenter-view-container">
@@ -77,13 +81,7 @@
         videoStream={videoStream1}
       />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-        <PeerMediaSmall
-          {connection}
-          {peerId}
-          {iAmSpeaking}
-          {updatePeerStates}
-          {peerStates}
-        />
+        <PeerMediaSmall {connection} {peerId} {iAmSpeaking} />
       {/each}
     </div>
 
@@ -101,12 +99,7 @@
         videoStream={videoStream2}
       />
     {:else}
-      <BigSpeaker
-        {peerStates}
-        connection={presenter}
-        peerId={presenterId}
-        small={false}
-      />
+      <BigSpeaker connection={presenter} peerId={presenterId} small={false} />
     {/if}
   </div>
 </div>

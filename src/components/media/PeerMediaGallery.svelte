@@ -5,11 +5,13 @@
   import { getAudioContext } from "../../../stores/media/audioContext";
   import MicOffRed from "../../assets/MicOffRed.svelte";
   import { loudestPeer } from "../../../stores/media/audioContext";
+  import {
+    peerStates,
+    updatePeerState,
+  } from "../../../stores/media/peerStates";
 
   export let connection;
   export let peerId;
-  export let updatePeerStates;
-  export let peerStates;
 
   let videoElement;
   let square;
@@ -19,11 +21,21 @@
   let initialized = false;
   let pauseImage = "/relax2.webp";
   let loudest;
-
-  $: console.log("peer id: ", peerId);
+  let isVideoSetup = false;
+  let peerState;
 
   const unsubscribe = loudestPeer.subscribe((value) => {
     loudest = value;
+  });
+
+  const unsubscribe2 = peerStates.subscribe((value) => {
+    if (value[peerId]) {
+      peerState = value[peerId];
+      micMuted = !peerState.audioOn;
+      videoPaused = !peerState.videoOn;
+      initialized = peerState.initialized;
+      pauseImage = peerState.pauseImage;
+    }
   });
 
   $: {
@@ -36,48 +48,75 @@
     }
   }
 
+  const reSetupVideo = () => {
+    const videoTrack = connection
+      .getReceivers()
+      .find((receiver) => receiver.track.kind === "video")?.track;
+    if (videoTrack) {
+      console.log("video reset");
+      videoElement.srcObject = new MediaStream([videoTrack]);
+      videoElement.autoplay = true;
+    }
+  };
+
+  $: if (connection && videoElement && initialized && !isVideoSetup) {
+    reSetupVideo();
+  }
+
+  // $: console.log("is video setup?", isVideoSetup);
+  // $: console.log("is there connection? ", connection);
+  // $: console.log("is there video element? ", videoElement);
+  // $: {
+  //   console.log("am i initialized? ", initialized);
+  // }
+
   onDestroy(() => {
     unsubscribe();
+    unsubscribe2();
   });
 
   onMount(() => {
     const audioContext = getAudioContext();
     connection.ontrack = (event) => {
+      console.log("setting up peer media");
       if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
         const sourceNode = audioContext.createMediaStreamSource(audioStream);
         sourceNode.connect(audioContext.destination);
+        isVideoSetup = true;
       }
-      if (event.streams && event.streams[0] && event.track.kind === "video") {
+      if (
+        event.streams &&
+        event.streams[0] &&
+        event.track.kind === "video" &&
+        !initialized
+      ) {
         videoElement.srcObject = event.streams[0];
       }
     };
 
     const unpackReport = (data) => {
       const [_, report] = data.split("-");
-      const parsed = JSON.parse(report);
-      videoPaused = !parsed.videoOn;
-      micMuted = !parsed.audioOn;
-      presenting = parsed.presenting;
-      initialized = true;
-      pauseImage = parsed.pauseImage;
-      updatePeerStates(peerId, parsed);
+      const parsedObject = JSON.parse(report);
+      parsedObject.initialized = true;
+      updatePeerState(peerId, parsedObject);
     };
 
     //receive data from peer:
     connection.ondatachannel = (e) => {
       e.channel.onmessage = (m) => {
+        console.log("receiving new data from peer", m.data);
         if (m.data.includes("report")) {
           unpackReport(m.data);
         }
         if (m.data.includes("camera-muted")) {
-          videoPaused = true;
+          console.log("camera muted");
           const [, , parsed] = m.data.split("-");
           pauseImage = parsed;
-          updatePeerStates(peerId, {
-            ...peerStates[peerId],
+          updatePeerState(peerId, {
+            ...peerState,
             pauseImage: parsed,
-            videoOn: !peerStates[peerId].videoOn,
+            videoOn: false,
           });
         }
         if (m.data.includes("startScreenShare")) {
@@ -87,16 +126,22 @@
         switch (m.data) {
           case "camera-live":
             videoPaused = false;
-            updatePeerStates(peerId, {
-              ...peerStates[peerId],
-              videoOn: !peerStates[peerId].videoOn,
+            updatePeerState(peerId, {
+              ...peerState,
+              videoOn: true,
             });
             break;
           case "mic-muted":
-            micMuted = true;
+            updatePeerState(peerId, {
+              ...peerState,
+              audioOn: false,
+            });
             break;
           case "mic-live":
-            micMuted = false;
+            updatePeerState(peerId, {
+              ...peerState,
+              audioOn: true,
+            });
             break;
           case "stopScreenShare":
             updatePresenter(null);
@@ -105,6 +150,24 @@
       };
     };
   });
+
+  if (peerStates[peerId]?.initialized) {
+    initialized = true;
+    console.log("initialized");
+  }
+
+  onMount(() => {
+    console.log("mounted a peer in gallery view");
+  });
+
+  $: if (connection) {
+    videoElement = videoElement;
+  }
+
+  const showInfo = () => {
+    console.log("initialized: ", initialized);
+    console.log("video :");
+  };
 </script>
 
 <div class="peer-media-square">
@@ -116,6 +179,7 @@
       bind:this={videoElement}
       autoplay
       muted
+      playsinline
     >
       <track kind="captions" />
     </video>
@@ -125,6 +189,12 @@
       class:fade-out={!videoPaused}
       alt=""
     />
+    <div
+      class="connecting centered"
+      style="display: {initialized ? 'none' : 'flex'}"
+    >
+      Connecting...
+    </div>
   </div>
   <div
     class="mic-symbol centered"
@@ -132,13 +202,6 @@
   >
     <MicOffRed />
   </div>
-</div>
-
-<div
-  class="connecting centered"
-  style="display: {initialized ? 'none' : 'flex'}"
->
-  Connecting...
 </div>
 
 <style>
@@ -153,6 +216,18 @@
     width: 100%;
     height: 100%;
     z-index: 3;
+  }
+
+  .connecting {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
   }
 
   .mic-symbol {
@@ -179,6 +254,7 @@
     object-fit: cover;
     opacity: 1;
     transition: opacity 0.5s ease-in;
+    z-index: 5;
   }
 
   img {

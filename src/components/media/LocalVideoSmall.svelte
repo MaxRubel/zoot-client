@@ -55,9 +55,6 @@
       videoElement.srcObject = videoStream;
     }
   }
-
-  $: console.log(videoOn);
-  $: console.log(userPrefs.hideSelf);
 </script>
 
 <div

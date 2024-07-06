@@ -18,19 +18,19 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
       if (source) {
         levels[peerId] = source.audioLevel;
       }
-    }
+    } 
   });
 
   // Analyze local audio
   if (!localAnalyserNode) {
     const audioTrack = localStream.getTracks().find((t) => t.kind === "audio");
+
     if (audioTrack && audioContext) {
       const sourceNode = audioContext.createMediaStreamSource(new MediaStream([audioTrack]));
       localAnalyserNode = audioContext.createAnalyser();
       sourceNode.connect(localAnalyserNode);
       localAnalyserNode.fftSize = 256;
       localDataArray = new Uint8Array(localAnalyserNode.frequencyBinCount);
-      console.log("local audio: ", audioTrack)
     }
   }
 
@@ -56,10 +56,19 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
     }
   });
   // console.log(levels)
+  // console.log("analyzing levels of ", Object.values(levels).length, " users")
   loudestPeer.set({ level: maxLevel, id: maxLevelPeerId });
 };
 
 export const analyzeAudioLevels = (peerConnections, localStream, myId, audioContext) => {
+  // console.log("starting audio analysis")
+  // console.log("peer connections: ", peerConnections)
+  // console.log("my audio stream: ", localStream)
+  // console.log("my id is ", myId)
+  // console.log("my audio context is ", audioContext)
+  if(analyzerLoop){
+    clearInterval(analyzerLoop)
+  }
   analyzerLoop = setInterval(() => {
     analyze(peerConnections, localStream, myId, audioContext);
   }, 150);

@@ -5,12 +5,14 @@
   import { getAudioContext } from "../../../stores/media/audioContext";
   import MicOffRed from "../../assets/MicOffRed.svelte";
   import { loudestPeer } from "../../../stores/media/audioContext";
+  import {
+    peerStates,
+    updatePeerState,
+  } from "../../../stores/media/peerStates";
 
   export let connection;
   export let peerId;
   export let iAmSpeaking;
-  export let updatePeerStates;
-  export let peerStates;
 
   let videoElement;
   let square;
@@ -20,9 +22,21 @@
   let initialized = false;
   let pauseImage = "/relax2.webp";
   let loudest;
+  let isVideoSetup = false;
+  let peerState;
 
   const unsubscribe = loudestPeer.subscribe((value) => {
     loudest = value;
+  });
+
+  const unsubscribe2 = peerStates.subscribe((value) => {
+    if (value[peerId]) {
+      peerState = value[peerId];
+      micMuted = !peerState.audioOn;
+      videoPaused = !peerState.videoOn;
+      initialized = peerState.initialized;
+      pauseImage = peerState.pauseImage;
+    }
   });
 
   $: {
@@ -36,48 +50,68 @@
     }
   }
 
+  const reSetupVideo = () => {
+    const videoTrack = connection
+      .getReceivers()
+      .find((receiver) => receiver.track.kind === "video")?.track;
+    if (videoTrack) {
+      console.log("video reset");
+      videoElement.srcObject = new MediaStream([videoTrack]);
+      videoElement.autoplay = true;
+    }
+  };
+
+  $: if (connection && videoElement && initialized && !isVideoSetup) {
+    reSetupVideo();
+  }
+
   onDestroy(() => {
     unsubscribe();
+    unsubscribe2();
   });
 
   onMount(() => {
     const audioContext = getAudioContext();
     connection.ontrack = (event) => {
+      console.log("setting up peer media");
       if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
         const sourceNode = audioContext.createMediaStreamSource(audioStream);
         sourceNode.connect(audioContext.destination);
+        isVideoSetup = true;
       }
-      if (event.streams && event.streams[0] && event.track.kind === "video") {
+      if (
+        event.streams &&
+        event.streams[0] &&
+        event.track.kind === "video" &&
+        !initialized
+      ) {
         videoElement.srcObject = event.streams[0];
       }
     };
 
     const unpackReport = (data) => {
       const [_, report] = data.split("-");
-      const parsed = JSON.parse(report);
-      videoPaused = !parsed.videoOn;
-      micMuted = !parsed.audioOn;
-      presenting = parsed.presenting;
-      initialized = true;
-      pauseImage = parsed.pauseImage;
-      updatePeerStates(peerId, parsed);
+      const parsedObject = JSON.parse(report);
+      parsedObject.initialized = true;
+      updatePeerState(peerId, parsedObject);
     };
 
     //receive data from peer:
     connection.ondatachannel = (e) => {
       e.channel.onmessage = (m) => {
+        console.log("receiving new data from peer", m.data);
         if (m.data.includes("report")) {
           unpackReport(m.data);
         }
         if (m.data.includes("camera-muted")) {
-          videoPaused = true;
+          console.log("camera muted");
           const [, , parsed] = m.data.split("-");
           pauseImage = parsed;
-          updatePeerStates(peerId, {
-            ...peerStates[peerId],
+          updatePeerState(peerId, {
+            ...peerState,
             pauseImage: parsed,
-            videoOn: !peerStates[peerId].videoOn,
+            videoOn: false,
           });
         }
         if (m.data.includes("startScreenShare")) {
@@ -87,16 +121,22 @@
         switch (m.data) {
           case "camera-live":
             videoPaused = false;
-            updatePeerStates(peerId, {
-              ...peerStates[peerId],
-              videoOn: !peerStates[peerId].videoOn,
+            updatePeerState(peerId, {
+              ...peerState,
+              videoOn: true,
             });
             break;
           case "mic-muted":
-            micMuted = true;
+            updatePeerState(peerId, {
+              ...peerState,
+              audioOn: false,
+            });
             break;
           case "mic-live":
-            micMuted = false;
+            updatePeerState(peerId, {
+              ...peerState,
+              audioOn: true,
+            });
             break;
           case "stopScreenShare":
             updatePresenter(null);
@@ -105,25 +145,51 @@
       };
     };
   });
+
+  if (peerStates[peerId]?.initialized) {
+    initialized = true;
+    console.log("initialized");
+  }
+
+  onMount(() => {
+    console.log("mounted a peer in gallery view");
+  });
+
+  $: if (connection) {
+    videoElement = videoElement;
+  }
+
+  const showInfo = () => {
+    console.log("initialized: ", initialized);
+    console.log("video :");
+  };
 </script>
 
-<div
-  class="peer-media-square"
-  style="display: {initialized ? 'block' : 'none'};"
->
-  <div class="border small" bind:this={square}></div>
+<div class="peer-media-square">
+  <div class="border" bind:this={square}></div>
   <div class="media-container">
     <video
-      class="video-small"
+      class="video-normal"
+      class:fade-out={videoPaused}
       bind:this={videoElement}
       autoplay
       muted
-      class:fade-in={!videoPaused}
+      playsinline
     >
       <track kind="captions" />
     </video>
-
-    <img src={pauseImage} class="small" alt="" class:fade-out={!videoPaused} />
+    <img
+      src={pauseImage}
+      class="pause-image"
+      class:fade-out={!videoPaused}
+      alt=""
+    />
+    <div
+      class="connecting centered"
+      style="display: {initialized ? 'none' : 'flex'}"
+    >
+      Connecting...
+    </div>
   </div>
   <div
     class="mic-symbol centered"
@@ -133,22 +199,9 @@
   </div>
 </div>
 
-<div
-  class="connecting centered small-text"
-  style="display: {initialized ? 'none;' : 'flex;'}; font-size: 10pt;}"
->
-  Connecting...
-</div>
-
 <style>
   .peer-media-square {
     position: relative;
-  }
-
-  .media-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
   }
 
   .border {
@@ -157,6 +210,19 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 3;
+  }
+
+  .connecting {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
   }
 
   .mic-symbol {
@@ -171,41 +237,36 @@
     padding-left: 1px;
   }
 
-  .video-small {
+  .media-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-normal {
+    /* width: 100%; */
+    height: 100%;
     width: 200px;
-    max-height: 18vh;
-    min-height: 125px;
-    aspect-ratio: 4/3;
     object-fit: cover;
-    transition: ease-in 0.5s;
-    transition: ease-out 0s;
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+    z-index: 5;
   }
-  .small-text {
-    font-size: 10pt;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 200px;
-  }
+
   img {
+    aspect-ratio: 4/3;
     position: absolute;
     top: 0;
     left: 0;
-    aspect-ratio: 4/3;
     width: 480px;
     width: 100%;
     height: 100%;
+    object-fit: fill;
     opacity: 1;
-    transition: ease-out 0.5s;
+    transition: opacity 0.5s ease-out;
   }
-  .fade-in {
-    opacity: 1;
-  }
+
   .fade-out {
     opacity: 0;
-  }
-  .small {
-    width: 200px;
-    object-fit: fill;
   }
 </style>

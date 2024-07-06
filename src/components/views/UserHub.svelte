@@ -1,13 +1,12 @@
 <script>
   // @ts-nocheck
 
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, tick } from "svelte";
   import { clientId } from "../../../stores/auth_store";
   import { checkPeerConnection } from "../../../utils/ws/checkPeerConnection";
   import { testAndPrint } from "../../../utils/hub/testAndPrint";
   import { testIncomingMedia } from "../../../utils/hub/testMedia";
   import { addPeersToLocal } from "../../../utils/hub/addClientsToLocal";
-  import PeerMedia from "../media/PeerMedia.svelte";
   import MicIcon from "../../assets/MicIcon.svelte";
   import CameraOn from "../../assets/CameraOn.svelte";
   import MicOff from "../../assets/MicOff.svelte";
@@ -92,7 +91,6 @@
 
   const unsubscribe3 = userPreferences.subscribe((value) => {
     userPrefs = value;
-    console.log(value);
   });
 
   const unsubscribe4 = audioContextStore.subscribe((value) => {
@@ -107,6 +105,10 @@
       : micOff(peerConnections, audioStream);
     videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
   };
+
+  $: {
+    console.log("top level peerState: ", peerStates);
+  }
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -405,14 +407,26 @@
   const handleMic = () => {
     if (audioOn) {
       micOff(peerConnections, audioStream);
-      broadcastToRoom(dataChannels, "mic-muted");
       audioOn = false;
+      console.log(
+        "updating my selection.  audio:  ",
+        audioOn,
+        "video :",
+        videoOn,
+      );
       updateUserSelection(audioOn, videoOn);
+      broadcastToRoom(dataChannels, "mic-muted");
     } else {
       micOn(peerConnections, audioStream);
-      broadcastToRoom(dataChannels, "mic-live");
       audioOn = true;
+      console.log(
+        "updating my selection.  audio:  ",
+        audioOn,
+        "video :",
+        videoOn,
+      );
       updateUserSelection(audioOn, videoOn);
+      broadcastToRoom(dataChannels, "mic-live");
     }
   };
 
@@ -420,14 +434,27 @@
     if (videoOn) {
       videoStream = await cameraOff(peerConnections);
       pauseImage = chooseGif();
-      broadcastToRoom(dataChannels, `camera-muted-${pauseImage}`);
       videoOn = false;
+      console.log(
+        "updating my selection.  audio:  ",
+        audioOn,
+        "video :",
+        videoOn,
+      );
       updateUserSelection(audioOn, videoOn);
+      broadcastToRoom(dataChannels, `camera-muted-${pauseImage}`);
     } else {
       videoStream = await cameraOn(peerConnections);
       broadcastToRoom(dataChannels, "camera-live");
       videoOn = true;
+      console.log(
+        "updating my selection.  audio:  ",
+        audioOn,
+        "video :",
+        videoOn,
+      );
       updateUserSelection(audioOn, videoOn);
+      broadcastToRoom(dataChannels, "camera-live");
     }
   };
 
@@ -469,11 +496,6 @@
   const updatePresenter = (value) => {
     presenter = value;
   };
-
-  const updatePeerStates = (id, value) => {
-    peerStates[id] = value;
-    peerStates = { ...peerStates };
-  };
 </script>
 
 <div class="user-hub">
@@ -487,30 +509,26 @@
       {showPeerConnections}
     />
   {/if}
-  {#if userPrefs.view === "speaker"}
-    <SpeakerView
-      {peerConnections}
-      {audioOn}
-      {videoOn}
-      {pauseImage}
-      {updatePeerStates}
-      {peerStates}
-      {videoStream}
-      {myId}
-    />
-  {/if}
-  {#if userPrefs.view === "gallery"}
-    <GalleryView
-      {myId}
-      {audioOn}
-      {videoOn}
-      {pauseImage}
-      {peerStates}
-      {peerConnections}
-      {updatePeerStates}
-      {videoStream}
-    />
-  {/if}
+  {#key userPrefs.view}
+    {#if userPrefs.view === "speaker"}
+      <SpeakerView
+        {peerConnections}
+        {audioOn}
+        {videoOn}
+        {pauseImage}
+        {videoStream}
+        {myId}
+      />
+    {:else}
+      <GalleryView
+        {audioOn}
+        {videoOn}
+        {pauseImage}
+        {peerConnections}
+        {videoStream}
+      />
+    {/if}
+  {/key}
 
   <BottomToolBar
     {audioOn}

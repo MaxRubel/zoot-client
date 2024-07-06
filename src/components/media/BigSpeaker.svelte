@@ -1,18 +1,28 @@
 <script>
   import MicOffRed from "../../assets/MicOffRed.svelte";
+  import { peerStates } from "../../../stores/media/peerStates";
+  import { onDestroy } from "svelte";
 
   export let connection;
   export let peerId;
   export let small;
-  export let peerStates;
 
   let videoElement;
   let square;
   let videoPaused = false;
   let micMuted = false;
   let pauseImage = "/relax2.webp";
+  let peerState;
 
-  $: if (connection && peerStates && videoElement) {
+  const unsubscribe = peerStates.subscribe((value) => {
+    if (value[peerId]) {
+      peerState = value[peerId];
+    }
+  });
+
+  onDestroy(unsubscribe);
+
+  $: if (connection && peerState && videoElement) {
     updateVideoStream();
   }
 
@@ -21,8 +31,8 @@
     if (remoteStreams.length > 0 && videoElement) {
       videoElement.srcObject = remoteStreams[0];
     }
-    videoPaused = !peerStates[peerId].videoOn;
-    pauseImage = peerStates[peerId].pauseImage;
+    videoPaused = !peerState.videoOn;
+    pauseImage = peerState.pauseImage;
   }
 </script>
 

@@ -11,6 +11,7 @@ export const userSelection = writable(getInitialState());
 export const updateUserSelection = (audioOn, videoOn) => {
     userSelection.set({ audioOn, videoOn });
     localStorage.setItem('userSelection', JSON.stringify({ audioOn, videoOn }));
+    console.log("received change")
 };
 
 userSelection.subscribe(value => {
