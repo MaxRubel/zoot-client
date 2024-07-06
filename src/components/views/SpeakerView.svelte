@@ -38,10 +38,6 @@
   const iAmSpeaking = (id) => {
     presenterId = id;
   };
-  $: console.log(presenterId);
-  $: {
-    console.log("this person is now speaking: ", presenterId);
-  }
 
   $: {
     if (presenterId) {
@@ -62,8 +58,6 @@
       videoStream2 = videoStream.clone();
     }
   }
-
-  $: console.log("presenter: ", presenter);
 </script>
 
 <div class="presenter-view-container">

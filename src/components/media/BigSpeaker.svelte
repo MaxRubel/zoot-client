@@ -28,10 +28,6 @@
       videoElement.srcObject = remoteStreams[0];
     }
   }
-
-  onMount(() => {
-    console.log("new speaker here!");
-  });
 </script>
 
 <div class="peer-media-square">

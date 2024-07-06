@@ -26,10 +26,6 @@
       videoElement.srcObject = videoStream;
     }
   }
-
-  onMount(() => {
-    console.log("here i am on the big speaker");
-  });
 </script>
 
 <div
