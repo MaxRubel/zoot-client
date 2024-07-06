@@ -38,6 +38,10 @@
   const iAmSpeaking = (id) => {
     presenterId = id;
   };
+  $: console.log(presenterId);
+  $: {
+    console.log("this person is now speaking: ", presenterId);
+  }
 
   $: {
     if (presenterId) {
@@ -58,6 +62,8 @@
       videoStream2 = videoStream.clone();
     }
   }
+
+  $: console.log("presenter: ", presenter);
 </script>
 
 <div class="presenter-view-container">
@@ -85,15 +91,17 @@
   </div>
 
   <div class="speaker-div">
-    {#if presenterId && presenterId === myId && !userPrefs.hideSelf}
-      <LocalVideoSpeaking
-        {audioOn}
-        {videoOn}
-        {pauseImage}
-        videoStream={videoStream2}
-      />
-    {:else}
-      <BigSpeaker connection={presenter} peerId={presenterId} small={false} />
+    {#if presenterId}
+      {#if presenterId === myId}
+        <LocalVideoSpeaking
+          {audioOn}
+          {videoOn}
+          {pauseImage}
+          videoStream={videoStream2}
+        />
+      {:else}
+        <BigSpeaker connection={presenter} peerId={presenterId} small={false} />
+      {/if}
     {/if}
   </div>
 </div>
@@ -116,19 +124,21 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     max-height: 18vh;
-    min-height: 125px;
+    min-height: 132px;
+    padding-bottom: 12px;
+    justify-content: center;
   }
 
   .scroll-button {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.7);
     color: white;
     border: 1px solid rgb(109, 109, 109);
     padding: 15px 5px;
     cursor: pointer;
-    z-index: 10;
+    z-index: 100;
   }
 
   .scroll-button:active {
@@ -144,7 +154,7 @@
   }
 
   .speaker-div {
-    margin-top: 20px;
+    margin-top: 3px;
     width: 100%;
     height: 50vh;
   }
