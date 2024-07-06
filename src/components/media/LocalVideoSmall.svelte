@@ -57,7 +57,7 @@
   }
 </script>
 
-<div
+<!-- <div
   class="small-row-square"
   style="display: {userPrefs.hideSelf ? 'none' : 'block'}"
 >
@@ -86,52 +86,83 @@
   >
     <MicOffRed />
   </div>
+</div> -->
+
+<div class="peer-media-square">
+  <div class="border" bind:this={square}></div>
+  <div class="media-container">
+    <video
+      class="video-normal"
+      style="display: {videoOn ? 'block' : 'none'}"
+      bind:this={videoElement}
+      autoplay
+      muted
+      playsinline
+    >
+      <track kind="captions" />
+    </video>
+    <img
+      src={pauseImage}
+      class="pause-image"
+      style="display: {videoOn ? 'none' : 'block'}"
+      alt=""
+    />
+  </div>
+  <div
+    class="mic-symbol centered"
+    style="display: {audioOn ? 'none' : 'block'}"
+  >
+    <MicOffRed />
+  </div>
 </div>
 
 <style>
-  .image-small {
-    flex: 0 0 auto;
-    width: 200px;
-    height: auto;
-    aspect-ratio: 4/3;
-    object-fit: fill;
-    max-width: 100%;
-    max-height: 100%;
-  }
-
-  .paused-image {
-    max-height: 18vh;
-    margin: 0px;
-    min-height: 125px;
-  }
-
-  .small-video {
-    flex: 0 0 auto;
-    width: 200px;
-    max-height: 18vh;
-    min-height: 125px;
-    aspect-ratio: 4/3;
-    object-fit: cover;
+  .peer-media-square {
+    position: relative;
   }
 
   .border {
     position: absolute;
-    height: 100%;
+    top: 0;
+    left: 0;
     width: 100%;
-    bottom: 0;
-    left: 36px;
-    width: 200px;
-    z-index: 10;
+    height: 100%;
+    z-index: 20;
   }
 
   .mic-symbol {
     position: absolute;
-    bottom: 4px;
-    left: 42px;
-    position: absolute;
+    bottom: 3px;
+    left: 10px;
     color: rgb(30, 30, 30);
     background-color: rgb(248, 250, 285, 0.7);
     border-radius: 7px;
-    padding-bottom: 3px;
+    padding: 1px 0px;
+    padding-bottom: 6px;
+    padding-left: 1px;
+  }
+
+  .media-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-normal {
+    width: 200px;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+    z-index: 5;
+  }
+
+  img {
+    aspect-ratio: 4/3;
+
+    width: 200px;
+    height: 100%;
+    object-fit: fill;
+    opacity: 1;
   }
 </style>

@@ -1,7 +1,7 @@
 <script>
   import MicOffRed from "../../assets/MicOffRed.svelte";
   import { clientId } from "../../../stores/auth_store";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { userPreferences } from "../../../stores/media/userPreferences";
 
   export let pauseImage;

@@ -1,17 +1,13 @@
 <script>
   import MicOffRed from "../../assets/MicOffRed.svelte";
   import { peerStates } from "../../../stores/media/peerStates";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   export let connection;
   export let peerId;
   export let small;
 
   let videoElement;
-  let square;
-  let videoPaused = false;
-  let micMuted = false;
-  let pauseImage = "/relax2.webp";
   let peerState;
 
   const unsubscribe = peerStates.subscribe((value) => {
@@ -31,17 +27,14 @@
     if (remoteStreams.length > 0 && videoElement) {
       videoElement.srcObject = remoteStreams[0];
     }
-    videoPaused = !peerState.videoOn;
-    pauseImage = peerState.pauseImage;
   }
 </script>
 
 <div class="peer-media-square">
-  <div class="border {small && 'small'}" bind:this={square}></div>
   <video
     bind:this={videoElement}
     class="video-big"
-    style="display: {videoPaused ? 'none' : 'block'}"
+    style="display: {peerState?.videoOn ? 'block' : 'none'}"
     autoplay
     muted
   >
@@ -49,14 +42,14 @@
   </video>
 
   <img
-    src={pauseImage}
-    style="display: {videoPaused ? 'block' : 'none'}"
+    src={peerState?.pauseImage}
+    style="display: {peerState?.videoOn ? 'none' : 'block'}"
     class={small ? "image-small" : "image-large"}
     alt=""
   />
   <div
     class="mic-symbol centered"
-    style="display: {micMuted ? 'block' : 'none'}"
+    style="display: {peerState?.audioOn ? 'none' : 'block'}"
   >
     <MicOffRed />
   </div>
@@ -68,14 +61,6 @@
     height: 100%;
     overflow: hidden;
     position: relative;
-  }
-
-  .border {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
   }
 
   .mic-symbol {
@@ -103,21 +88,11 @@
     left: 0;
   }
 
-  .small-text {
-    font-size: 10pt;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 200px;
-  }
   img {
     aspect-ratio: 4/3;
     width: 480px;
     width: 100%;
     height: 100%;
     object-fit: fill;
-  }
-  .small {
-    width: 200px;
   }
 </style>

@@ -245,10 +245,9 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 480px;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: fill;
     opacity: 1;
     transition: opacity 0.5s ease-out;
   }
