@@ -33,7 +33,7 @@
 
   $: {
     if (square) {
-      if (loudest?.id === myId && loudest?.level > 0.1) {
+      if (loudest?.id === myId && loudest?.level > 0.007) {
         square.style.border = "3px solid rgb(240, 248, 255, .4)";
         iAmSpeaking(myId);
       } else {
@@ -121,6 +121,7 @@
     bottom: 0;
     left: 36px;
     width: 200px;
+    z-index: 10;
   }
 
   .mic-symbol {

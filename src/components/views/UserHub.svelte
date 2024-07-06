@@ -48,6 +48,7 @@
   import ViewRooms from "./ViewRooms.svelte";
   import GalleryView from "./GalleryView.svelte";
   import SpeakerView from "./SpeakerView.svelte";
+  import { deletePeerState } from "../../../stores/media/peerStates";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -288,6 +289,7 @@
       dataChannels[peerId].close();
       delete peerConnections[peerId];
       delete dataChannels[peerId];
+      deletePeerState(peerId);
       peerConnections = { ...peerConnections };
       dataChannels = { ...dataChannels };
     }
@@ -404,23 +406,11 @@
     if (audioOn) {
       micOff(peerConnections, audioStream);
       audioOn = false;
-      console.log(
-        "updating my selection.  audio:  ",
-        audioOn,
-        "video :",
-        videoOn,
-      );
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "mic-muted");
     } else {
       micOn(peerConnections, audioStream);
       audioOn = true;
-      console.log(
-        "updating my selection.  audio:  ",
-        audioOn,
-        "video :",
-        videoOn,
-      );
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "mic-live");
     }
@@ -431,24 +421,11 @@
       videoStream = await cameraOff(peerConnections);
       pauseImage = chooseGif();
       videoOn = false;
-      console.log(
-        "updating my selection.  audio:  ",
-        audioOn,
-        "video :",
-        videoOn,
-      );
       updateUserSelection(audioOn, videoOn);
-      broadcastToRoom(dataChannels, `camera-muted-${pauseImage}`);
+      broadcastToRoom(dataChannels, `cameramuted-${pauseImage}`);
     } else {
       videoStream = await cameraOn(peerConnections);
-      broadcastToRoom(dataChannels, "camera-live");
       videoOn = true;
-      console.log(
-        "updating my selection.  audio:  ",
-        audioOn,
-        "video :",
-        videoOn,
-      );
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "camera-live");
     }
@@ -505,26 +482,24 @@
       {showPeerConnections}
     />
   {/if}
-  {#key userPrefs.view}
-    {#if userPrefs.view === "speaker"}
-      <SpeakerView
-        {peerConnections}
-        {audioOn}
-        {videoOn}
-        {pauseImage}
-        {videoStream}
-        {myId}
-      />
-    {:else}
-      <GalleryView
-        {audioOn}
-        {videoOn}
-        {pauseImage}
-        {peerConnections}
-        {videoStream}
-      />
-    {/if}
-  {/key}
+  {#if userPrefs.view === "speaker"}
+    <SpeakerView
+      {peerConnections}
+      {audioOn}
+      {videoOn}
+      {pauseImage}
+      {videoStream}
+      {myId}
+    />
+  {:else}
+    <GalleryView
+      {audioOn}
+      {videoOn}
+      {pauseImage}
+      {peerConnections}
+      {videoStream}
+    />
+  {/if}
 
   <BottomToolBar
     {audioOn}

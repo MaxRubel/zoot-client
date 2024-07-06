@@ -51,6 +51,7 @@
     height: 70px;
     width: 100vw;
     min-width: 350px;
+    z-index: 30;
   }
 
   .clear {
