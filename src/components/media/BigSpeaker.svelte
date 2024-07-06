@@ -88,21 +88,11 @@
     left: 0;
   }
 
-  .small-text {
-    font-size: 10pt;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 200px;
-  }
   img {
     aspect-ratio: 4/3;
     width: 480px;
     width: 100%;
     height: 100%;
     object-fit: fill;
-  }
-  .small {
-    width: 200px;
   }
 </style>
