@@ -32,7 +32,7 @@
 
   $: {
     if (square) {
-      if (loudest?.id === myId && loudest?.level > 0.1) {
+      if (loudest?.id === myId && loudest?.level > 0.007) {
         square.style.border = "3px solid rgb(240, 248, 255, .4)";
       } else {
         square.style.border = "none";
@@ -106,7 +106,7 @@
   .image-gallery {
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;
@@ -115,7 +115,7 @@
   .large-video {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;

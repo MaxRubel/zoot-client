@@ -13,14 +13,9 @@
   export let connection;
   export let peerId;
   export let iAmSpeaking;
-
   let videoElement;
   let square;
-  let videoPaused = false;
-  let micMuted = false;
   let presenting = false;
-  let initialized = false;
-  let pauseImage = "/relax2.webp";
   let loudest;
   let isVideoSetup = false;
   let peerState;
@@ -32,10 +27,6 @@
   const unsubscribe2 = peerStates.subscribe((value) => {
     if (value[peerId]) {
       peerState = value[peerId];
-      micMuted = !peerState.audioOn;
-      videoPaused = !peerState.videoOn;
-      initialized = peerState.initialized;
-      pauseImage = peerState.pauseImage;
     }
   });
 
@@ -60,13 +51,22 @@
     }
   };
 
-  $: if (connection && videoElement && initialized && !isVideoSetup) {
+  $: if (
+    connection &&
+    videoElement &&
+    peerState?.initialized &&
+    !isVideoSetup
+  ) {
     reSetupVideo();
   }
 
   onDestroy(() => {
     unsubscribe();
     unsubscribe2();
+    if (connection) {
+      connection.ontrack = null;
+      connection.ondatachannel = null;
+    }
   });
 
   onMount(() => {
@@ -82,7 +82,7 @@
         event.streams &&
         event.streams[0] &&
         event.track.kind === "video" &&
-        !initialized
+        !peerState?.initialized
       ) {
         videoElement.srcObject = event.streams[0];
       }
@@ -91,8 +91,12 @@
     const unpackReport = (data) => {
       const [_, report] = data.split("-");
       const parsedObject = JSON.parse(report);
-      parsedObject.initialized = true;
-      updatePeerState(peerId, parsedObject);
+
+      updatePeerState(peerId, (currentState) => ({
+        ...currentState,
+        ...parsedObject,
+        initialized: true,
+      }));
     };
 
     //receive data from peer:
@@ -101,39 +105,39 @@
         if (m.data.includes("report")) {
           unpackReport(m.data);
         }
-        if (m.data.includes("camera-muted")) {
-          console.log("camera muted");
-          const [, , parsed] = m.data.split("-");
-          pauseImage = parsed;
-          updatePeerState(peerId, {
-            ...peerState,
+
+        if (m.data.includes("cameramuted")) {
+          const [, parsed] = m.data.split("-");
+          updatePeerState(peerId, (currentState) => ({
+            ...currentState,
             pauseImage: parsed,
             videoOn: false,
-          });
+          }));
         }
+
         if (m.data.includes("startScreenShare")) {
           const [, id] = m.data.split("-");
           updatePresenter(id);
         }
+
         switch (m.data) {
           case "camera-live":
-            videoPaused = false;
-            updatePeerState(peerId, {
-              ...peerState,
+            updatePeerState(peerId, (currentState) => ({
+              ...currentState,
               videoOn: true,
-            });
+            }));
             break;
           case "mic-muted":
-            updatePeerState(peerId, {
-              ...peerState,
+            updatePeerState(peerId, (currentState) => ({
+              ...currentState,
               audioOn: false,
-            });
+            }));
             break;
           case "mic-live":
-            updatePeerState(peerId, {
-              ...peerState,
+            updatePeerState(peerId, (currentState) => ({
+              ...currentState,
               audioOn: true,
-            });
+            }));
             break;
           case "stopScreenShare":
             updatePresenter(null);
@@ -142,10 +146,6 @@
       };
     };
   });
-
-  if (peerStates[peerId]?.initialized) {
-    initialized = true;
-  }
 
   $: if (connection) {
     videoElement = videoElement;
@@ -157,7 +157,7 @@
   <div class="media-container">
     <video
       class="video-normal"
-      class:fade-out={videoPaused}
+      class:fade-out={!peerState?.videoOn}
       bind:this={videoElement}
       autoplay
       muted
@@ -166,21 +166,22 @@
       <track kind="captions" />
     </video>
     <img
-      src={pauseImage}
+      src={peerState?.pauseImage}
       class="pause-image"
-      class:fade-out={!videoPaused}
+      class:fade-out={peerState?.videoOn}
+      style="display: {peerState?.initialized ? 'block' : 'none'}"
       alt=""
     />
     <div
       class="connecting centered"
-      style="display: {initialized ? 'none' : 'flex'}"
+      style="display: {peerState?.initialized ? 'none' : 'flex'}"
     >
       Connecting...
     </div>
   </div>
   <div
     class="mic-symbol centered"
-    style="display: {micMuted ? 'block' : 'none'}"
+    style="display: {!peerState?.audioOn ? 'block' : 'none'}"
   >
     <MicOffRed />
   </div>
@@ -197,7 +198,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 3;
+    z-index: 10;
   }
 
   .connecting {
@@ -231,8 +232,8 @@
   }
 
   .video-normal {
-    height: 100%;
     width: 200px;
+    height: 100%;
     object-fit: cover;
     opacity: 1;
     transition: opacity 0.5s ease-in;
@@ -247,7 +248,7 @@
     width: 480px;
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: cover;
     opacity: 1;
     transition: opacity 0.5s ease-out;
   }
