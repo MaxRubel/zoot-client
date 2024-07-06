@@ -53,7 +53,6 @@
       .getReceivers()
       .find((receiver) => receiver.track.kind === "video")?.track;
     if (videoTrack) {
-      console.log("video reset");
       videoElement.srcObject = new MediaStream([videoTrack]);
       videoElement.autoplay = true;
     }
@@ -63,13 +62,6 @@
     reSetupVideo();
   }
 
-  // $: console.log("is video setup?", isVideoSetup);
-  // $: console.log("is there connection? ", connection);
-  // $: console.log("is there video element? ", videoElement);
-  // $: {
-  //   console.log("am i initialized? ", initialized);
-  // }
-
   onDestroy(() => {
     unsubscribe();
     unsubscribe2();
@@ -78,7 +70,6 @@
   onMount(() => {
     const audioContext = getAudioContext();
     connection.ontrack = (event) => {
-      console.log("setting up peer media");
       if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
         const sourceNode = audioContext.createMediaStreamSource(audioStream);
@@ -151,23 +142,9 @@
     };
   });
 
-  if (peerStates[peerId]?.initialized) {
-    initialized = true;
-    console.log("initialized");
-  }
-
-  onMount(() => {
-    console.log("mounted a peer in gallery view");
-  });
-
   $: if (connection) {
     videoElement = videoElement;
   }
-
-  const showInfo = () => {
-    console.log("initialized: ", initialized);
-    console.log("video :");
-  };
 </script>
 
 <div class="peer-media-square">

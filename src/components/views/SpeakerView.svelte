@@ -58,12 +58,6 @@
       videoStream2 = videoStream.clone();
     }
   }
-
-  $: console.log(
-    "there are ",
-    Object.values(peerConnections).length,
-    "other peers in this speaker view",
-  );
 </script>
 
 <div class="presenter-view-container">
