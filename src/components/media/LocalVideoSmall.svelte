@@ -9,7 +9,7 @@
   export let videoOn;
   export let audioOn;
   export let iAmSpeaking;
-  export let videoStream;
+  export let localVideo;
 
   let myId;
   let loudest;
@@ -51,8 +51,8 @@
   });
 
   $: {
-    if (videoElement && videoStream) {
-      videoElement.srcObject = videoStream;
+    if (videoElement && localVideo) {
+      videoElement.srcObject = localVideo;
     }
   }
 </script>

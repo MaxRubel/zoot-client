@@ -1,12 +1,12 @@
 <script>
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { userPreferences } from "../../../stores/media/userPreferences";
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
-  import BigSpeaker from "../media/BigSpeaker.svelte";
   import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
-  import LocalVideoSpeaking from "../media/LocalVideoSpeaking.svelte";
   import PeerMediaSmall from "../media/PeerMediaSmall.svelte";
+  import ScreenSharer from "../media/ScreenSharer.svelte";
+  import YouArePresenting from "../YouArePresenting.svelte";
 
   export let peerConnections;
   export let audioOn;
@@ -16,14 +16,12 @@
   export let myId;
   export let receive_end_screenshare;
   export let updatePresenter;
+  export let screen_sharer;
 
-  let presenterId = null;
   let presenter = null;
   let userPrefs;
+  let presenterId;
 
-  onMount(() => {
-    console.log(" i was in fact created");
-  });
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
     container.scrollBy({ left: -450, behavior: "smooth" });
@@ -44,10 +42,11 @@
     presenterId = id;
   };
 
+  console.log(myId);
   $: {
-    if (presenterId) {
+    if (screen_sharer) {
       Object.entries(peerConnections).forEach(([peerId, peer]) => {
-        if (peerId === presenterId) {
+        if (peerId === screen_sharer) {
           presenter = peer;
         }
       });
@@ -95,18 +94,11 @@
     </button>
   </div>
 
-  <div class="speaker-div">
-    {#if presenterId}
-      {#if presenterId === myId}
-        <LocalVideoSpeaking
-          {audioOn}
-          {videoOn}
-          {pauseImage}
-          localVideo={videoStream2}
-        />
-      {:else}
-        <BigSpeaker connection={presenter} peerId={presenterId} small={false} />
-      {/if}
+  <div class="presenter-div">
+    {#if myId !== screen_sharer}
+      <ScreenSharer connection={presenter} peerId={screen_sharer} />
+    {:else}
+      <YouArePresenting />
     {/if}
   </div>
 </div>
@@ -115,6 +107,7 @@
   .presenter-view-container {
     margin-top: 5px;
   }
+
   .scroll-wrapper {
     position: relative;
     width: 100%;
@@ -125,13 +118,14 @@
     display: flex;
     overflow-x: auto;
     gap: 15px;
-    padding: 0px 35px;
+    padding: 0px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    max-height: 18vh;
-    min-height: 132px;
+    height: 11vh;
     padding-bottom: 12px;
+    margin-bottom: 12px;
     justify-content: center;
+    border-bottom: 1px solid rgb(104, 104, 104);
   }
 
   .scroll-button {
@@ -158,9 +152,11 @@
     right: 0;
   }
 
-  .speaker-div {
+  .presenter-div {
     margin-top: 3px;
-    width: 90vw;
-    height: 50vh;
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
   }
 </style>

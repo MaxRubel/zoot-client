@@ -1,10 +1,11 @@
 <script>
   import { peerStates } from "../../stores/media/peerStates";
 
-  $: storeContent = JSON.stringify($peerStates, null, 2);
+  $: peerState = JSON.stringify($peerStates, null, 2);
+  // $: storeContent = JSON.stringify($peerStates, null, 2);
 </script>
 
-<div class="store-content centered">{storeContent}</div>
+<div class="store-content centered">{peerState}</div>
 
 <style>
   .store-content {

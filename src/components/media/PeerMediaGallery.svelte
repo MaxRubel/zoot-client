@@ -12,6 +12,8 @@
 
   export let connection;
   export let peerId;
+  export let receive_end_screenshare;
+  export let updatePresenter;
 
   let videoElement;
   let square;
@@ -115,7 +117,7 @@
         }
 
         if (m.data.includes("startScreenShare")) {
-          const [, id] = m.data.split("-");
+          const [, id] = m.data.split("&");
           updatePresenter(id);
         }
 
@@ -141,6 +143,9 @@
           case "stopScreenShare":
             updatePresenter(null);
             break;
+          case "endscreenshare":
+            receive_end_screenshare();
+            return;
         }
       };
     };

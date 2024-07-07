@@ -6,15 +6,22 @@
   export let audioOn;
   export let videoOn;
   export let pauseImage;
-  export let videoStream;
+  export let localVideo;
+  export let receive_end_screenshare;
+  export let updatePresenter;
 </script>
 
 <div class="top">
   <div id="video-container" class="top">
-    <LocalVideoGallery {audioOn} {videoOn} {pauseImage} {videoStream} />
+    <LocalVideoGallery {audioOn} {videoOn} {pauseImage} {localVideo} />
 
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-      <PeerMediaGallery {connection} {peerId} />
+      <PeerMediaGallery
+        {connection}
+        {peerId}
+        {receive_end_screenshare}
+        {updatePresenter}
+      />
     {/each}
   </div>
 </div>

@@ -1,8 +1,8 @@
 export const cameraOn = async (peerConnections) => {
-  let videoStream;
+  let localVideo;
   try {
-    videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    videoStream.getTracks().forEach((t) => {
+    localVideo = await navigator.mediaDevices.getUserMedia({ video: true });
+    localVideo.getTracks().forEach((t) => {
       t.enabled = true
     });
   } catch (error) {
@@ -17,5 +17,5 @@ export const cameraOn = async (peerConnections) => {
     }
   });
 
-  return videoStream;
+  return localVideo;
 };

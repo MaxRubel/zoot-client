@@ -15,6 +15,6 @@ export async function screenShareOff(peerConnections, dataChannels) {
     }
   }
   Object.values(dataChannels).forEach((chan) => {
-    chan.send(`stopScreenShare`)
+    chan.send(`endscreenshare`)
   })
 }
