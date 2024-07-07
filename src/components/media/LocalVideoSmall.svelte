@@ -32,7 +32,6 @@
     if (square) {
       if (loudest?.id === myId && loudest?.level > 0.007) {
         square.style.border = "3px solid rgb(240, 248, 255, .4)";
-        console.log("i am speaking");
         iAmSpeaking(myId);
       } else {
         square.style.border = "none";
