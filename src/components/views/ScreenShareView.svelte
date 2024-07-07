@@ -1,6 +1,6 @@
 <script>
   import { onDestroy } from "svelte";
-  import { userPreferences } from "../../../stores/media/userPreferences";
+  import { userState } from "../../../stores/media/userState";
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
   import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
@@ -9,17 +9,13 @@
   import YouArePresenting from "../YouArePresenting.svelte";
 
   export let peerConnections;
-  export let audioOn;
-  export let videoOn;
-  export let pauseImage;
   export let localVideo;
   export let myId;
   export let receive_end_screenshare;
-  export let updatePresenter;
-  export let screen_sharer;
+  export let update_screen_sharer;
+  export let screen_sharer_id;
 
   let presenter = null;
-  let userPrefs;
   let presenterId;
 
   function scrollLeft() {
@@ -32,21 +28,14 @@
     container.scrollBy({ left: 450, behavior: "smooth" });
   }
 
-  const unsubscribe = userPreferences.subscribe((value) => {
-    userPrefs = value;
-  });
-
-  onDestroy(unsubscribe);
-
   const iAmSpeaking = (id) => {
     presenterId = id;
   };
 
-  console.log(myId);
   $: {
-    if (screen_sharer) {
+    if (screen_sharer_id) {
       Object.entries(peerConnections).forEach(([peerId, peer]) => {
-        if (peerId === screen_sharer) {
+        if (peerId === screen_sharer_id) {
           presenter = peer;
         }
       });
@@ -71,20 +60,14 @@
     </button>
 
     <div class="scroll-container">
-      <LocalVideoSmall
-        {iAmSpeaking}
-        {audioOn}
-        {videoOn}
-        {pauseImage}
-        localVideo={videoStream1}
-      />
+      <LocalVideoSmall {iAmSpeaking} localVideo={videoStream1} />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMediaSmall
           {connection}
           {peerId}
           {iAmSpeaking}
           {receive_end_screenshare}
-          {updatePresenter}
+          {update_screen_sharer}
         />
       {/each}
     </div>
@@ -95,8 +78,8 @@
   </div>
 
   <div class="presenter-div">
-    {#if myId !== screen_sharer}
-      <ScreenSharer connection={presenter} peerId={screen_sharer} />
+    {#if myId !== screen_sharer_id}
+      <ScreenSharer connection={presenter} peerId={screen_sharer_id} />
     {:else}
       <YouArePresenting />
     {/if}

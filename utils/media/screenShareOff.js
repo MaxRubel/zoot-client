@@ -1,3 +1,5 @@
+import { updateUserState } from "../../stores/media/userState";
+
 export async function screenShareOff(peerConnections, dataChannels) {
   const cameraStream = await navigator.mediaDevices.getUserMedia({
     video: true
@@ -17,4 +19,5 @@ export async function screenShareOff(peerConnections, dataChannels) {
   Object.values(dataChannels).forEach((chan) => {
     chan.send(`endscreenshare`)
   })
+  updateUserState("sharing_screen", null)
 }

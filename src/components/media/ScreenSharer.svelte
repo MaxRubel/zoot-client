@@ -29,9 +29,9 @@
   }
 
   onMount(() => {
-    console.log(connection);
-    console.log(peerState);
-    console.log(videoElement);
+    // console.log(connection);
+    // console.log(peerState);
+    // console.log(videoElement);
   });
 </script>
 

@@ -1,20 +1,16 @@
 <script>
   import MicOffRed from "../../assets/MicOffRed.svelte";
-  import { clientId } from "../../../stores/auth_store";
-  import { onDestroy, onMount } from "svelte";
-  import { userPreferences } from "../../../stores/media/userPreferences";
+  import { onDestroy } from "svelte";
+  import { userState } from "../../../stores/media/userState";
 
-  export let pauseImage;
-  export let videoOn;
-  export let audioOn;
   export let localVideo;
 
   let square;
   let videoElement;
-  let userPrefs;
+  let user_state;
 
-  const unsubscribe3 = userPreferences.subscribe((value) => {
-    userPrefs = value;
+  const unsubscribe3 = userState.subscribe((value) => {
+    user_state = value;
   });
 
   onDestroy(() => {
@@ -30,14 +26,14 @@
 
 <div
   class="peer-media-square"
-  style="display: {userPrefs.hideSelf ? 'none' : 'block'}"
+  style="display: {user_state.hideSelf ? 'none' : 'block'}"
 >
   <div class="border" bind:this={square}></div>
 
   <video
     bind:this={videoElement}
     class="large-video"
-    style="display: {videoOn ? 'block' : 'none'}"
+    style="display: {user_state.videoOn ? 'block' : 'none'}"
     autoplay
     muted
   >
@@ -45,15 +41,15 @@
   </video>
 
   <img
-    src={pauseImage}
+    src={user_state.pauseImage}
     class="paused-image image-large"
-    style="display: {videoOn ? 'none' : 'block'}"
+    style="display: {user_state.videoOn ? 'none' : 'block'}"
     alt=""
   />
 
   <div
     class="mic-symbol centered"
-    style="display: {audioOn ? 'none' : 'block'}"
+    style="display: {user_state.audioOn ? 'none' : 'block'}"
   >
     <MicOffRed />
   </div>

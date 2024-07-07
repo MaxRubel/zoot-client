@@ -3,11 +3,8 @@
   import { loudestPeer } from "../../../stores/media/audioContext";
   import { clientId } from "../../../stores/auth_store";
   import { onDestroy } from "svelte";
-  import { userPreferences } from "../../../stores/media/userPreferences";
+  import { userState } from "../../../stores/media/userState";
 
-  export let pauseImage;
-  export let videoOn;
-  export let audioOn;
   export let localVideo;
 
   let myId;
@@ -16,7 +13,7 @@
   let timeout;
   let borderTimeout;
   let videoElement;
-  let userPrefs;
+  let user_state;
 
   const unsubscribe = loudestPeer.subscribe((value) => {
     loudest = value;
@@ -26,8 +23,8 @@
     myId = value;
   });
 
-  const unsubscribe3 = userPreferences.subscribe((value) => {
-    userPrefs = value;
+  const unsubscribe3 = userState.subscribe((value) => {
+    user_state = value;
   });
 
   $: {
@@ -57,14 +54,14 @@
 
 <div
   class="peer-media-square gallery"
-  style="display: {userPrefs.hideSelf ? 'none' : 'block'}"
+  style="display: {user_state.hideSelf ? 'none' : 'block'}"
 >
   <div class="border-gallery" bind:this={square}></div>
 
   <video
     bind:this={videoElement}
     class="large-video"
-    style="display: {videoOn ? 'block' : 'none'}"
+    style="display: {user_state.videoOn ? 'block' : 'none'}"
     autoplay
     muted
   >
@@ -72,13 +69,16 @@
   </video>
 
   <img
-    src={pauseImage}
+    src={user_state.pauseImage}
     class="image-gallery"
-    style="display: {videoOn ? 'none' : 'block'}"
+    style="display: {user_state.videoOn ? 'none' : 'block'}"
     alt=""
   />
 
-  <div class="gallery-mic" style="display: {audioOn ? 'none' : 'block'}">
+  <div
+    class="gallery-mic"
+    style="display: {user_state.audioOn ? 'none' : 'block'}"
+  >
     <MicOffRed />
   </div>
 </div>

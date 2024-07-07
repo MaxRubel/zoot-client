@@ -1,3 +1,5 @@
+import { updateUserState } from "../../stores/media/userState";
+
 export function micOn(peerConnections, stream) {
   const audioTrack = stream.getAudioTracks()[0];
   if (audioTrack) {
@@ -26,6 +28,7 @@ export function micOn(peerConnections, stream) {
           conn.addTrack(audioTrack, mediaStream);
         }
       });
+      updateUserState("audioOn", true)
     })
     .catch(function (error) {
       console.error("Error accessing the microphone:", error);

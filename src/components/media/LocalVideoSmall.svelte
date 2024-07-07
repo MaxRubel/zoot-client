@@ -3,11 +3,8 @@
   import { loudestPeer } from "../../../stores/media/audioContext";
   import { clientId } from "../../../stores/auth_store";
   import { onDestroy } from "svelte";
-  import { userPreferences } from "../../../stores/media/userPreferences";
+  import { userState } from "../../../stores/media/userState";
 
-  export let pauseImage;
-  export let videoOn;
-  export let audioOn;
   export let iAmSpeaking;
   export let localVideo;
 
@@ -17,7 +14,7 @@
   let timeout;
   let borderTimeout;
   let videoElement;
-  let userPrefs;
+  let user_state;
 
   const unsubscribe = loudestPeer.subscribe((value) => {
     loudest = value;
@@ -27,8 +24,8 @@
     myId = value;
   });
 
-  const unsubscribe3 = userPreferences.subscribe((value) => {
-    userPrefs = value;
+  const unsubscribe3 = userState.subscribe((value) => {
+    user_state = value;
   });
 
   $: {
@@ -57,43 +54,15 @@
   }
 </script>
 
-<!-- <div
-  class="small-row-square"
-  style="display: {userPrefs.hideSelf ? 'none' : 'block'}"
+<div
+  class="peer-media-square"
+  style="display: {user_state.hideSelf ? 'none' : 'block'};"
 >
-  <div class="border" bind:this={square}></div>
-
-  <video
-    bind:this={videoElement}
-    class="small-video"
-    style="display: {videoOn ? 'block' : 'none'}"
-    autoplay
-    muted
-  >
-    <track kind="captions" />
-  </video>
-
-  <img
-    src={pauseImage}
-    class="paused-image image-small"
-    style="display: {videoOn ? 'none' : 'block'}"
-    alt=""
-  />
-
-  <div
-    class="mic-symbol centered"
-    style="display: {audioOn ? 'none' : 'block'}"
-  >
-    <MicOffRed />
-  </div>
-</div> -->
-
-<div class="peer-media-square">
   <div class="border" bind:this={square}></div>
   <div class="media-container">
     <video
       class="video-normal"
-      style="display: {videoOn ? 'block' : 'none'}"
+      style="display: {user_state.videoOn ? 'block' : 'none'}"
       bind:this={videoElement}
       autoplay
       muted
@@ -102,15 +71,15 @@
       <track kind="captions" />
     </video>
     <img
-      src={pauseImage}
+      src={user_state.pauseImage}
       class="pause-image"
-      style="display: {videoOn ? 'none' : 'block'}"
+      style="display: {user_state.videoOn ? 'none' : 'block'}"
       alt=""
     />
   </div>
   <div
     class="mic-symbol centered"
-    style="display: {audioOn ? 'none' : 'block'}"
+    style="display: {user_state.audioOn ? 'none' : 'block'}"
   >
     <MicOffRed />
   </div>

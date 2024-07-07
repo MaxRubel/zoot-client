@@ -9,16 +9,18 @@
     peerStates,
     updatePeerState,
   } from "../../../stores/media/peerStates";
+  import { broadcastToRoom } from "../../../utils/dataChannels/broadcastToRoom";
+  import { updateUserState } from "../../../stores/media/userState";
+  import { resend_screenshare } from "../../../utils/media/resendScreenShare";
 
   export let connection;
   export let peerId;
   export let iAmSpeaking;
   export let receive_end_screenshare;
-  export let updatePresenter;
+  export let update_screen_sharer;
 
   let videoElement;
   let square;
-  let presenting = false;
   let loudest;
   let isVideoSetup = false;
   let peerState;
@@ -92,8 +94,12 @@
     };
 
     const unpackReport = (data) => {
-      const [_, report] = data.split("-");
+      const [_, report] = data.split("&");
       const parsedObject = JSON.parse(report);
+
+      if (parsedObject.sharing_screen) {
+        update_screen_sharer(parsedObject.user_id);
+      }
 
       updatePeerState(peerId, (currentState) => ({
         ...currentState,
@@ -119,8 +125,8 @@
         }
 
         if (m.data.includes("startScreenShare")) {
-          const [, id] = m.data.split("-");
-          updatePresenter(id);
+          const [, id] = m.data.split("&");
+          update_screen_sharer(id);
         }
 
         switch (m.data) {

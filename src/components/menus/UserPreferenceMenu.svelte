@@ -1,31 +1,36 @@
 <script>
   import GearIcon from "../../assets/GearIcon.svelte";
-  import { updateUserPreferences } from "../../../stores/media/userPreferences";
+  import { updateUserState, userState } from "../../../stores/media/userState";
+  import { onDestroy } from "svelte";
 
-  export let userPrefs;
-  export let presenter;
-
+  let user_state;
   let isExpanded = false;
+
+  const unsubscribe = userState.subscribe((value) => {
+    user_state = value;
+  });
+
+  onDestroy(unsubscribe);
 
   const handleUpdate = (e) => {
     const { id } = e.target;
-    let newPrefs = { ...userPrefs };
-
+    let oldPrefs = { ...user_state };
     switch (id) {
       case "selfView":
-        newPrefs.hideSelf = !newPrefs.hideSelf;
+        updateUserState("hideSelf", !oldPrefs.hideSelf);
         break;
       case "debug-menu":
-        newPrefs.debug = !newPrefs.debug;
+        updateUserState("debug", !oldPrefs.debug);
         break;
       case "viewOptions":
-        newPrefs.view = newPrefs.view === "gallery" ? "speaker" : "gallery";
+        updateUserState(
+          "view",
+          oldPrefs.view === "gallery" ? "speaker" : "gallery",
+        );
         break;
       default:
         return;
     }
-
-    updateUserPreferences(newPrefs);
   };
 
   function toggleMenu() {
@@ -43,16 +48,13 @@
   </button>
   <div class="nav-buttons">
     <button class="clear" id="viewOptions" on:click={handleUpdate}>
-      {userPrefs.view === "speaker" ? "Gallery View" : "Speaker View"}
+      {user_state.view === "speaker" ? "Gallery View" : "Speaker View"}
     </button>
     <button class="clear" id="selfView" on:click={handleUpdate}>
-      {userPrefs.hideSelf ? "Show Self" : "Hide Self"}
-    </button>
-    <button class="clear" id="presentView" on:click={handleUpdate}>
-      {userPrefs.watchPresenter && presenter ? "Stop Watching" : "Watch"}
+      {user_state.hideSelf ? "Show Self" : "Hide Self"}
     </button>
     <button class="clear" id="debug-menu" on:click={handleUpdate}>
-      {userPrefs.debug ? "Hide Debugger" : "Debug"}
+      {user_state.debug ? "Hide Debugger" : "Debug"}
     </button>
   </div>
 </nav>

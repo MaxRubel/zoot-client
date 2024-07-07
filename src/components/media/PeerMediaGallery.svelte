@@ -13,7 +13,7 @@
   export let connection;
   export let peerId;
   export let receive_end_screenshare;
-  export let updatePresenter;
+  export let update_screen_sharer;
 
   let videoElement;
   let square;
@@ -90,8 +90,12 @@
     };
 
     const unpackReport = (data) => {
-      const [_, report] = data.split("-");
+      const [_, report] = data.split("&");
       const parsedObject = JSON.parse(report);
+
+      if (parsedObject.sharing_screen) {
+        update_screen_sharer(parsedObject.user_id);
+      }
 
       updatePeerState(peerId, (currentState) => ({
         ...currentState,
@@ -118,7 +122,7 @@
 
         if (m.data.includes("startScreenShare")) {
           const [, id] = m.data.split("&");
-          updatePresenter(id);
+          update_screen_sharer(id);
         }
 
         switch (m.data) {
@@ -141,7 +145,7 @@
             }));
             break;
           case "stopScreenShare":
-            updatePresenter(null);
+            update_screen_sharer(null);
             break;
           case "endscreenshare":
             receive_end_screenshare();

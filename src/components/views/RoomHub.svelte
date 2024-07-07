@@ -35,10 +35,7 @@
     userSelection,
     updateUserSelection,
   } from "../../../stores/media/mediaSelection";
-  import {
-    userPreferences,
-    updateUserPreferences,
-  } from "../../../stores/media/userPreferences";
+  import { updateUserState, userState } from "../../../stores/media/userState";
   import UserPreferenceMenu from "../menus/UserPreferenceMenu.svelte";
   import PresenterView from "./SpeakerView.svelte";
   import {
@@ -59,19 +56,15 @@
 
   let roomId = param;
   let localVideo;
-  let localAudio;
+  let stream;
   let peerIDs = [];
   let peerConnections = {};
   let peerStates = {};
   let dataChannels = {};
-  let presenting = false;
   let confirmAudio = false;
-  let pauseImage = chooseGif();
-  let videoOn;
-  let audioOn;
   let myId;
-  let userPrefs = {};
-  let presenter = null;
+  let user_state = {};
+  let screen_sharer_id = null;
 
   //Audio Context Modal
   if (!audioContext) {
@@ -79,33 +72,45 @@
   }
 
   //----Svelte Stores-----
-  //whether your camera/audio was turned on last time
-  const unsubscribe = userSelection.subscribe((value) => {
-    audioOn = value.audioOn;
-    videoOn = value.videoOn;
-  });
 
   //userId
   const unsubscribe2 = clientId.subscribe((value) => {
     myId = value;
   });
 
-  const unsubscribe3 = userPreferences.subscribe((value) => {
-    userPrefs = value;
+  const unsubscribe3 = userState.subscribe((value) => {
+    user_state = value;
   });
 
   const unsubscribe4 = audioContextStore.subscribe((value) => {
     audioContext = value;
   });
 
-  onDestroy(unsubscribe, unsubscribe2, unsubscribe3, unsubscribe4);
+  onDestroy(() => {
+    unsubscribe2();
+    unsubscribe3();
+    unsubscribe4();
+  });
 
   const alignUserSelection = () => {
-    audioOn
-      ? micOn(peerConnections, localAudio)
-      : micOff(peerConnections, localAudio);
-    videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
+    user_state.audioOn
+      ? micOn(peerConnections, stream)
+      : micOff(peerConnections, stream);
+    user_state.videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
   };
+
+  $: {
+    if (
+      user_state.needs_screenshare &&
+      dataChannels[user_state.needs_screenshare]
+    ) {
+      broadcastToRoom(
+        dataChannels,
+        `needscreenshare&${user_state.needs_screenshare}`,
+      );
+      updateUserState("needs_screenshare", null);
+    }
+  }
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -147,9 +152,7 @@
   onDestroy(() => {
     ws.send(`3&${roomId}&${myId}&&`);
     stopAnalyzingAudioLevels();
-    unsubscribe();
-    unsubscribe2();
-    unsubscribe3();
+    updateUserState("sharing_screen", null);
   });
 
   //Send My Id to Server When Connecting
@@ -190,13 +193,13 @@
 
   onMount(async () => {
     localVideo = await cameraOn(peerConnections);
-    localAudio = await getUserMedia();
+    stream = await getUserMedia();
   });
 
   //analyze audio levels:
   $: {
     stopAnalyzingAudioLevels();
-    analyzeAudioLevels(peerConnections, localAudio, myId, audioContext);
+    analyzeAudioLevels(peerConnections, stream, myId, audioContext);
   }
 
   const startNegotiations = async (answererId) => {
@@ -212,9 +215,9 @@
     dataChannels[answererId] = dataChannel;
     //Get Each Track from the Stream
 
-    localAudio = await getUserMedia();
-    localAudio.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, localAudio);
+    stream = await getUserMedia();
+    stream.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, stream);
     });
 
     //Create Offer
@@ -223,10 +226,11 @@
 
     //Send status report after joining
     const report = JSON.stringify({
-      audioOn,
-      videoOn,
-      presenting,
-      pauseImage,
+      audioOn: user_state.audioOn,
+      videoOn: user_state.videoOn,
+      sharing_screen: user_state.sharing_screen != null,
+      user_id: myId,
+      pauseImag: user_state.pauseImage,
     });
 
     //Send status report to new connection
@@ -236,7 +240,7 @@
         dataChannel.addEventListener(
           "open",
           () => {
-            dataChannel.send(`report-${report}`);
+            dataChannel.send(`report&${report}`);
           },
           { once: true },
         );
@@ -322,10 +326,11 @@
       dataChannels[senderId] = dataChannel;
 
       const report = JSON.stringify({
-        audioOn,
-        videoOn,
-        presenting,
-        pauseImage,
+        audioOn: user_state.audioOn,
+        videoOn: user_state.videoOn,
+        sharing_screen: user_state.sharing_screen,
+        user_id: myId,
+        pauseImage: user_state.pauseImage,
       });
 
       //Send status report to new connection
@@ -335,11 +340,11 @@
           dataChannel.addEventListener(
             "open",
             () => {
-              dataChannel.send(`report-${report}`);
-              if (audioOn) {
-                micOn(peerConnections, localAudio);
+              dataChannel.send(`report&${report}`);
+              if (user_state.audioOn) {
+                micOn(peerConnections, stream);
               } else {
-                micOff(peerConnections, localAudio);
+                micOff(peerConnections, stream);
               }
             },
             { once: true },
@@ -371,9 +376,17 @@
           return;
         }
         await peerConnection.setRemoteDescription(parsed);
-        localAudio = await getUserMedia();
-        localAudio.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, localAudio);
+        stream = await getUserMedia();
+        stream.getTracks().forEach((track) => {
+          if (track.kind === "video") {
+            if (user_state.sharing_screen) {
+              peerConnection.addTrack(user_state.sharing_screen, stream);
+            } else {
+              peerConnection.addTrack(track, stream);
+            }
+          } else if (track.kind === "audio") {
+            peerConnection.addTrack(track, stream);
+          }
         });
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
@@ -402,30 +415,21 @@
   };
 
   const handleMic = () => {
-    if (audioOn) {
-      micOff(peerConnections, localAudio);
-      audioOn = false;
-      updateUserSelection(audioOn, videoOn);
+    if (user_state.audioOn) {
+      micOff(peerConnections, stream);
       broadcastToRoom(dataChannels, "mic-muted");
     } else {
-      micOn(peerConnections, localAudio);
-      audioOn = true;
-      updateUserSelection(audioOn, videoOn);
+      micOn(peerConnections, stream);
       broadcastToRoom(dataChannels, "mic-live");
     }
   };
 
   const handleCamera = async () => {
-    if (videoOn) {
+    if (user_state.videoOn) {
       localVideo = await cameraOff(peerConnections);
-      pauseImage = chooseGif();
-      videoOn = false;
-      updateUserSelection(audioOn, videoOn);
-      broadcastToRoom(dataChannels, `cameramuted-${pauseImage}`);
+      broadcastToRoom(dataChannels, `cameramuted-${user_state.pauseImage}`);
     } else {
       localVideo = await cameraOn(peerConnections);
-      videoOn = true;
-      updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "camera-live");
     }
   };
@@ -435,28 +439,29 @@
   };
 
   const receive_end_screenshare = () => {
-    presenter = null;
+    screen_sharer_id = null;
   };
 
   const handleScreenShare = async () => {
-    if (presenter) {
-      presenter === "myId"
+    if (screen_sharer_id) {
+      screen_sharer_id === myId
         ? console.warn("You are already presenting")
         : console.warn("someone else is already presenting");
       return;
     }
-    presenter = await screenShareOn(
+
+    screen_sharer_id = await screenShareOn(
       peerConnections,
       dataChannels,
       myId,
-      presenter,
+      screen_sharer_id,
       broadcast_end_screenshare,
-      updatePresenter,
+      update_screen_sharer,
     );
   };
 
-  const updatePresenter = (value) => {
-    presenter = value;
+  const update_screen_sharer = (value) => {
+    screen_sharer_id = value;
   };
 
   const testMedia = () => {
@@ -481,15 +486,12 @@
   const leaveRoom = () => {
     navigate("/");
   };
-  const updateUserPrefs = (userPrefs) => {
-    updateUserPreferences(userPrefs);
-  };
 </script>
 
 <div class="user-hub">
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
-  <UserPreferenceMenu {userPrefs} {presenter} />
-  {#if userPrefs.debug}
+  <UserPreferenceMenu />
+  {#if user_state.debug}
     <DebugMenu
       {sendTestMessage}
       {testConnection}
@@ -498,45 +500,30 @@
     />
   {/if}
 
-  {#if presenter}
+  {#if screen_sharer_id}
     <ScreenShareView
       {peerConnections}
-      {audioOn}
-      {videoOn}
-      {pauseImage}
       {localVideo}
       {myId}
-      screen_sharer={presenter}
-      {updatePresenter}
+      {screen_sharer_id}
+      {update_screen_sharer}
       {receive_end_screenshare}
     />
-  {:else if userPrefs.view === "speaker"}
+  {:else if user_state.view === "speaker"}
     <SpeakerView
       {peerConnections}
-      {audioOn}
-      {videoOn}
-      {pauseImage}
       {localVideo}
       {myId}
-      {updatePresenter}
+      {update_screen_sharer}
       {receive_end_screenshare}
     />
   {:else}
     <GalleryView
-      {audioOn}
-      {videoOn}
-      {pauseImage}
       {peerConnections}
       {localVideo}
-      {updatePresenter}
+      {update_screen_sharer}
       {receive_end_screenshare}
     />
   {/if}
-  <BottomToolBar
-    {audioOn}
-    {videoOn}
-    {handleCamera}
-    {handleMic}
-    {handleScreenShare}
-  />
+  <BottomToolBar {handleCamera} {handleMic} {handleScreenShare} />
 </div>
