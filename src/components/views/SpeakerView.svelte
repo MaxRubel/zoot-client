@@ -1,6 +1,4 @@
 <script>
-  import { onDestroy, onMount } from "svelte";
-  import { userPreferences } from "../../../stores/media/userPreferences";
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
   import BigSpeaker from "../media/BigSpeaker.svelte";
@@ -9,21 +7,14 @@
   import PeerMediaSmall from "../media/PeerMediaSmall.svelte";
 
   export let peerConnections;
-  export let audioOn;
-  export let videoOn;
-  export let pauseImage;
   export let localVideo;
   export let myId;
   export let receive_end_screenshare;
-  export let updatePresenter;
+  export let update_screen_sharer;
 
   let presenterId = null;
   let presenter = null;
-  let userPrefs;
 
-  onMount(() => {
-    console.log(" i was in fact created");
-  });
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
     container.scrollBy({ left: -450, behavior: "smooth" });
@@ -33,12 +24,6 @@
     const container = document.querySelector(".scroll-container");
     container.scrollBy({ left: 450, behavior: "smooth" });
   }
-
-  const unsubscribe = userPreferences.subscribe((value) => {
-    userPrefs = value;
-  });
-
-  onDestroy(unsubscribe);
 
   const iAmSpeaking = (id) => {
     presenterId = id;
@@ -72,20 +57,14 @@
     </button>
 
     <div class="scroll-container">
-      <LocalVideoSmall
-        {iAmSpeaking}
-        {audioOn}
-        {videoOn}
-        {pauseImage}
-        localVideo={videoStream1}
-      />
+      <LocalVideoSmall {iAmSpeaking} localVideo={videoStream1} />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMediaSmall
           {connection}
           {peerId}
           {iAmSpeaking}
           {receive_end_screenshare}
-          {updatePresenter}
+          {update_screen_sharer}
         />
       {/each}
     </div>
@@ -98,12 +77,7 @@
   <div class="speaker-div">
     {#if presenterId}
       {#if presenterId === myId}
-        <LocalVideoSpeaking
-          {audioOn}
-          {videoOn}
-          {pauseImage}
-          localVideo={videoStream2}
-        />
+        <LocalVideoSpeaking localVideo={videoStream2} />
       {:else}
         <BigSpeaker connection={presenter} peerId={presenterId} small={false} />
       {/if}

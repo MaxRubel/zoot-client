@@ -1,26 +1,22 @@
 <script>
   import LocalVideoGallery from "../media/LocalVideoGallery.svelte";
   import PeerMediaGallery from "../media/PeerMediaGallery.svelte";
-
   export let peerConnections;
-  export let audioOn;
-  export let videoOn;
-  export let pauseImage;
   export let localVideo;
   export let receive_end_screenshare;
-  export let updatePresenter;
+  export let update_screen_sharer;
 </script>
 
 <div class="top">
   <div id="video-container" class="top">
-    <LocalVideoGallery {audioOn} {videoOn} {pauseImage} {localVideo} />
+    <LocalVideoGallery {localVideo} />
 
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
       <PeerMediaGallery
         {connection}
         {peerId}
         {receive_end_screenshare}
-        {updatePresenter}
+        {update_screen_sharer}
       />
     {/each}
   </div>

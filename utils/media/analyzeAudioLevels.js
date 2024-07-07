@@ -1,7 +1,6 @@
 import { loudestPeer } from "../../stores/media/audioContext"
-import { getUserSelection } from "../../stores/media/mediaSelection";
-
-
+import { get } from 'svelte/store';
+import { userState } from "../../stores/media/userState";
 
 let analyzerLoop = null;
 let localAnalyserNode = null;
@@ -18,7 +17,7 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
       if (source) {
         levels[peerId] = source.audioLevel;
       }
-    } 
+    }
   });
 
   // Analyze local audio
@@ -34,10 +33,8 @@ const analyze = (peerConnections, localStream, myId, audioContext) => {
     }
   }
 
-  const { audioOn } = getUserSelection()
-
   if (localAnalyserNode && localDataArray) {
-    if (audioOn) {
+    if (get(userState).audioOn) {
       localAnalyserNode.getByteFrequencyData(localDataArray);
       const average = localDataArray.reduce((sum, value) => sum + value, 0) / localDataArray.length;
       const volume = average / 255;
@@ -66,7 +63,7 @@ export const analyzeAudioLevels = (peerConnections, localStream, myId, audioCont
   // console.log("my audio stream: ", localStream)
   // console.log("my id is ", myId)
   // console.log("my audio context is ", audioContext)
-  if(analyzerLoop){
+  if (analyzerLoop) {
     clearInterval(analyzerLoop)
   }
   analyzerLoop = setInterval(() => {

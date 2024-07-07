@@ -50,7 +50,6 @@
   };
 </script>
 
-<NavBar />
 <div class="top relative">
   <button on:click={createRoom}> Create Room </button>
 </div>

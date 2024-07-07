@@ -7,6 +7,7 @@
 </script>
 
 <main>
+  <NavBar />
   <Router>
     <Route path="/"><ViewRooms /></Route>
     <Route path="/rooms/:id"><RoomHub /></Route>

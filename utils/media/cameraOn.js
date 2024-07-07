@@ -1,3 +1,5 @@
+import { updateUserState } from "../../stores/media/userState";
+
 export const cameraOn = async (peerConnections) => {
   let localVideo;
   try {
@@ -16,6 +18,6 @@ export const cameraOn = async (peerConnections) => {
       videoSender.track.enabled = true;
     }
   });
-
+  updateUserState("videoOn", true)
   return localVideo;
 };

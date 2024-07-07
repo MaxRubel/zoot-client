@@ -1,4 +1,7 @@
+import { updateUserState } from "../../stores/media/userState";
+
 export const micOff = (peerConnections, stream) => {
+  updateUserState("audioOn", false)
   //Mute local audio
   const audioTrack = stream.getAudioTracks()[0];
   if (audioTrack) {
@@ -14,4 +17,5 @@ export const micOff = (peerConnections, stream) => {
       audioSender.track.enabled = false;
     }
   });
+
 };

@@ -5,26 +5,34 @@
   import BackIcon from "../../assets/BackIcon.svelte";
   import CameraOff from "../../assets/CameraOff.svelte";
   import CameraOn from "../../assets/CameraOn.svelte";
+  import { onDestroy } from "svelte";
+  import { userState } from "../../../stores/media/userState";
 
   export let handleMic;
   export let handleCamera;
   export let handleScreenShare;
-  export let audioOn;
-  export let videoOn;
+
+  let user_state;
+
+  const unsubscribe = userState.subscribe((value) => {
+    user_state = value;
+  });
+
+  onDestroy(unsubscribe);
 </script>
 
 <div class="bottom">
   <div id="marginLeft" />
   <div class="mid-bottom centered">
     <button class="clear" on:click={handleMic}>
-      {#if audioOn}
+      {#if user_state.audioOn}
         <MicIcon />Mute Mic
       {:else}
         <MicOff />Activate Mic
       {/if}
     </button>
     <button class="clear" on:click={handleCamera}>
-      {#if videoOn}
+      {#if user_state.videoOn}
         <CameraOn />Stop Video
       {:else}
         <CameraOff />Start Video
