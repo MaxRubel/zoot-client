@@ -49,23 +49,23 @@
   import GalleryView from "./GalleryView.svelte";
   import SpeakerView from "./SpeakerView.svelte";
   import { deletePeerState } from "../../../stores/media/peerStates";
+  import ScreenShareView from "./ScreenShareView.svelte";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
   const param = url.pathname.split("/").pop();
 
+  let audioContext;
+
   let roomId = param;
-  let videoStream;
-  let audioStream;
   let localVideo;
-  let peers = [];
+  let localAudio;
+  let peerIDs = [];
   let peerConnections = {};
   let peerStates = {};
   let dataChannels = {};
-  let joined = false;
   let presenting = false;
   let confirmAudio = false;
-  let audioContext;
   let pauseImage = chooseGif();
   let videoOn;
   let audioOn;
@@ -102,8 +102,8 @@
 
   const alignUserSelection = () => {
     audioOn
-      ? micOn(peerConnections, audioStream)
-      : micOff(peerConnections, audioStream);
+      ? micOn(peerConnections, localAudio)
+      : micOff(peerConnections, localAudio);
     videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
   };
 
@@ -178,25 +178,25 @@
   }
 
   const init = () => {
-    if (peers.length === 0) {
+    if (peerIDs.length === 0) {
       return;
     }
-    for (let i = 0; i < peers.length; i++) {
-      if (!checkPeerConnection(peerConnections, peers[i], myId)) {
-        startNegotiations(peers[i]);
+    for (let i = 0; i < peerIDs.length; i++) {
+      if (!checkPeerConnection(peerConnections, peerIDs[i], myId)) {
+        startNegotiations(peerIDs[i]);
       }
     }
   };
 
   onMount(async () => {
-    videoStream = await cameraOn(peerConnections);
-    audioStream = await getUserMedia();
+    localVideo = await cameraOn(peerConnections);
+    localAudio = await getUserMedia();
   });
 
   //analyze audio levels:
   $: {
     stopAnalyzingAudioLevels();
-    analyzeAudioLevels(peerConnections, audioStream, myId, audioContext);
+    analyzeAudioLevels(peerConnections, localAudio, myId, audioContext);
   }
 
   const startNegotiations = async (answererId) => {
@@ -212,9 +212,9 @@
     dataChannels[answererId] = dataChannel;
     //Get Each Track from the Stream
 
-    audioStream = await getUserMedia();
-    audioStream.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, audioStream);
+    localAudio = await getUserMedia();
+    localAudio.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, localAudio);
     });
 
     //Create Offer
@@ -271,9 +271,8 @@
 
     // Receive Array of Peer Ids Upon Joining
     if (dataType === "4") {
-      joined = false;
       const clientArr = e.data.split("&");
-      peers = addPeersToLocal(peers, myId, clientArr);
+      peerIDs = addPeersToLocal(peerIDs, myId, clientArr);
       if (audioContext) {
         init();
       }
@@ -338,9 +337,9 @@
             () => {
               dataChannel.send(`report-${report}`);
               if (audioOn) {
-                micOn(peerConnections, audioStream);
+                micOn(peerConnections, localAudio);
               } else {
-                micOff(peerConnections, audioStream);
+                micOff(peerConnections, localAudio);
               }
             },
             { once: true },
@@ -372,9 +371,9 @@
           return;
         }
         await peerConnection.setRemoteDescription(parsed);
-        audioStream = await getUserMedia();
-        audioStream.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, audioStream);
+        localAudio = await getUserMedia();
+        localAudio.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, localAudio);
         });
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
@@ -404,12 +403,12 @@
 
   const handleMic = () => {
     if (audioOn) {
-      micOff(peerConnections, audioStream);
+      micOff(peerConnections, localAudio);
       audioOn = false;
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "mic-muted");
     } else {
-      micOn(peerConnections, audioStream);
+      micOn(peerConnections, localAudio);
       audioOn = true;
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "mic-live");
@@ -418,26 +417,46 @@
 
   const handleCamera = async () => {
     if (videoOn) {
-      videoStream = await cameraOff(peerConnections);
+      localVideo = await cameraOff(peerConnections);
       pauseImage = chooseGif();
       videoOn = false;
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, `cameramuted-${pauseImage}`);
     } else {
-      videoStream = await cameraOn(peerConnections);
+      localVideo = await cameraOn(peerConnections);
       videoOn = true;
       updateUserSelection(audioOn, videoOn);
       broadcastToRoom(dataChannels, "camera-live");
     }
   };
 
-  const handleScreenShare = () => {
+  const broadcast_end_screenshare = () => {
+    broadcastToRoom(dataChannels, "endscreenshare");
+  };
+
+  const receive_end_screenshare = () => {
+    presenter = null;
+  };
+
+  const handleScreenShare = async () => {
     if (presenter) {
-      window.alert("Oops! Somone is already presenting.");
+      presenter === "myId"
+        ? console.warn("You are already presenting")
+        : console.warn("someone else is already presenting");
       return;
     }
-    presenter = myId;
-    screenShareOn(peerConnections, dataChannels, myId);
+    presenter = await screenShareOn(
+      peerConnections,
+      dataChannels,
+      myId,
+      presenter,
+      broadcast_end_screenshare,
+      updatePresenter,
+    );
+  };
+
+  const updatePresenter = (value) => {
+    presenter = value;
   };
 
   const testMedia = () => {
@@ -465,10 +484,6 @@
   const updateUserPrefs = (userPrefs) => {
     updateUserPreferences(userPrefs);
   };
-
-  const updatePresenter = (value) => {
-    presenter = value;
-  };
 </script>
 
 <div class="user-hub">
@@ -482,14 +497,29 @@
       {showPeerConnections}
     />
   {/if}
-  {#if userPrefs.view === "speaker"}
+
+  {#if presenter}
+    <ScreenShareView
+      {peerConnections}
+      {audioOn}
+      {videoOn}
+      {pauseImage}
+      {localVideo}
+      {myId}
+      screen_sharer={presenter}
+      {updatePresenter}
+      {receive_end_screenshare}
+    />
+  {:else if userPrefs.view === "speaker"}
     <SpeakerView
       {peerConnections}
       {audioOn}
       {videoOn}
       {pauseImage}
-      {videoStream}
+      {localVideo}
       {myId}
+      {updatePresenter}
+      {receive_end_screenshare}
     />
   {:else}
     <GalleryView
@@ -497,10 +527,11 @@
       {videoOn}
       {pauseImage}
       {peerConnections}
-      {videoStream}
+      {localVideo}
+      {updatePresenter}
+      {receive_end_screenshare}
     />
   {/if}
-
   <BottomToolBar
     {audioOn}
     {videoOn}

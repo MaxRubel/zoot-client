@@ -2,6 +2,7 @@
   import { navigate } from "svelte-routing";
   import { clientId } from "../../../stores/auth_store";
   import { createAudioContext } from "../../../stores/media/audioContext";
+  import NavBar from "../menus/NavBar.svelte";
 
   let rooms = [];
   let myId = null;
@@ -49,6 +50,7 @@
   };
 </script>
 
+<NavBar />
 <div class="top relative">
   <button on:click={createRoom}> Create Room </button>
 </div>

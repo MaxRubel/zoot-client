@@ -13,6 +13,9 @@
   export let connection;
   export let peerId;
   export let iAmSpeaking;
+  export let receive_end_screenshare;
+  export let updatePresenter;
+
   let videoElement;
   let square;
   let presenting = false;
@@ -139,8 +142,8 @@
               audioOn: true,
             }));
             break;
-          case "stopScreenShare":
-            updatePresenter(null);
+          case "endscreenshare":
+            receive_end_screenshare();
             break;
         }
       };
