@@ -14,7 +14,6 @@
     <Route path="/rooms/:id"><RoomHub /></Route>
     <Route path="/rooms/new"><NewRoomForm /></Route>
   </Router>
-  <StoreRender />
 </main>
 
 <style>

@@ -90,6 +90,11 @@
     unsubscribe2();
     unsubscribe3();
     unsubscribe4();
+    broadcastToRoom(dataChannels, "I am leaving");
+    // ws.send(`0&${roomId}&${myId}&&`);
+    // ws.send(`3&${roomId}&${myId}&&`);
+    stopAnalyzingAudioLevels();
+    updateUserState("sharing_screen", null);
   });
 
   const alignUserSelection = () => {
@@ -98,19 +103,6 @@
       : micOff(peerConnections, stream);
     user_state.videoOn ? cameraOn(peerConnections) : cameraOff(peerConnections);
   };
-
-  $: {
-    if (
-      user_state.needs_screenshare &&
-      dataChannels[user_state.needs_screenshare]
-    ) {
-      broadcastToRoom(
-        dataChannels,
-        `needscreenshare&${user_state.needs_screenshare}`,
-      );
-      updateUserState("needs_screenshare", null);
-    }
-  }
 
   const iceServers = [
     { urls: "stun:stun.l.google.com:19302" },
@@ -129,7 +121,14 @@
   const ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
 
   const cleanup = () => {
+    if (user_state.sharing_screen) {
+      broadcastToRoom(dataChannels, "endscreenshare");
+      updateUserState("sharing_screen", null);
+    }
+
     ws.send(`3&${roomId}&${myId}&&`);
+    ws.close();
+
     Object.values(peerConnections).forEach((conn) => {
       if (peerConnections[conn]) {
         peerConnections[conn].close();
@@ -138,7 +137,6 @@
     Object.values(dataChannels).forEach((chan) => {
       chan.close();
     });
-    ws.close();
   };
   window.addEventListener("beforeunload", (e) => {
     cleanup();
@@ -148,12 +146,6 @@
   window.onpopstate = function () {
     history.go(1);
   };
-
-  onDestroy(() => {
-    ws.send(`3&${roomId}&${myId}&&`);
-    stopAnalyzingAudioLevels();
-    updateUserState("sharing_screen", null);
-  });
 
   //Send My Id to Server When Connecting
   ws.onopen = () => {
@@ -481,10 +473,6 @@
 
   const showPeerConnections = () => {
     console.log(peerConnections);
-  };
-
-  const leaveRoom = () => {
-    navigate("/");
   };
 </script>
 

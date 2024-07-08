@@ -51,7 +51,10 @@
       videoElement.autoplay = true;
     }
   };
-
+  $: console.log(connection);
+  $: console.log(videoElement);
+  $: console.log(isVideoSetup);
+  $: console.log(peerState?.initialized);
   $: if (
     connection &&
     videoElement &&

@@ -56,6 +56,11 @@
     }
   };
 
+  // $: console.log(connection);
+  // $: console.log(videoElement);
+  // $: console.log(peerState?.initialized);
+  // $: console.log(isVideoSetup);
+
   $: if (
     connection &&
     videoElement &&
@@ -150,7 +155,7 @@
             break;
           case "endscreenshare":
             receive_end_screenshare();
-            reSetupVideo();
+            // reSetupVideo();
             break;
         }
       };
