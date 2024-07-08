@@ -50,11 +50,16 @@
     const videoTrack = connection
       .getReceivers()
       .find((receiver) => receiver.track.kind === "video")?.track;
-    if (videoTrack) {
+    if (videoTrack && videoElement) {
       videoElement.srcObject = new MediaStream([videoTrack]);
       videoElement.autoplay = true;
     }
   };
+
+  // $: console.log(connection);
+  // $: console.log(videoElement);
+  // $: console.log(peerState?.initialized);
+  // $: console.log(isVideoSetup);
 
   $: if (
     connection &&
@@ -150,6 +155,7 @@
             break;
           case "endscreenshare":
             receive_end_screenshare();
+            // reSetupVideo();
             break;
         }
       };

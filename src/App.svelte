@@ -4,6 +4,7 @@
   import NewRoomForm from "./components/forms/NewRoomForm.svelte";
   import NavBar from "./components/menus/NavBar.svelte";
   import RoomHub from "./components/views/RoomHub.svelte";
+  import StoreRender from "./components/StoreRender.svelte";
 </script>
 
 <main>
@@ -13,7 +14,6 @@
     <Route path="/rooms/:id"><RoomHub /></Route>
     <Route path="/rooms/new"><NewRoomForm /></Route>
   </Router>
-  <!-- <StoreRender /> -->
 </main>
 
 <style>
