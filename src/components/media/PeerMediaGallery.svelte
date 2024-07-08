@@ -12,7 +12,6 @@
 
   export let connection;
   export let peerId;
-  export let receive_end_screenshare;
   export let update_screen_sharer;
 
   let videoElement;
@@ -147,11 +146,8 @@
               audioOn: true,
             }));
             break;
-          case "stopScreenShare":
-            update_screen_sharer(null);
-            break;
           case "endscreenshare":
-            receive_end_screenshare();
+            update_screen_sharer(null);
             return;
         }
       };

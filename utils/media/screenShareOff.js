@@ -14,6 +14,8 @@ export async function screenShareOff(peerConnections, dataChannels) {
 
     if (videoSender) {
       await videoSender.replaceTrack(cameraTrack);
+    } else {
+      console.log("theres no sender")
     }
   }
   Object.values(dataChannels).forEach((chan) => {

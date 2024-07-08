@@ -16,7 +16,6 @@
   export let connection;
   export let peerId;
   export let iAmSpeaking;
-  export let receive_end_screenshare;
   export let update_screen_sharer;
 
   let videoElement;
@@ -50,9 +49,14 @@
     const videoTrack = connection
       .getReceivers()
       .find((receiver) => receiver.track.kind === "video")?.track;
+    console.log("getting video");
+    console.log(videoTrack);
     if (videoTrack && videoElement) {
       videoElement.srcObject = new MediaStream([videoTrack]);
-      videoElement.autoplay = true;
+      console.log("found video and added it");
+      isVideoSetup = true;
+    } else {
+      console.log("no video track or videoElement");
     }
   };
 
@@ -67,6 +71,7 @@
     peerState?.initialized &&
     !isVideoSetup
   ) {
+    console.log("resetting video");
     reSetupVideo();
   }
 
@@ -86,7 +91,6 @@
         const audioStream = new MediaStream([event.track]);
         const sourceNode = audioContext.createMediaStreamSource(audioStream);
         sourceNode.connect(audioContext.destination);
-        isVideoSetup = true;
       }
       if (
         event.streams &&
@@ -95,6 +99,7 @@
         !peerState?.initialized
       ) {
         videoElement.srcObject = event.streams[0];
+        isVideoSetup = true;
       }
     };
 
@@ -107,7 +112,6 @@
       }
 
       updatePeerState(peerId, (currentState) => ({
-        ...currentState,
         ...parsedObject,
         initialized: true,
       }));
@@ -154,8 +158,7 @@
             }));
             break;
           case "endscreenshare":
-            receive_end_screenshare();
-            // reSetupVideo();
+            update_screen_sharer(null);
             break;
         }
       };
@@ -172,7 +175,6 @@
   <div class="media-container">
     <video
       class="video-normal"
-      class:fade-out={!peerState?.videoOn}
       bind:this={videoElement}
       autoplay
       muted

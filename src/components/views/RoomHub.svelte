@@ -45,7 +45,10 @@
   import ViewRooms from "./ViewRooms.svelte";
   import GalleryView from "./GalleryView.svelte";
   import SpeakerView from "./SpeakerView.svelte";
-  import { deletePeerState } from "../../../stores/media/peerStates";
+  import {
+    clearPeerStates,
+    deletePeerState,
+  } from "../../../stores/media/peerStates";
   import ScreenShareView from "./ScreenShareView.svelte";
 
   const currentUrl = window.location.href;
@@ -91,6 +94,7 @@
     unsubscribe3();
     unsubscribe4();
     broadcastToRoom(dataChannels, "I am leaving");
+    clearPeerStates();
     // ws.send(`0&${roomId}&${myId}&&`);
     // ws.send(`3&${roomId}&${myId}&&`);
     stopAnalyzingAudioLevels();
@@ -430,10 +434,6 @@
     broadcastToRoom(dataChannels, "endscreenshare");
   };
 
-  const receive_end_screenshare = () => {
-    screen_sharer_id = null;
-  };
-
   const handleScreenShare = async () => {
     if (screen_sharer_id) {
       screen_sharer_id === myId
@@ -495,23 +495,11 @@
       {myId}
       {screen_sharer_id}
       {update_screen_sharer}
-      {receive_end_screenshare}
     />
   {:else if user_state.view === "speaker"}
-    <SpeakerView
-      {peerConnections}
-      {localVideo}
-      {myId}
-      {update_screen_sharer}
-      {receive_end_screenshare}
-    />
+    <SpeakerView {peerConnections} {localVideo} {myId} {update_screen_sharer} />
   {:else}
-    <GalleryView
-      {peerConnections}
-      {localVideo}
-      {update_screen_sharer}
-      {receive_end_screenshare}
-    />
+    <GalleryView {peerConnections} {localVideo} {update_screen_sharer} />
   {/if}
   <BottomToolBar {handleCamera} {handleMic} {handleScreenShare} />
 </div>
