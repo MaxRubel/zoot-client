@@ -47,11 +47,9 @@
 
   const reSetupVideo = () => {
     const remoteStreams = connection.getRemoteStreams();
-    console.log("Getting video, remote streams:", remoteStreams);
 
     if (remoteStreams.length > 0 && videoElement) {
       const videoTracks = remoteStreams[0].getVideoTracks();
-      console.log("Video tracks found:", videoTracks);
 
       if (videoTracks.length > 0) {
         const videoTrack = videoTracks[0];
@@ -64,13 +62,8 @@
         } else {
           videoElement.srcObject = new MediaStream([videoTrack]);
         }
-
         isVideoSetup = true;
-      } else {
-        console.errpr("No video tracks found in remote stream");
       }
-    } else {
-      console.log("No remote streams or videoElement");
     }
   };
 
@@ -85,7 +78,6 @@
     peerState?.initialized &&
     !isVideoSetup
   ) {
-    console.log("resetting video");
     reSetupVideo();
   }
 
@@ -172,9 +164,7 @@
             }));
             break;
           case "endscreenshare":
-            console.log("recevied end screen share message");
             update_screen_sharer(null);
-            reSetupVideo();
             break;
         }
       };

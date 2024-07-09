@@ -7,14 +7,14 @@ export const dataChannelsStore = writable({});
 
 // Helper function to update a specific peer connection
 export function updatePeerConnectionStore(peerId, connection) {
-    peerConnectionsStore.update(connections => ({
+  peerConnectionsStore.update(connections => ({
     ...connections,
     [peerId]: connection
   }));
 }
 
 // Helper function to update a specific data channel
-export function updateDataChannel(peerId, channel) {
+export function updateDataChannelStore(peerId, channel) {
   dataChannelsStore.update(channels => ({
     ...channels,
     [peerId]: channel
@@ -23,7 +23,7 @@ export function updateDataChannel(peerId, channel) {
 
 // Helper function to remove a peer connection
 export function removePeerConnection(peerId) {
-    peerConnectionsStore.update(connections => {
+  peerConnectionsStore.update(connections => {
     const { [peerId]: _, ...rest } = connections;
     return rest;
   });
