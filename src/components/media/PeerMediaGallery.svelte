@@ -43,11 +43,9 @@
 
   const reSetupVideo = () => {
     const remoteStreams = connection.getRemoteStreams();
-    console.log("Getting video, remote streams:", remoteStreams);
 
     if (remoteStreams.length > 0 && videoElement) {
       const videoTracks = remoteStreams[0].getVideoTracks();
-      console.log("Video tracks found:", videoTracks);
 
       if (videoTracks.length > 0) {
         const videoTrack = videoTracks[0];
@@ -60,7 +58,6 @@
         } else {
           videoElement.srcObject = new MediaStream([videoTrack]);
         }
-
         isVideoSetup = true;
       } else {
         console.errpr("No video tracks found in remote stream");
@@ -69,10 +66,6 @@
       console.error("No remote streams or videoElement");
     }
   };
-  $: console.log(connection);
-  $: console.log(videoElement);
-  $: console.log(isVideoSetup);
-  $: console.log(peerState?.initialized);
   $: if (
     connection &&
     videoElement &&
@@ -119,6 +112,7 @@
       }
 
       updatePeerState(peerId, (currentState) => ({
+        ...currentState,
         ...parsedObject,
         initialized: true,
       }));

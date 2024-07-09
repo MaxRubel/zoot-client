@@ -53,6 +53,10 @@
   import {
     dataChannelsStore,
     peerConnectionsStore,
+    removeDataChannel,
+    removePeerConnection,
+    updateDataChannelStore,
+    updatePeerConnectionStore,
   } from "../../../stores/media/roomStore";
 
   const currentUrl = window.location.href;
@@ -80,8 +84,13 @@
 
   //----Svelte Stores-----
 
-  $: peerConnectionsStore.set(peerConnections);
-  $: dataChannelsStore.set(dataChannels);
+  const unsubscribe = peerConnectionsStore.subscribe((value) => {
+    peerConnections = value;
+  });
+
+  const unsubscribe1 = dataChannelsStore.subscribe((value) => {
+    dataChannels = value;
+  });
 
   //userId
   const unsubscribe2 = clientId.subscribe((value) => {
@@ -96,13 +105,11 @@
     audioContext = value;
   });
 
-  const share_local_room_connections = () => {
-    return { peerConnections, dataChannels };
-  };
-
   onDestroy(() => {
     peerConnectionsStore.set({});
     dataChannelsStore.set({});
+    unsubscribe();
+    unsubscribe1();
     unsubscribe2();
     unsubscribe3();
     unsubscribe4();
@@ -214,14 +221,16 @@
   const startNegotiations = async (answererId) => {
     //Create New Peer Connection
     const peerConnection = new RTCPeerConnection({ iceServers });
-    peerConnections[answererId] = peerConnection;
+    updatePeerConnectionStore(answererId, peerConnection);
+    // peerConnections[answererId] = peerConnection;
 
     //Create New data channel from direct communication
     const dataChannel = peerConnection.createDataChannel(
       `dataChannel-${answererId}`,
     );
 
-    dataChannels[answererId] = dataChannel;
+    updateDataChannelStore(answererId, dataChannel);
+    // dataChannels[answererId] = dataChannel;
     //Get Each Track from the Stream
 
     stream = await getUserMedia();
@@ -299,11 +308,13 @@
       }
       peerConnections[peerId].close();
       dataChannels[peerId].close();
-      delete peerConnections[peerId];
-      delete dataChannels[peerId];
+      removePeerConnection(peerId);
+      // delete peerConnections[peerId];
+      removeDataChannel(peerId);
+      // delete dataChannels[peerId];
       deletePeerState(peerId);
-      peerConnections = { ...peerConnections };
-      dataChannels = { ...dataChannels };
+      // peerConnections = { ...peerConnections };
+      // dataChannels = { ...dataChannels };
     }
     if (dataType === "6") {
       navigate("/rooms/new");
@@ -322,7 +333,11 @@
 
       //Receiver Creates New Peer Connection
       if (!peerConnections[senderId]) {
-        peerConnections[senderId] = new RTCPeerConnection({ iceServers });
+        updatePeerConnectionStore(
+          senderId,
+          new RTCPeerConnection({ iceServers }),
+        );
+        // peerConnections[senderId] = new RTCPeerConnection({ iceServers });
       }
 
       const peerConnection = peerConnections[senderId];
