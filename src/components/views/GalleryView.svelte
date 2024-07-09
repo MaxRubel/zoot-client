@@ -3,7 +3,6 @@
   import PeerMediaGallery from "../media/PeerMediaGallery.svelte";
   export let peerConnections;
   export let localVideo;
-  export let receive_end_screenshare;
   export let update_screen_sharer;
 </script>
 
@@ -12,12 +11,7 @@
     <LocalVideoGallery {localVideo} />
 
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
-      <PeerMediaGallery
-        {connection}
-        {peerId}
-        {receive_end_screenshare}
-        {update_screen_sharer}
-      />
+      <PeerMediaGallery {connection} {peerId} {update_screen_sharer} />
     {/each}
   </div>
 </div>

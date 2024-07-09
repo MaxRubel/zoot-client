@@ -9,7 +9,6 @@
   export let peerConnections;
   export let localVideo;
   export let myId;
-  export let receive_end_screenshare;
   export let update_screen_sharer;
 
   let presenterId = null;
@@ -63,7 +62,6 @@
           {connection}
           {peerId}
           {iAmSpeaking}
-          {receive_end_screenshare}
           {update_screen_sharer}
         />
       {/each}

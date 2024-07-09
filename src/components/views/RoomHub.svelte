@@ -45,8 +45,15 @@
   import ViewRooms from "./ViewRooms.svelte";
   import GalleryView from "./GalleryView.svelte";
   import SpeakerView from "./SpeakerView.svelte";
-  import { deletePeerState } from "../../../stores/media/peerStates";
+  import {
+    clearPeerStates,
+    deletePeerState,
+  } from "../../../stores/media/peerStates";
   import ScreenShareView from "./ScreenShareView.svelte";
+  import {
+    dataChannelsStore,
+    peerConnectionsStore,
+  } from "../../../stores/media/roomStore";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -73,6 +80,9 @@
 
   //----Svelte Stores-----
 
+  $: peerConnectionsStore.set(peerConnections);
+  $: dataChannelsStore.set(dataChannels);
+
   //userId
   const unsubscribe2 = clientId.subscribe((value) => {
     myId = value;
@@ -86,11 +96,18 @@
     audioContext = value;
   });
 
+  const share_local_room_connections = () => {
+    return { peerConnections, dataChannels };
+  };
+
   onDestroy(() => {
+    peerConnectionsStore.set({});
+    dataChannelsStore.set({});
     unsubscribe2();
     unsubscribe3();
     unsubscribe4();
     broadcastToRoom(dataChannels, "I am leaving");
+    clearPeerStates();
     // ws.send(`0&${roomId}&${myId}&&`);
     // ws.send(`3&${roomId}&${myId}&&`);
     stopAnalyzingAudioLevels();
@@ -430,10 +447,6 @@
     broadcastToRoom(dataChannels, "endscreenshare");
   };
 
-  const receive_end_screenshare = () => {
-    screen_sharer_id = null;
-  };
-
   const handleScreenShare = async () => {
     if (screen_sharer_id) {
       screen_sharer_id === myId
@@ -487,7 +500,6 @@
       {showPeerConnections}
     />
   {/if}
-
   {#if screen_sharer_id}
     <ScreenShareView
       {peerConnections}
@@ -495,23 +507,11 @@
       {myId}
       {screen_sharer_id}
       {update_screen_sharer}
-      {receive_end_screenshare}
     />
   {:else if user_state.view === "speaker"}
-    <SpeakerView
-      {peerConnections}
-      {localVideo}
-      {myId}
-      {update_screen_sharer}
-      {receive_end_screenshare}
-    />
+    <SpeakerView {peerConnections} {localVideo} {myId} {update_screen_sharer} />
   {:else}
-    <GalleryView
-      {peerConnections}
-      {localVideo}
-      {update_screen_sharer}
-      {receive_end_screenshare}
-    />
+    <GalleryView {peerConnections} {localVideo} {update_screen_sharer} />
   {/if}
   <BottomToolBar {handleCamera} {handleMic} {handleScreenShare} />
 </div>
