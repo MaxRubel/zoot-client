@@ -42,12 +42,31 @@
   }
 
   const reSetupVideo = () => {
-    const videoTrack = connection
-      .getReceivers()
-      .find((receiver) => receiver.track.kind === "video")?.track;
-    if (videoTrack) {
-      videoElement.srcObject = new MediaStream([videoTrack]);
-      videoElement.autoplay = true;
+    const remoteStreams = connection.getRemoteStreams();
+    console.log("Getting video, remote streams:", remoteStreams);
+
+    if (remoteStreams.length > 0 && videoElement) {
+      const videoTracks = remoteStreams[0].getVideoTracks();
+      console.log("Video tracks found:", videoTracks);
+
+      if (videoTracks.length > 0) {
+        const videoTrack = videoTracks[0];
+
+        if (videoElement.srcObject) {
+          videoElement.srcObject
+            .getVideoTracks()
+            .forEach((track) => videoElement.srcObject.removeTrack(track));
+          videoElement.srcObject.addTrack(videoTrack);
+        } else {
+          videoElement.srcObject = new MediaStream([videoTrack]);
+        }
+
+        isVideoSetup = true;
+      } else {
+        console.errpr("No video tracks found in remote stream");
+      }
+    } else {
+      console.error("No remote streams or videoElement");
     }
   };
   $: console.log(connection);
@@ -100,7 +119,6 @@
       }
 
       updatePeerState(peerId, (currentState) => ({
-        ...currentState,
         ...parsedObject,
         initialized: true,
       }));

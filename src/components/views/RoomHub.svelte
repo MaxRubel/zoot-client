@@ -50,6 +50,10 @@
     deletePeerState,
   } from "../../../stores/media/peerStates";
   import ScreenShareView from "./ScreenShareView.svelte";
+  import {
+    dataChannelsStore,
+    peerConnectionsStore,
+  } from "../../../stores/media/roomStore";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -76,6 +80,9 @@
 
   //----Svelte Stores-----
 
+  $: peerConnectionsStore.set(peerConnections);
+  $: dataChannelsStore.set(dataChannels);
+
   //userId
   const unsubscribe2 = clientId.subscribe((value) => {
     myId = value;
@@ -89,7 +96,13 @@
     audioContext = value;
   });
 
+  const share_local_room_connections = () => {
+    return { peerConnections, dataChannels };
+  };
+
   onDestroy(() => {
+    peerConnectionsStore.set({});
+    dataChannelsStore.set({});
     unsubscribe2();
     unsubscribe3();
     unsubscribe4();
@@ -487,7 +500,6 @@
       {showPeerConnections}
     />
   {/if}
-
   {#if screen_sharer_id}
     <ScreenShareView
       {peerConnections}
