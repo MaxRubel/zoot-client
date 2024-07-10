@@ -7,7 +7,7 @@
 </script>
 
 <div class="top">
-  <div id="video-container" class="top">
+  <div id="video-container">
     <LocalVideoGallery {localVideo} />
 
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
@@ -22,22 +22,28 @@
   }
 
   #video-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 5px;
-    padding: 0px 3px;
-    margin-bottom: 80px;
+    height: 80vh;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    overflow: auto;
   }
 
-  @media screen and (max-width: 600px) {
-    #video-container {
-      grid-template-columns: 1fr;
-    }
+  :global(#video-container > *) {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: calc(50% - 5px);
+    max-width: calc(50% - 5px);
+    min-width: calc(50% - 5px);
+    height: auto;
+    aspect-ratio: 16 / 9;
   }
 
-  @media screen and (min-width: 601px) {
-    #video-container {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
+  /* @media (max-width: 768px) {
+    :global(#video-container > *) {
+      flex-basis: 100%;
+      max-width: 100%;
+      min-width: 100%;
+    } */
+  /* } */
 </style>

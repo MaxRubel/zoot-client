@@ -132,7 +132,7 @@
 
   .speaker-div {
     margin-top: 3px;
-    width: 90vw;
+    width: 100%;
     height: 50vh;
   }
 </style>

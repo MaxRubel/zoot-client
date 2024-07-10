@@ -210,20 +210,19 @@
   .peer-media-square {
     position: relative;
     width: 100%;
-    padding-bottom: 75%; /* This creates a 4:3 aspect ratio */
     overflow: hidden;
   }
 
-  .gallery {
+  /* .gallery {
     min-height: 400px;
-  }
+  } */
 
   .border-gallery {
     position: absolute;
     height: 100%;
     width: 100%;
     top: 0;
-    z-index: 2;
+    z-index: 10;
   }
 
   .media-container {
@@ -269,6 +268,12 @@
     justify-content: center;
     align-items: center;
     z-index: 2;
+  }
+
+  .mic-symbol {
+    position: absolute;
+    bottom: 0;
+    left: 0;
   }
 
   .centered {

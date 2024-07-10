@@ -85,20 +85,17 @@
   .peer-media-square {
     position: relative;
     width: 100%;
-    padding-bottom: 75%; /* This creates a 4:3 aspect ratio */
+    /* padding-top: 56.25%; 16:9 Aspect Ratio */
     overflow: hidden;
-  }
-
-  .gallery {
-    min-height: 400px;
   }
 
   .border-gallery {
     position: absolute;
-    height: 100%;
-    width: 100%;
     top: 0;
-    z-index: 2;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
   }
 
   .media-content {
