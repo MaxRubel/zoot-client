@@ -61,7 +61,7 @@
   <div class="border" bind:this={square}></div>
   <div class="media-container">
     <video
-      class="video-normal"
+      class="media-content"
       style="display: {user_state.videoOn ? 'block' : 'none'}"
       bind:this={videoElement}
       autoplay
@@ -72,7 +72,7 @@
     </video>
     <img
       src={user_state.pauseImage}
-      class="pause-image"
+      class="media-content"
       style="display: {user_state.videoOn ? 'none' : 'block'}"
       alt=""
     />
@@ -88,6 +88,9 @@
 <style>
   .peer-media-square {
     position: relative;
+    width: 200px;
+    height: 150px;
+    overflow: hidden;
   }
 
   .border {
@@ -99,39 +102,20 @@
     z-index: 20;
   }
 
-  .mic-symbol {
-    position: absolute;
-    bottom: 3px;
-    left: 10px;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding: 1px 0px;
-    padding-bottom: 6px;
-    padding-left: 1px;
-  }
-
   .media-container {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden;
   }
 
-  .video-normal {
-    width: 200px;
+  .media-content {
+    width: 100%;
     height: 100%;
     object-fit: cover;
     opacity: 1;
     transition: opacity 0.5s ease-in;
-    z-index: 5;
-  }
-
-  img {
-    aspect-ratio: 4/3;
-
-    width: 200px;
-    height: 100%;
-    object-fit: fill;
-    opacity: 1;
   }
 </style>

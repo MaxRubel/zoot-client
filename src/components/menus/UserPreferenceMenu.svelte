@@ -39,7 +39,7 @@
 </script>
 
 <nav
-  class="user-prefs"
+  class="user-prefs-container"
   class:expanded={isExpanded}
   class:collapsed={!isExpanded}
 >
@@ -60,12 +60,16 @@
 </nav>
 
 <style>
-  .user-prefs {
+  .user-prefs-container {
     display: flex;
     flex-direction: row;
     justify-content: left;
     transition: opacity 0.5s ease;
     overflow: hidden;
+    position: fixed;
+    top: 10px;
+    right: 0px;
+    z-index: 200;
   }
 
   .nav-buttons {
@@ -80,6 +84,7 @@
   .expanded {
     width: 600px;
     transition: all ease 0.5s;
+    right: -115px;
   }
 
   .clear {
@@ -101,7 +106,7 @@
     border: none;
     width: 60px;
     padding: 20px;
-    margin-right: 20px;
+    /* margin-right: 20px; */
   }
   .empty:active,
   .empty:focus {

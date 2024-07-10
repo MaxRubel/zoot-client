@@ -94,15 +94,4 @@
     left: 36px;
     width: 200px;
   }
-
-  .mic-symbol {
-    position: absolute;
-    bottom: 4px;
-    left: 42px;
-    position: absolute;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding-bottom: 3px;
-  }
 </style>

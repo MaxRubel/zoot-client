@@ -61,25 +61,6 @@
 </div>
 
 <style>
-  /* .peer-media-square {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-  } */
-
-  .mic-symbol {
-    position: absolute;
-    bottom: 3px;
-    left: 10px;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding: 1px 0px;
-    padding-bottom: 6px;
-    padding-left: 1px;
-  }
-
   .image-large {
     object-fit: contain;
   }

@@ -213,6 +213,9 @@
 <style>
   .peer-media-square {
     position: relative;
+    width: 200px;
+    height: 150px;
+    overflow: hidden;
   }
 
   .border {
@@ -234,18 +237,7 @@
     justify-content: center;
     align-items: center;
     z-index: 2;
-  }
-
-  .mic-symbol {
-    position: absolute;
-    bottom: 3px;
-    left: 10px;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding: 1px 0px;
-    padding-bottom: 6px;
-    padding-left: 1px;
+    font-size: 14px;
   }
 
   .media-container {
@@ -255,7 +247,7 @@
   }
 
   .video-normal {
-    width: 200px;
+    width: 100%;
     height: 100%;
     object-fit: cover;
     opacity: 1;
@@ -264,13 +256,12 @@
   }
 
   img {
-    aspect-ratio: 4/3;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: cover;
     opacity: 1;
     transition: opacity 0.5s ease-out;
   }

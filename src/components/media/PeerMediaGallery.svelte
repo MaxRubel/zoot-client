@@ -171,11 +171,11 @@
   }
 </script>
 
-<div class="peer-media-square">
-  <div class="border" bind:this={square}></div>
+<div class="peer-media-square gallery">
+  <div class="border-gallery" bind:this={square}></div>
   <div class="media-container">
     <video
-      class="video-normal"
+      class="media-content video-normal"
       class:fade-out={!peerState?.videoOn}
       bind:this={videoElement}
       autoplay
@@ -186,7 +186,7 @@
     </video>
     <img
       src={peerState?.pauseImage}
-      class="pause-image"
+      class="media-content pause-image"
       class:fade-out={peerState?.videoOn}
       alt=""
       style="display: {peerState?.initialized ? 'block' : 'none'}"
@@ -199,7 +199,7 @@
     </div>
   </div>
   <div
-    class="mic-symbol centered"
+    class="mic-symbol"
     style="display: {!peerState?.audioOn ? 'block' : 'none'}"
   >
     <MicOffRed />
@@ -209,15 +209,54 @@
 <style>
   .peer-media-square {
     position: relative;
+    width: 100%;
+    padding-bottom: 75%; /* This creates a 4:3 aspect ratio */
+    overflow: hidden;
   }
 
-  .border {
+  .gallery {
+    min-height: 400px;
+  }
+
+  .border-gallery {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    z-index: 2;
+  }
+
+  .media-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 10;
+  }
+
+  .media-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-normal {
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+    z-index: 5;
+  }
+
+  .pause-image {
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+    z-index: 1;
+  }
+
+  .fade-out {
+    opacity: 0;
   }
 
   .connecting {
@@ -232,47 +271,9 @@
     z-index: 2;
   }
 
-  .mic-symbol {
-    position: absolute;
-    bottom: 3px;
-    left: 10px;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding: 1px 0px;
-    padding-bottom: 6px;
-    padding-left: 1px;
-  }
-
-  .media-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  .video-normal {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 1;
-    transition: opacity 0.5s ease-in;
-    z-index: 5;
-  }
-
-  img {
-    aspect-ratio: 4/3;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 480px;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 1;
-    transition: opacity 0.5s ease-out;
-  }
-
-  .fade-out {
-    opacity: 0;
+  .centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
