@@ -1,4 +1,8 @@
-<nav class="nav-container">
+<script>
+  import { fade } from "svelte/transition";
+</script>
+
+<nav class="nav-container" transition:fade>
   <logo class="logo">
     <a href="/">
       <img class="ducky" src="/invertedDucky.png" alt="duckyyyyy" />ZOOT</a
