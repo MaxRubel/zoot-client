@@ -11,7 +11,6 @@
   let loudest;
   let square;
   let timeout;
-  let borderTimeout;
   let videoElement;
   let user_state;
 
@@ -42,7 +41,6 @@
     unsubscribe2();
     unsubscribe3();
     clearTimeout(timeout);
-    clearTimeout(borderTimeout);
   });
 
   $: {
@@ -60,7 +58,7 @@
 
   <video
     bind:this={videoElement}
-    class="large-video"
+    class="media-content"
     style="display: {user_state.videoOn ? 'block' : 'none'}"
     autoplay
     muted
@@ -70,13 +68,13 @@
 
   <img
     src={user_state.pauseImage}
-    class="image-gallery"
+    class="media-content"
     style="display: {user_state.videoOn ? 'none' : 'block'}"
     alt=""
   />
 
   <div
-    class="gallery-mic"
+    class="mic-symbol"
     style="display: {user_state.audioOn ? 'none' : 'block'}"
   >
     <MicOffRed />
@@ -86,8 +84,8 @@
 <style>
   .peer-media-square {
     position: relative;
-    height: 100%;
     width: 100%;
+    padding-bottom: 75%; /* This creates a 4:3 aspect ratio */
     overflow: hidden;
   }
 
@@ -103,32 +101,12 @@
     z-index: 2;
   }
 
-  .image-gallery {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .media-content {
     position: absolute;
     top: 0;
     left: 0;
-  }
-
-  .large-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .gallery-mic {
-    position: absolute;
-    bottom: 4px;
-    left: 10px;
-    position: absolute;
-    color: rgb(30, 30, 30);
-    background-color: rgb(248, 250, 285, 0.7);
-    border-radius: 7px;
-    padding-bottom: 3px;
   }
 </style>

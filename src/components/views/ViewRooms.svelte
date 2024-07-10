@@ -3,9 +3,10 @@
   import { clientId } from "../../../stores/auth_store";
   import { createAudioContext } from "../../../stores/media/audioContext";
   import NavBar from "../menus/NavBar.svelte";
-
+  import { fade } from "svelte/transition";
   let rooms = [];
   let myId = null;
+  let isFetching = false;
 
   clientId.subscribe((value) => {
     myId = value;
@@ -45,57 +46,68 @@
 
       if (data !== "null") {
         rooms = Object.values(JSON.parse(data));
+        isFetching = false;
       }
     }
   };
 </script>
 
-<div class="top relative">
-  <button on:click={createRoom}> Create Room </button>
-</div>
-<img src="/angryZoot.png" alt="Angry Zoot mfer" class="zoot" />
-{#if rooms.length === 0}
-  <div class="top">No rooms are currently active...</div>
-{:else}
-  <div class="top">
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 70%">Room</th>
-          <th>Clients</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each rooms as room}
-          <tr>
-            <td>
-              <button
-                class="not-button"
-                on:click={() => {
-                  goToRoom(room.id);
-                }}
-              >
-                {room.name}
-              </button>
-            </td>
-            <td
-              >{Object.values(room.clients)
-                ? Object.values(room.clients).length
-                : "0"}</td
-            >
-          </tr>
-        {/each}
-      </tbody>
-    </table>
+{#if !isFetching}
+  <div class="view-rooms-container" transition:fade>
+    <button on:click={createRoom}> Create Room </button>
+
+    <img src="/angryZoot.png" alt="Angry Zoot mfer" class="zoot" />
+    {#if rooms.length === 0}
+      <div class="top">No rooms are currently active...</div>
+    {:else}
+      <div class="top">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 70%">Room</th>
+              <th>Clients</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each rooms as room}
+              <tr>
+                <td>
+                  <button
+                    class="not-button"
+                    on:click={() => {
+                      goToRoom(room.id);
+                    }}
+                  >
+                    {room.name}
+                  </button>
+                </td>
+                <td
+                  >{Object.values(room.clients)
+                    ? Object.values(room.clients).length
+                    : "0"}</td
+                >
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
   </div>
 {/if}
 
 <style>
+  .view-rooms-container {
+    display: flex;
+    align-items: center;
+    height: 80vh;
+    /* justify-content: center; */
+    flex-direction: column;
+    font-size: 14px;
+  }
   .not-button {
     background-color: transparent;
     color: white;
     border: none;
-    font-size: 14pt;
     padding: 0px;
   }
   .zoot {
@@ -111,25 +123,16 @@
   }
   table {
     border-collapse: collapse;
-    width: 100%;
+    width: 80vw;
   }
 
   th,
   td {
-    padding: 8px !important;
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
-
   td {
-    font-size: 14pt;
-  }
-
-  tr:hover {
-    background-color: #f5f5f5;
-  }
-
-  .relative {
-    position: relative;
+    padding: 2px 15px;
+    /* border-bottom: rgb(255, 255, 255); */
   }
 </style>

@@ -100,7 +100,7 @@
     padding: 0px 35px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    max-height: 18vh;
+    max-height: 200px;
     min-height: 132px;
     padding-bottom: 12px;
     justify-content: center;

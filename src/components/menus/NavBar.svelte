@@ -1,15 +1,15 @@
-<div class="nav-container">
-  <div class="logo">
+<nav class="nav-container">
+  <logo class="logo">
     <a href="/">
       <img class="ducky" src="/invertedDucky.png" alt="duckyyyyy" />ZOOT</a
     >
-  </div>
+  </logo>
   <div class="links"></div>
-</div>
+</nav>
 
 <style>
   .ducky {
-    width: 53px;
+    width: 48px;
     margin-right: 10px;
     filter: brightness(1.3);
     padding-bottom: 5px;
@@ -19,7 +19,7 @@
     grid-template-columns: 200px 2fr 1fr;
   }
   .logo {
-    font-size: 30pt;
+    font-size: 18pt;
     display: flex;
     justify-content: left;
   }
