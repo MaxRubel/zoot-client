@@ -1,6 +1,7 @@
 <script>
   import { navigate } from "svelte-routing";
   import { createNewRoom } from "../../api/rooms";
+  import { fade } from "svelte/transition";
 
   let name = "";
 
@@ -12,7 +13,7 @@
   };
 </script>
 
-<div class="form-container">
+<div class="form-container" transition:fade={{ duration: 2000, delay: 500 }}>
   <form on:submit={handleSubmit} class="new-room-form">
     <div class="left">Room Name:</div>
     <input type="text" bind:value={name} />
