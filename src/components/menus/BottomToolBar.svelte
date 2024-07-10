@@ -87,6 +87,19 @@
     border: none;
   }
 
+  button:hover {
+    background-color: #255a9b;
+  }
+
+  button:focus {
+    outline: 2px solid #535bf2;
+    outline-offset: 2px;
+  }
+
+  button:active {
+    background-color: #4347d9;
+  }
+
   @media screen and (max-width: 605px) {
     .bottom-tool-bar-container {
       grid-template-columns: 4fr 1fr;

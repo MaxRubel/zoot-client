@@ -58,6 +58,7 @@
     updateDataChannelStore,
     updatePeerConnectionStore,
   } from "../../../stores/media/roomStore";
+  import { fade } from "svelte/transition";
 
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
@@ -504,7 +505,7 @@
   };
 </script>
 
-<div class="user-hub">
+<div class="user-hub" transition:fade>
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
   <UserPreferenceMenu />
   {#if user_state.debug}
