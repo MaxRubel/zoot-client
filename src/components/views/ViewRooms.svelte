@@ -28,12 +28,10 @@
   });
 
   const createRoom = () => {
-    createAudioContext();
     navigate("/rooms/new");
   };
 
   const goToRoom = (id) => {
-    createAudioContext();
     navigate(`/rooms/${id}`);
   };
 
