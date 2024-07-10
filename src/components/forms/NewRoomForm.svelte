@@ -13,8 +13,8 @@
   };
 </script>
 
-<div class="form-container" transition:fade={{ duration: 2000, delay: 500 }}>
-  <form on:submit={handleSubmit} class="new-room-form">
+<div class="form-container" transition:fade={{ duration: 2000 }}>
+  <form on:submit|preventDefault={handleSubmit} class="new-room-form">
     <div class="left">Room Name:</div>
     <input type="text" bind:value={name} />
     <button type="submit">Create</button>
