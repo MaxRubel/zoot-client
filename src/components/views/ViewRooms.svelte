@@ -2,11 +2,12 @@
   import { navigate } from "svelte-routing";
   import { clientId } from "../../../stores/auth_store";
   import { createAudioContext } from "../../../stores/media/audioContext";
-  import NavBar from "../menus/NavBar.svelte";
   import { fade } from "svelte/transition";
+  import { onMount } from "svelte";
+
   let rooms = [];
   let myId = null;
-  let isFetching = false;
+  let isFetching = true;
 
   clientId.subscribe((value) => {
     myId = value;
@@ -53,45 +54,46 @@
 </script>
 
 {#if !isFetching}
-  <div class="view-rooms-container" transition:fade>
-    <button on:click={createRoom}> Create Room </button>
-
-    <img src="/angryZoot.png" alt="Angry Zoot mfer" class="zoot" />
-    {#if rooms.length === 0}
-      <div class="top">No rooms are currently active...</div>
-    {:else}
-      <div class="top">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 70%">Room</th>
-              <th>Clients</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each rooms as room}
+  <div transition:fade={{ duration: 500, delay: 500 }}>
+    <div class="view-rooms-container">
+      <button on:click={createRoom}> Create Room </button>
+      <img src="/angryZoot.png" alt="Angry Zoot mfer" class="zoot" />
+      {#if rooms.length === 0}
+        <div class="top">No rooms are currently active...</div>
+      {:else}
+        <div class="top">
+          <table>
+            <thead>
               <tr>
-                <td>
-                  <button
-                    class="not-button"
-                    on:click={() => {
-                      goToRoom(room.id);
-                    }}
-                  >
-                    {room.name}
-                  </button>
-                </td>
-                <td
-                  >{Object.values(room.clients)
-                    ? Object.values(room.clients).length
-                    : "0"}</td
-                >
+                <th style="width: 70%">Room</th>
+                <th>Clients</th>
               </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
+            </thead>
+            <tbody>
+              {#each rooms as room}
+                <tr>
+                  <td>
+                    <button
+                      class="not-button"
+                      on:click={() => {
+                        goToRoom(room.id);
+                      }}
+                    >
+                      {room.name}
+                    </button>
+                  </td>
+                  <td
+                    >{Object.values(room.clients)
+                      ? Object.values(room.clients).length
+                      : "0"}</td
+                  >
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {/if}
+    </div>
   </div>
 {/if}
 
@@ -100,7 +102,6 @@
     display: flex;
     align-items: center;
     height: 80vh;
-    /* justify-content: center; */
     flex-direction: column;
     font-size: 14px;
   }
@@ -133,6 +134,5 @@
   }
   td {
     padding: 2px 15px;
-    /* border-bottom: rgb(255, 255, 255); */
   }
 </style>
