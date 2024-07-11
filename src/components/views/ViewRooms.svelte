@@ -52,7 +52,7 @@
 </script>
 
 {#if !isFetching}
-  <div transition:fade={{ duration: 500, delay: 500 }}>
+  <div transition:fade={{ duration: 500, delay: 200 }}>
     <div class="view-rooms-container">
       <button on:click={createRoom}> Create Room </button>
       <img src="/angryZoot.png" alt="Angry Zoot mfer" class="zoot" />

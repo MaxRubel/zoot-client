@@ -143,7 +143,12 @@
   ];
 
   // const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
-  const ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
+  let ws;
+  try {
+    ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
+  } catch {
+    console.error("Unable to connect to websocket");
+  }
 
   const cleanup = () => {
     if (user_state.sharing_screen) {

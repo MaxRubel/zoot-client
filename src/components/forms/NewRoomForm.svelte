@@ -5,11 +5,14 @@
 
   let name = "";
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    createNewRoom({ name }).then((roomId) => {
+    try {
+      const roomId = await createNewRoom({ name });
       navigate(`/rooms/${roomId}`);
-    });
+    } catch (error) {
+      console.error("Failed to create a new room:", error);
+    }
   };
 </script>
 
@@ -29,7 +32,6 @@
     height: 80vh;
     display: flex;
     justify-content: center;
-    /* align-items: center; */
   }
 
   button {
