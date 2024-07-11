@@ -122,6 +122,9 @@
     updateUserState("sharing_screen", null);
   });
 
+  // window.addEventListener("resize", (e) => {
+  // });
+
   const alignUserSelection = () => {
     user_state.audioOn
       ? micOn(peerConnections, stream)

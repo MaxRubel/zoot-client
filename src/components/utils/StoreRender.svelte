@@ -1,6 +1,6 @@
 <script>
-  import { peerStates } from "../../stores/media/peerStates";
-  import { userState } from "../../stores/media/userState";
+  import { peerStates } from "../../../stores/media/peerStates";
+  import { userState } from "../../../stores/media/userState";
 
   $: peerState = JSON.stringify($peerStates, null, 2);
   $: user_state = JSON.stringify($userState, null, 2);
