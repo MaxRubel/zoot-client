@@ -171,7 +171,7 @@
   }
 </script>
 
-<div class="peer-media-square gallery">
+<div class="video-tile">
   <div class="border-gallery" bind:this={square}></div>
   <div class="media-container">
     <video
@@ -207,15 +207,13 @@
 </div>
 
 <style>
-  .peer-media-square {
+  .video-tile {
     position: relative;
     width: 100%;
+    height: 100%;
     overflow: hidden;
+    border-radius: 8px;
   }
-
-  /* .gallery {
-    min-height: 400px;
-  } */
 
   .border-gallery {
     position: absolute;
@@ -272,8 +270,8 @@
 
   .mic-symbol {
     position: absolute;
-    bottom: 0;
-    left: 0;
+    bottom: 10px;
+    left: 10px;
   }
 
   .centered {

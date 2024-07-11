@@ -6,13 +6,14 @@
   import { userState } from "../../../stores/media/userState";
 
   export let localVideo;
+  export let columns;
 
   let myId;
   let loudest;
   let square;
-  let timeout;
   let videoElement;
   let user_state;
+  let localVidDiv;
 
   const unsubscribe = loudestPeer.subscribe((value) => {
     loudest = value;
@@ -40,7 +41,6 @@
     unsubscribe();
     unsubscribe2();
     unsubscribe3();
-    clearTimeout(timeout);
   });
 
   $: {
@@ -51,7 +51,8 @@
 </script>
 
 <div
-  class="peer-media-square gallery"
+  class="video-tile"
+  bind:this={localVidDiv}
   style="display: {user_state.hideSelf ? 'none' : 'block'}"
 >
   <div class="border-gallery" bind:this={square}></div>
@@ -59,7 +60,7 @@
   <video
     bind:this={videoElement}
     class="media-content"
-    style="display: {user_state.videoOn ? 'block' : 'none'}"
+    class:hidden={!user_state.videoOn}
     autoplay
     muted
   >
@@ -69,24 +70,22 @@
   <img
     src={user_state.pauseImage}
     class="media-content"
-    style="display: {user_state.videoOn ? 'none' : 'block'}"
+    class:hidden={user_state.videoOn}
     alt=""
   />
 
-  <div
-    class="mic-symbol"
-    style="display: {user_state.audioOn ? 'none' : 'block'}"
-  >
+  <div class="mic-symbol" class:hidden={user_state.audioOn}>
     <MicOffRed />
   </div>
 </div>
 
 <style>
-  .peer-media-square {
+  .video-tile {
     position: relative;
     width: 100%;
-    /* padding-top: 56.25%; 16:9 Aspect Ratio */
+    height: 100%;
     overflow: hidden;
+    border-radius: 8px;
   }
 
   .border-gallery {
@@ -105,5 +104,16 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .mic-symbol {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 20;
   }
 </style>
