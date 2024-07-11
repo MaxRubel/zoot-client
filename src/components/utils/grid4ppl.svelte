@@ -1,10 +1,11 @@
 <script>
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   let gridElement;
   let windowWidth = 0;
-  let items = Array.from({ length: 20 }, (_, i) => `Video ${i + 1}`); // Adjust the length to simulate different item counts
+  let items = Array.from({ length: 0 }, (_, i) => `Tile ${i + 1}`); // Adjust the length to simulate different item counts
   let newWindow;
+  let grid;
 
   function openNewWindow() {
     newWindow = window.open("", "New Window", "width=600,height=400");
@@ -22,28 +23,68 @@
     window.resizeTo(newWidth, window.innerHeight);
   }
 
-  function setAspectRatio(width, height) {
-    const aspectRatio = width / height;
-    const newWidth = window.innerHeight * aspectRatio;
-    window.resizeTo(newWidth, window.innerHeight);
-  }
+  // function setAspectRatio(width, height) {
+  //   const aspectRatio = width / height;
+  //   const newWidth = window.innerHeight * aspectRatio;
+  //   window.resizeTo(newWidth, window.innerHeight);
+  // }
 
-  // Example: Set a 16:9 aspect ratio
-  setAspectRatio(16, 9);
+  // // Example: Set a 16:9 aspect ratio
+  // setAspectRatio(16, 9);
 
   function calculateGrid() {
-    const length = items.length;
-    const rows = Math.ceil(Math.sqrt(length));
-    const cols = Math.ceil(length / rows);
+    const itemsLength = items.length;
+    let rows = Math.ceil(Math.sqrt(itemsLength));
+    let cols = Math.ceil(itemsLength / rows);
+    cols = Math.ceil(cols);
+    // debugger;
+    if (itemsLength < 3) {
+      rows = 1;
+    }
+    if (itemsLength < 4) {
+      cols = 2;
+    } else if (itemsLength === 5 || itemsLength === 6) {
+      cols += 1;
+    } else if (itemsLength >= 10 && itemsLength <= 12) {
+      cols += 1;
+    } else if (itemsLength >= 17 && itemsLength <= 20) {
+      cols += 1;
+    } else if (itemsLength >= 26 && itemsLength <= 30) {
+      cols += 1;
+    } else if (itemsLength >= 37 && itemsLength <= 42) {
+      cols += 1;
+    }
+
     return { rows, cols };
   }
 
-  $: grid = calculateGrid();
+  $: {
+    grid = calculateGrid();
+    console.log(items);
+  }
+  let interval;
+
+  const stop = () => {
+    clearInterval(interval);
+  };
+
+  const start = () => {
+    if (interval) {
+      clearInterval(interval);
+    }
+    interval = setInterval(() => {
+      items = [...items, `Tile ${items.length + 1}`];
+    }, 300);
+  };
 
   onMount(() => {
     updateLayout();
     window.addEventListener("resize", updateLayout);
-    return () => window.removeEventListener("resize", updateLayout);
+
+    onDestroy(() => {
+      window.removeEventListener("resize", updateLayout);
+      clearInterval(interval);
+    });
   });
 </script>
 
@@ -52,17 +93,14 @@
   bind:this={gridElement}
   style="--rows: {grid.rows}; --cols: {grid.cols}"
 >
-  {#each items as item, index}
+  {#each items as item}
     <div class="tile">
       <div class="tile-content">{item}</div>
     </div>
   {/each}
-  {#each Array(grid.rows * grid.cols - items.length) as _}
-    <div class="tile">
-      <div class="tile-content empty"></div>
-    </div>
-  {/each}
 </div>
+<button on:click={start}>start</button>
+<button on:click={stop}>stop</button>
 
 <style>
   .video-grid {
@@ -73,8 +111,9 @@
     grid-template-columns: repeat(var(--cols), 1fr);
     justify-content: center;
     align-items: center;
-    max-height: 87vh;
-    background-color: red;
+    max-height: 77vh;
+    aspect-ratio: 4 / 3;
+    background-color: rgba(255, 0, 0, 0.164);
   }
 
   .tile {

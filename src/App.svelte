@@ -16,7 +16,7 @@
     <Route path="/"><ViewRooms /></Route>
     <Route path="/rooms/:id"><RoomHub /></Route>
     <Route path="/rooms/new"><NewRoomForm /></Route>
-    <Route path="/test"><OpenWindow /></Route>
+    <Route path="/test"><Grid4ppl /></Route>
   </Router>
 </main>
 
