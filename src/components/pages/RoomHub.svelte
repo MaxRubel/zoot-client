@@ -120,10 +120,8 @@
     // ws.send(`3&${roomId}&${myId}&&`);
     stopAnalyzingAudioLevels();
     updateUserState("sharing_screen", null);
+    cleanup();
   });
-
-  // window.addEventListener("resize", (e) => {
-  // });
 
   const alignUserSelection = () => {
     user_state.audioOn
@@ -175,12 +173,13 @@
     cleanup();
   });
 
-  // history.pushState(null, null, location.href);
-  // window.onpopstate = function () {
-  //   history.go(1);
-  // };
+  //Hijack the back button:
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.go(1);
+  };
 
-  //Send My Id to Server When Connecting
+  //Automatic Websockets:
   ws.onopen = () => {
     ws.send(`1&${roomId}&${myId}&0&`);
   };
@@ -231,7 +230,6 @@
     //Create New Peer Connection
     const peerConnection = new RTCPeerConnection({ iceServers });
     updatePeerConnectionStore(answererId, peerConnection);
-    // peerConnections[answererId] = peerConnection;
 
     //Create New data channel from direct communication
     const dataChannel = peerConnection.createDataChannel(
@@ -239,9 +237,8 @@
     );
 
     updateDataChannelStore(answererId, dataChannel);
-    // dataChannels[answererId] = dataChannel;
-    //Get Each Track from the Stream
 
+    //Get Each Track from the Stream
     stream = await getUserMedia();
     stream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, stream);
@@ -318,16 +315,12 @@
       peerConnections[peerId].close();
       dataChannels[peerId].close();
       removePeerConnection(peerId);
-      // delete peerConnections[peerId];
       removeDataChannel(peerId);
-      // delete dataChannels[peerId];
       deletePeerState(peerId);
-      // peerConnections = { ...peerConnections };
-      // dataChannels = { ...dataChannels };
     }
-    // if (dataType === "6") {
-    //   navigate("/rooms/new");
-    // }
+    if (dataType === "6") {
+      navigate("/rooms/new");
+    }
 
     //---------------Negotiations----------------
     if (dataType === "3") {
