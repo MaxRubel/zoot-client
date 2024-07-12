@@ -43,7 +43,13 @@
   class:expanded={isExpanded}
   class:collapsed={!isExpanded}
 >
-  <button id="toggle-menu" class="clear empty" on:click={toggleMenu}>
+  <button
+    id="toggle-menu"
+    class="clear empty"
+    class:emptyExpanded={isExpanded}
+    class:emptyCollapsed={!isExpanded}
+    on:click={toggleMenu}
+  >
     <GearIcon />
   </button>
   <div class="nav-buttons">
@@ -53,13 +59,17 @@
     <button class="clear" id="selfView" on:click={handleUpdate}>
       {user_state.hideSelf ? "Show Self" : "Hide Self"}
     </button>
-    <button class="clear" id="debug-menu" on:click={handleUpdate}>
+    <!-- <button class="clear" id="debug-menu" on:click={handleUpdate}>
       {user_state.debug ? "Hide Debugger" : "Debug"}
-    </button>
+    </button> -->
   </div>
 </nav>
 
 <style>
+  #toggle-menu {
+    min-width: 60px !important;
+  }
+
   .user-prefs-container {
     display: flex;
     flex-direction: row;
@@ -77,14 +87,14 @@
   }
 
   .collapsed {
-    width: 40px;
+    width: 60px;
     transition: all ease 0.5s;
   }
 
   .expanded {
     width: 600px;
     transition: all ease 0.5s;
-    right: -115px;
+    right: -252px;
   }
 
   .clear {
@@ -104,9 +114,7 @@
     background-color: transparent;
     color: white;
     border: none;
-    width: 60px;
-    padding: 20px;
-    /* margin-right: 20px; */
+    width: 60px !important;
   }
   .empty:active,
   .empty:focus {
@@ -115,5 +123,45 @@
     -webkit-tap-highlight-color: transparent;
     outline: none;
     box-shadow: none;
+  }
+
+  .emptyCollapsed {
+    width: 60px !important;
+  }
+
+  .emptyCollapsed {
+    width: 60px !important;
+  }
+
+  @media screen and (max-width: 600px) {
+    .expanded {
+      right: -272px;
+    }
+    .emptyCollapsed {
+      margin-right: 20px;
+    }
+    .emptyExpanded {
+      margin-right: -15px;
+    }
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:focus,
+  button:active,
+  button:hover {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  button:hover {
+    background-color: #535bf2;
+  }
+
+  button:active {
+    background-color: #4347d9;
   }
 </style>

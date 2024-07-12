@@ -6,7 +6,7 @@
   import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
   import PeerMediaSmall from "../media/PeerMediaSmall.svelte";
   import ScreenSharer from "../media/ScreenSharer.svelte";
-  import YouArePresenting from "../YouArePresenting.svelte";
+  import YouArePresenting from "../cutscreens/YouArePresenting.svelte";
 
   export let peerConnections;
   export let localVideo;

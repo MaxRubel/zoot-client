@@ -54,7 +54,7 @@
   class="peer-media-square gallery"
   style="display: {user_state.hideSelf ? 'none' : 'block'}"
 >
-  <div class="border-gallery" bind:this={square}></div>
+  <div class="border" bind:this={square}></div>
 
   <video
     bind:this={videoElement}
@@ -85,15 +85,11 @@
   .peer-media-square {
     position: relative;
     width: 100%;
-    padding-bottom: 75%; /* This creates a 4:3 aspect ratio */
-    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    /* border: 1px solid rgba(224, 255, 255, 0.482); */
   }
 
-  .gallery {
-    min-height: 400px;
-  }
-
-  .border-gallery {
+  .border {
     position: absolute;
     height: 100%;
     width: 100%;
@@ -102,11 +98,12 @@
   }
 
   .media-content {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
