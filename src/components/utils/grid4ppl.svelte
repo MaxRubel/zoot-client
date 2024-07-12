@@ -1,27 +1,19 @@
 <script>
   import { onDestroy, onMount } from "svelte";
 
-  let gridElement;
   let windowWidth = 0;
-  let items = Array.from({ length: 4 }, (_, i) => `Tile ${i + 1}`); // Adjust the length to simulate different item counts
+  let gridElement;
   let grid;
+
+  //Adjust length property to change amount of grid items
+  let items = Array.from({ length: 0 }, (_, i) => `Tile ${i + 1}`);
 
   function updateLayout() {
     windowWidth = window.innerWidth;
-    const aspectRatio = 16 / 9;
-    const newWidth = window.innerHeight * aspectRatio;
-    window.resizeTo(newWidth, window.innerHeight);
   }
 
-  // function setAspectRatio(width, height) {
-  //   const aspectRatio = width / height;
-  //   const newWidth = window.innerHeight * aspectRatio;
-  //   window.resizeTo(newWidth, window.innerHeight);
-  // }
-
-  // // Example: Set a 16:9 aspect ratio
-  // setAspectRatio(16, 9);
   let colWidth = "1fr";
+
   function calculateGrid() {
     const itemsLength = items.length;
     let rows = Math.ceil(Math.sqrt(itemsLength));
@@ -86,7 +78,23 @@
     }
     interval = setInterval(() => {
       items = [...items, `Tile ${items.length + 1}`];
-    }, 500);
+    }, 400);
+  };
+
+  const add1 = () => {
+    items = [...items, `Tile ${items.length + 1}`];
+  };
+
+  const remove1 = () => {
+    if (items.length > 0) {
+      const newItems = [...items];
+      newItems.pop();
+      items = newItems;
+    }
+  };
+
+  const clear = () => {
+    items = [];
   };
 
   onMount(() => {
@@ -111,9 +119,12 @@
       </div>
     {/each}
   </div>
-  <div>
+  <div class="fixed">
     <button on:click={start}>start</button>
     <button on:click={stop}>stop</button>
+    <button on:click={add1}>add 1</button>
+    <button on:click={remove1}>remove 1</button>
+    <button on:click={clear}>clear</button>
   </div>
 </div>
 
@@ -128,14 +139,15 @@
     align-items: center;
     max-height: 77vh;
     aspect-ratio: 4 / 3;
-    background-color: rgba(255, 0, 0, 0.164);
+    border: 5px solid rgba(255, 94, 0, 0.212);
+    background-color: rgba(255, 94, 0, 0.144);
+    margin: auto;
   }
 
   .tile {
     position: relative;
     width: 100%;
     aspect-ratio: 4 / 3;
-    /* border: 1px solid rgba(224, 255, 255, 0.482); */
   }
 
   .tile-content {
@@ -148,15 +160,9 @@
     align-items: center;
   }
 
-  /* @media (max-width: 700px) {
-    .video-grid {
-      grid-template-columns: repeat(var(--cols), 23vh);
-    }
-  } */
-
-  /* @media (max-width: 617px) {
-    .video-grid[data-items-length-gt-4="true"] {
-      grid-template-columns: repeat(var(--cols), 16vh);
-    }
-  } */
+  .fixed {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+  }
 </style>
