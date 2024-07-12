@@ -55,7 +55,6 @@
         rows = itemsLength;
         colWidth = "19vh";
       } else if (itemsLength > 4) {
-        console.log("hey");
         cols = 2;
         rows = Math.ceil(itemsLength / 2);
         colWidth = "17vh";
@@ -69,8 +68,6 @@
     }
     return { rows, cols };
   }
-
-  $: console.log(colWidth);
 
   $: {
     grid = calculateGrid();
