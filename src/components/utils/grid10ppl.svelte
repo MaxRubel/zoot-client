@@ -7,7 +7,6 @@
   function updateLayout() {
     screenWidth = window.innerWidth;
     if (screenWidth < 669) {
-      console.log("nice");
     }
   }
 

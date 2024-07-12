@@ -16,7 +16,6 @@
 
   const unsubscribe = userState.subscribe((value) => {
     selfView = !value.hideSelf;
-    console.log(selfView);
   });
 
   onDestroy(unsubscribe);
@@ -28,7 +27,6 @@
     let rows = Math.ceil(Math.sqrt(itemsLength));
     let cols = Math.ceil(itemsLength / rows);
     cols = Math.ceil(cols);
-    console.log("items length :", itemsLength);
     // debugger;
     if (itemsLength < 3) {
       rows = 1;
@@ -57,7 +55,6 @@
         rows = itemsLength;
         colWidth = "18vh";
       } else if (itemsLength > 4) {
-        console.log("hey");
         cols = 2;
         rows = Math.ceil(itemsLength / 2);
         colWidth = "17vh";
@@ -75,7 +72,6 @@
   $: {
     if (peerConnections && selfView != null) {
       grid = calculateGrid();
-      console.log(windowWidth);
     }
   }
 
@@ -84,7 +80,6 @@
     grid = calculateGrid();
   };
 
-  $: console.log(windowWidth);
   onMount(() => {
     handleResize();
     window.addEventListener("resize", handleResize);
