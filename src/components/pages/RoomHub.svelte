@@ -325,9 +325,9 @@
       // peerConnections = { ...peerConnections };
       // dataChannels = { ...dataChannels };
     }
-    if (dataType === "6") {
-      navigate("/rooms/new");
-    }
+    // if (dataType === "6") {
+    //   navigate("/rooms/new");
+    // }
 
     //---------------Negotiations----------------
     if (dataType === "3") {
