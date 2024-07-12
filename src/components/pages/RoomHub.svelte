@@ -509,14 +509,14 @@
 <div class="user-hub" transition:fade>
   <ConfirmAudioModal {confirmAudio} {closeModal} {hookUpAudioContext} />
   <UserPreferenceMenu />
-  {#if user_state.debug}
-    <DebugMenu
-      {sendTestMessage}
-      {testConnection}
-      {testMedia}
-      {showPeerConnections}
-    />
-  {/if}
+
+  <!-- <DebugMenu
+    {sendTestMessage}
+    {testConnection}
+    {testMedia}
+    {showPeerConnections}
+  /> -->
+
   {#if screen_sharer_id}
     <ScreenShareView
       {peerConnections}
