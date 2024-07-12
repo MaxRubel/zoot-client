@@ -7,6 +7,7 @@
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // debugger;
     try {
       const roomId = await createNewRoom({ name });
       navigate(`/rooms/${roomId}`);

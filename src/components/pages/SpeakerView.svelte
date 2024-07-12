@@ -107,12 +107,14 @@
   }
 
   .scroll-button {
+    display: flex;
+    height: 35px;
+    width: 55px;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: 1px solid rgb(109, 109, 109);
+    background-color: rgba(24, 59, 90, 0.328);
+    border: none;
     padding: 15px 5px;
     cursor: pointer;
     z-index: 100;

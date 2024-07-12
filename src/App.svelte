@@ -4,10 +4,7 @@
   import NewRoomForm from "./components/forms/NewRoomForm.svelte";
   import NavBar from "./components/menus/NavBar.svelte";
   import RoomHub from "./components/pages/RoomHub.svelte";
-  import StoreRender from "./components/utils/StoreRender.svelte";
-  import Grid from "./components/utils/grid10ppl.svelte";
   import Grid4ppl from "./components/utils/grid4ppl.svelte";
-  import OpenWindow from "./components/utils/openWindow.svelte";
 </script>
 
 <main>

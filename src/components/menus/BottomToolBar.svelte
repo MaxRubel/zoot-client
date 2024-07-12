@@ -49,14 +49,14 @@
 
 <style>
   .bottom-tool-bar-container {
+    background-color: #11151d;
     display: grid;
     grid-template-columns: minmax(100px, 1fr) 4fr 1fr;
-    background-color: rgba(46, 46, 46, 0.5);
     backdrop-filter: blur(10px);
     position: fixed;
     bottom: 0;
     left: 0;
-    height: 60px;
+    height: 80px;
     width: 100vw;
     min-width: 350px;
     z-index: 30;
@@ -68,7 +68,7 @@
 
   .clear {
     display: flex;
-    height: 50px;
+    height: 75px;
     width: 125px;
     padding: 5px 15px;
     font-size: 14px;
@@ -76,19 +76,18 @@
     justify-content: center;
     align-items: center;
     margin: 0px 4px;
-    background-color: rgba(24, 59, 90, 0.8);
-    border: 1px solid #adb1fa88;
+    background-color: rgba(24, 59, 90, 0.328);
+    border: none;
     color: rgb(255, 255, 255);
-    /* border: 1px solid rgba(123, 123, 123, 0.593); */
   }
 
   .red {
-    background-color: rgb(79, 0, 0, 0.7);
+    background-color: #8a1f04;
     border: none;
   }
 
   button:hover {
-    background-color: #255a9b;
+    background-color: #535bf2;
   }
 
   button:focus {
