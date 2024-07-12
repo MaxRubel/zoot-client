@@ -171,7 +171,7 @@
   }
 </script>
 
-<div class="peer-media-square gallery">
+<div class="peer-media-square">
   <div class="border-gallery" bind:this={square}></div>
   <div class="media-container">
     <video
@@ -210,12 +210,8 @@
   .peer-media-square {
     position: relative;
     width: 100%;
-    padding-bottom: 75%; /* This creates a 4:3 aspect ratio */
-    overflow: hidden;
-  }
-
-  .gallery {
-    min-height: 400px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
   }
 
   .border-gallery {
@@ -235,11 +231,13 @@
   }
 
   .media-content {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     object-fit: cover;
   }
 
@@ -250,6 +248,11 @@
   }
 
   .pause-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     opacity: 1;
     transition: opacity 0.5s ease-out;
     z-index: 1;
