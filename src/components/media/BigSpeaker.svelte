@@ -57,8 +57,8 @@
 
 <style>
   .peer-media-square {
-    width: 100%;
-    height: 100%;
+    aspect-ratio: 4/3;
+    height: 65vh;
     overflow: hidden;
     position: relative;
   }
