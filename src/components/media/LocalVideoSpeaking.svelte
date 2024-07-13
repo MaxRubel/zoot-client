@@ -58,15 +58,14 @@
 <style>
   .peer-media-square {
     position: relative;
-    height: 100%;
-    width: 100%;
+    aspect-ratio: 4/3;
     overflow: hidden;
   }
 
   .image-large {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;
@@ -80,7 +79,6 @@
   .large-video {
     width: 100%;
     height: 100%;
-    object-fit: contain;
     position: absolute;
     top: 0;
     left: 0;

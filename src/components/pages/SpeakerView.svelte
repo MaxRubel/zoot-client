@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
   import BigSpeaker from "../media/BigSpeaker.svelte";
@@ -13,6 +14,10 @@
 
   let presenterId = null;
   let presenter = null;
+  let scrollContainer;
+  let leftArrowButton;
+  let rightArrowButton;
+  let showButtons = false;
 
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
@@ -47,15 +52,41 @@
       videoStream2 = localVideo.clone();
     }
   }
+
+  const handleMouseEnter = () => {
+    if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {
+      showButtons = true;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    showButtons = false;
+  };
+
+  onMount(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  });
 </script>
 
 <div class="presenter-view-container">
-  <div class="scroll-wrapper">
-    <button class="scroll-button left-scroll centered" on:click={scrollLeft}>
+  <div
+    class="scroll-wrapper"
+    role="region"
+    aria-label="Scrollable content"
+    tabindex="-1"
+    on:mouseenter={handleMouseEnter}
+    on:mouseleave={handleMouseLeave}
+  >
+    <button
+      class="scroll-button left-scroll centered"
+      bind:this={leftArrowButton}
+      on:click={scrollLeft}
+      class:visible={showButtons}
+    >
       <LefttArrow />
     </button>
 
-    <div class="scroll-container">
+    <div class="scroll-container" bind:this={scrollContainer}>
       <LocalVideoSmall {iAmSpeaking} localVideo={videoStream1} />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMediaSmall
@@ -67,7 +98,12 @@
       {/each}
     </div>
 
-    <button class="scroll-button right-scroll centered" on:click={scrollRight}>
+    <button
+      class="scroll-button right-scroll centered"
+      bind:this={rightArrowButton}
+      on:click={scrollRight}
+      class:visible={showButtons}
+    >
       <RightArrow />
     </button>
   </div>
@@ -75,7 +111,7 @@
   <div class="speaker-div">
     {#if presenterId}
       {#if presenterId === myId}
-        <LocalVideoSpeaking localVideo={videoStream2} />
+        <LocalVideoSpeaking localVideo={videoStream1} />
       {:else}
         <BigSpeaker connection={presenter} peerId={presenterId} small={false} />
       {/if}
@@ -87,40 +123,60 @@
   .presenter-view-container {
     margin-top: 5px;
   }
+
   .scroll-wrapper {
     position: relative;
     width: 100%;
-    overflow: hidden;
+    display: flex;
+    justify-content: center;
   }
 
   .scroll-container {
     display: flex;
-    overflow-x: auto;
-    gap: 15px;
-    padding: 0px 35px;
+    overflow-x: scroll;
+    gap: 10px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    max-height: 200px;
-    min-height: 132px;
-    padding-bottom: 12px;
-    justify-content: center;
+    padding-bottom: 10px;
   }
 
   .scroll-button {
     display: flex;
-    height: 35px;
-    width: 55px;
+    height: 80px;
+    width: 50px;
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(24, 59, 90, 0.328);
+    transform: translateY(-55%);
+    background-color: rgba(24, 59, 90, 0.6);
     border: none;
     padding: 15px 5px;
     cursor: pointer;
     z-index: 100;
+    transition: all ease 2s;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+  }
+
+  .visible {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .scroll-button:hover {
+    background-color: rgb(83, 91, 242, 0.6);
+  }
+
+  button:focus,
+  button:active {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .scroll-button:active {
+    border: none;
+  }
+  .scroll-button:focus {
     border: none;
   }
 
@@ -134,8 +190,11 @@
 
   .speaker-div {
     margin-top: 3px;
+    display: flex;
+    justify-content: center;
     width: 90vw;
-    height: 70vh;
+    height: 63vh;
     margin: auto;
+    margin-bottom: 64px;
   }
 </style>

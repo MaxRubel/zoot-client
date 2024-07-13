@@ -88,9 +88,8 @@
 <style>
   .peer-media-square {
     position: relative;
-    width: 200px;
-    height: 150px;
-    overflow: hidden;
+    aspect-ratio: 4/3;
+    height: 140px;
   }
 
   .border {

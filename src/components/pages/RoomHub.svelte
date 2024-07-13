@@ -339,7 +339,6 @@
           senderId,
           new RTCPeerConnection({ iceServers }),
         );
-        // peerConnections[senderId] = new RTCPeerConnection({ iceServers });
       }
 
       const peerConnection = peerConnections[senderId];
