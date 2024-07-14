@@ -6,6 +6,7 @@ const DEFAULT_PREFERENCES = {
     debug: false,
     audioOn: false,
     videoOn: true,
+    inRoom: false
 };
 
 const getInitialState = () => {
@@ -18,7 +19,7 @@ export const userState = writable(getInitialState());
 export function updateUserState(key, value) {
     userState.update(states => {
         const updatedStates = { ...states, [key]: value };
-        const updateStateNoSharing = { ...updatedStates, sharing_screen: null }
+        const updateStateNoSharing = { ...updatedStates, sharing_screen: null, inRoom: null }
         localStorage.setItem('user_state', JSON.stringify(updateStateNoSharing));
         return updatedStates;
     });

@@ -27,106 +27,107 @@
       gridElement.style.marginTop = "0px";
     }
     switch (itemsLength) {
-      // case 1:
-      //   aspect = 4 / 3;
-      //   rowHeight = "80vh";
-      //   break;
-      // case 2:
-      //   cols = 2;
-      //   rows = 1;
-      //   aspect = null;
-      //   gridElement.style.marginTop = "40px";
-      //   if (windowWidth < 810) {
-      //     gridElement.style.marginTop = "0px";
-      //     aspect = 4 / 3;
-      //     cols = 1;
-      //     rows = 2;
-      //     colWidth = "53vh";
-      //   }
-      //   break;
-      // case 3:
-      //   if (windowWidth < 623) {
-      //     cols = 1;
-      //     rows = 3;
-      //     colWidth = "36vh";
-      //     aspect = null;
-      //   }
-      //   break;
-      // case 4:
-      //   if (windowWidth < 520) {
-      //     cols = 1;
-      //     rows = 4;
-      //     colWidth = "26vh";
-      //     aspect = null;
-      //   }
-      //   break;
-      // case 5:
-      //   cols = 3;
-      //   rows = 2;
-      //   aspect = 4 / 2;
-      //   if (windowWidth < 660) {
-      //     cols = 2;
-      //     rows = 3;
-      //     colWidth = "26.5vh";
-      //     aspect = 2 / 3;
-      //   }
-      //   break;
-      // case 6:
-      //   cols = 3;
-      //   rows = 2;
-      //   aspect = 4 / 2;
-      //   if (windowWidth < 660) {
-      //     cols = 2;
-      //     rows = 3;
-      //     colWidth = "26.5vh";
-      //     aspect = 2 / 3;
-      //   }
-      //   break;
-      case 7:
-        cols = 3;
-        rows = 3;
+      case 1:
         aspect = 4 / 3;
-        if (windowWidth < 660) {
-          cols = 2;
-          rows = 3;
-          colWidth = "26.5vh";
-          aspect = 2 / 3;
-        }
-        break;
-      case 8:
-        cols = 3;
-        rows = 3;
-        aspect = 4 / 3;
-        if (windowWidth < 660) {
-          cols = 2;
-          rows = 3;
-          colWidth = "26.5vh";
-          aspect = 2 / 3;
-        }
-        break;
-      case 8:
-        cols = 3;
-        rows = 3;
-        aspect = 4 / 3;
-        if (windowWidth < 660) {
-          cols = 2;
-          rows = 3;
-          colWidth = "26.5vh";
-          aspect = 2 / 3;
-        }
-        break;
-      case 9:
-        cols = 3;
-        rows = 3;
-        aspect = 4 / 3;
-        if (windowWidth < 660) {
-          cols = 2;
-          rows = 4;
-          colWidth = "21vh";
-          aspect = 2 / 3;
-        }
+        rowHeight = "80vh";
         break;
     }
+    // case 2:
+    //   cols = 2;
+    //   rows = 1;
+    //   aspect = null;
+    //   gridElement.style.marginTop = "40px";
+    //   if (windowWidth < 810) {
+    //     gridElement.style.marginTop = "0px";
+    //     aspect = 4 / 3;
+    //     cols = 1;
+    //     rows = 2;
+    //     colWidth = "53vh";
+    //   }
+    //   break;
+    // case 3:
+    //   if (windowWidth < 623) {
+    //     cols = 1;
+    //     rows = 3;
+    //     colWidth = "36vh";
+    //     aspect = null;
+    //   }
+    //   break;
+    // case 4:
+    //   if (windowWidth < 520) {
+    //     cols = 1;
+    //     rows = 4;
+    //     colWidth = "26vh";
+    //     aspect = null;
+    //   }
+    //   break;
+    // case 5:
+    //   cols = 3;
+    //   rows = 2;
+    //   aspect = 4 / 2;
+    //   if (windowWidth < 660) {
+    //     cols = 2;
+    //     rows = 3;
+    //     colWidth = "26.5vh";
+    //     aspect = 2 / 3;
+    //   }
+    //   break;
+    // case 6:
+    //   cols = 3;
+    //   rows = 2;
+    //   aspect = 4 / 2;
+    //   if (windowWidth < 660) {
+    //     cols = 2;
+    //     rows = 3;
+    //     colWidth = "26.5vh";
+    //     aspect = 2 / 3;
+    //   }
+    //   break;
+    // case 7:
+    //   cols = 3;
+    //   rows = 3;
+    //   aspect = 4 / 3;
+    //   if (windowWidth < 660) {
+    //     cols = 2;
+    //     rows = 3;
+    //     colWidth = "26.5vh";
+    //     aspect = 2 / 3;
+    //   }
+    //   break;
+    // case 8:
+    //   cols = 3;
+    //   rows = 3;
+    //   aspect = 4 / 3;
+    //   if (windowWidth < 660) {
+    //     cols = 2;
+    //     rows = 3;
+    //     colWidth = "26.5vh";
+    //     aspect = 2 / 3;
+    //   }
+    //   break;
+    // case 8:
+    //   cols = 3;
+    //   rows = 3;
+    //   aspect = 4 / 3;
+    //   if (windowWidth < 660) {
+    //     cols = 2;
+    //     rows = 3;
+    //     colWidth = "26.5vh";
+    //     aspect = 2 / 3;
+    //   }
+    //   break;
+    // case 9:
+    //   cols = 3;
+    //   rows = 3;
+    //   aspect = 4 / 3;
+    //   if (windowWidth < 660) {
+    //     cols = 2;
+    //     rows = 4;
+    //     colWidth = "21vh";
+    //     aspect = 2 / 3;
+    //   }
+    //   break;
+    // }
 
     if (items.length === 1) {
       rowHeight = "80vh";
