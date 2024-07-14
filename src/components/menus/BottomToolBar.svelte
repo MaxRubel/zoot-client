@@ -56,7 +56,7 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    height: 80px;
+    height: 75px;
     width: 100vw;
     min-width: 350px;
     z-index: 30;
@@ -68,7 +68,7 @@
 
   .clear {
     display: flex;
-    height: 75px;
+    height: 65px;
     width: 125px;
     padding: 5px 15px;
     font-size: 14px;

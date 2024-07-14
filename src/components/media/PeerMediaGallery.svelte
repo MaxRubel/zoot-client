@@ -238,7 +238,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    object-fit: cover;
   }
 
   .video-normal {
