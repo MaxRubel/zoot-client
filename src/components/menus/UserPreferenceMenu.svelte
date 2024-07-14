@@ -62,6 +62,7 @@
     <!-- <button class="clear" id="debug-menu" on:click={handleUpdate}>
       {user_state.debug ? "Hide Debugger" : "Debug"}
     </button> -->
+    <!-- </div> -->
   </div>
 </nav>
 
@@ -77,8 +78,8 @@
     transition: opacity 0.5s ease;
     overflow: hidden;
     position: fixed;
-    top: 10px;
-    right: 0px;
+    top: 5px;
+    right: 4px;
     z-index: 200;
   }
 
@@ -87,14 +88,15 @@
   }
 
   .collapsed {
-    width: 60px;
+    width: 65px;
+    /* background-color: red; */
     transition: all ease 0.5s;
   }
 
   .expanded {
     width: 600px;
     transition: all ease 0.5s;
-    right: -252px;
+    right: -240px;
   }
 
   .clear {
@@ -116,6 +118,11 @@
     border: none;
     width: 60px !important;
   }
+
+  .emptyCollapsed {
+    margin-right: 100px;
+  }
+
   .empty:active,
   .empty:focus {
     outline: none !important;
@@ -125,23 +132,12 @@
     box-shadow: none;
   }
 
-  .emptyCollapsed {
-    width: 60px !important;
-  }
-
-  .emptyCollapsed {
-    width: 60px !important;
-  }
-
   @media screen and (max-width: 600px) {
     .expanded {
-      right: -272px;
+      right: -249px;
     }
     .emptyCollapsed {
       margin-right: 20px;
-    }
-    .emptyExpanded {
-      margin-right: -15px;
     }
   }
 

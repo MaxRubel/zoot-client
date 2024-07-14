@@ -77,6 +77,7 @@
   let myId;
   let user_state = {};
   let screen_sharer_id = null;
+  let windowWidth;
 
   //Audio Context Modal
   if (!audioContext) {
@@ -104,23 +105,6 @@
 
   const unsubscribe4 = audioContextStore.subscribe((value) => {
     audioContext = value;
-  });
-
-  onDestroy(() => {
-    peerConnectionsStore.set({});
-    dataChannelsStore.set({});
-    unsubscribe();
-    unsubscribe1();
-    unsubscribe2();
-    unsubscribe3();
-    unsubscribe4();
-    broadcastToRoom(dataChannels, "I am leaving");
-    clearPeerStates();
-    // ws.send(`0&${roomId}&${myId}&&`);
-    // ws.send(`3&${roomId}&${myId}&&`);
-    stopAnalyzingAudioLevels();
-    updateUserState("sharing_screen", null);
-    cleanup();
   });
 
   const alignUserSelection = () => {
@@ -218,6 +202,27 @@
   onMount(async () => {
     localVideo = await cameraOn(peerConnections);
     stream = await getUserMedia();
+    userState.update((prevVal) => ({
+      ...prevVal,
+      inRoom: true,
+    }));
+  });
+
+  onDestroy(() => {
+    peerConnectionsStore.set({});
+    dataChannelsStore.set({});
+    unsubscribe();
+    unsubscribe1();
+    unsubscribe2();
+    unsubscribe3();
+    unsubscribe4();
+    broadcastToRoom(dataChannels, "I am leaving");
+    clearPeerStates();
+    // ws.send(`3&${roomId}&${myId}&&`);
+    stopAnalyzingAudioLevels();
+    updateUserState("sharing_screen", null);
+    cleanup();
+    updateUserState("inRoom", false);
   });
 
   //analyze audio levels:

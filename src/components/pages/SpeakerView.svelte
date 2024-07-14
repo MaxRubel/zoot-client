@@ -133,17 +133,20 @@
 
   .scroll-container {
     display: flex;
-    overflow-x: scroll;
     gap: 10px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    padding: 10px 0px;
     padding-bottom: 10px;
+    overflow-x: auto;
+    margin: 0% 1%;
+    margin-top: 18px;
   }
 
   .scroll-button {
     display: flex;
-    height: 80px;
-    width: 50px;
+    height: 70px;
+    width: 44px;
     position: absolute;
     top: 50%;
     transform: translateY(-55%);
