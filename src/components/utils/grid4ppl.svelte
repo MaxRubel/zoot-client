@@ -6,57 +6,182 @@
   let grid;
 
   //Adjust length property to change amount of grid items
-  let items = Array.from({ length: 0 }, (_, i) => `Tile ${i + 1}`);
 
   function updateLayout() {
     windowWidth = window.innerWidth;
   }
 
-  let colWidth = "1fr";
+  // let colWidth = "1fr";
 
+  let items = Array.from({ length: 7 }, (_, i) => `Tile ${i + 1}`);
   function calculateGrid() {
+    let colWidth = "1fr";
+    let rowHeight = "1fr";
     const itemsLength = items.length;
     let rows = Math.ceil(Math.sqrt(itemsLength));
     let cols = Math.ceil(itemsLength / rows);
+    let aspect = 4 / 3;
+
     cols = Math.ceil(cols);
-
-    if (itemsLength < 3) {
-      rows = 1;
+    if (gridElement) {
+      gridElement.style.marginTop = "0px";
     }
-    if (itemsLength < 4) {
+    switch (itemsLength) {
+      // case 1:
+      //   aspect = 4 / 3;
+      //   rowHeight = "80vh";
+      //   break;
+      // case 2:
+      //   cols = 2;
+      //   rows = 1;
+      //   aspect = null;
+      //   gridElement.style.marginTop = "40px";
+      //   if (windowWidth < 810) {
+      //     gridElement.style.marginTop = "0px";
+      //     aspect = 4 / 3;
+      //     cols = 1;
+      //     rows = 2;
+      //     colWidth = "53vh";
+      //   }
+      //   break;
+      // case 3:
+      //   if (windowWidth < 623) {
+      //     cols = 1;
+      //     rows = 3;
+      //     colWidth = "36vh";
+      //     aspect = null;
+      //   }
+      //   break;
+      // case 4:
+      //   if (windowWidth < 520) {
+      //     cols = 1;
+      //     rows = 4;
+      //     colWidth = "26vh";
+      //     aspect = null;
+      //   }
+      //   break;
+      // case 5:
+      //   cols = 3;
+      //   rows = 2;
+      //   aspect = 4 / 2;
+      //   if (windowWidth < 660) {
+      //     cols = 2;
+      //     rows = 3;
+      //     colWidth = "26.5vh";
+      //     aspect = 2 / 3;
+      //   }
+      //   break;
+      // case 6:
+      //   cols = 3;
+      //   rows = 2;
+      //   aspect = 4 / 2;
+      //   if (windowWidth < 660) {
+      //     cols = 2;
+      //     rows = 3;
+      //     colWidth = "26.5vh";
+      //     aspect = 2 / 3;
+      //   }
+      //   break;
+      case 7:
+        cols = 3;
+        rows = 3;
+        aspect = 4 / 3;
+        if (windowWidth < 660) {
+          cols = 2;
+          rows = 3;
+          colWidth = "26.5vh";
+          aspect = 2 / 3;
+        }
+        break;
+      case 8:
+        cols = 3;
+        rows = 3;
+        aspect = 4 / 3;
+        if (windowWidth < 660) {
+          cols = 2;
+          rows = 3;
+          colWidth = "26.5vh";
+          aspect = 2 / 3;
+        }
+        break;
+      case 8:
+        cols = 3;
+        rows = 3;
+        aspect = 4 / 3;
+        if (windowWidth < 660) {
+          cols = 2;
+          rows = 3;
+          colWidth = "26.5vh";
+          aspect = 2 / 3;
+        }
+        break;
+      case 9:
+        cols = 3;
+        rows = 3;
+        aspect = 4 / 3;
+        if (windowWidth < 660) {
+          cols = 2;
+          rows = 4;
+          colWidth = "21vh";
+          aspect = 2 / 3;
+        }
+        break;
+    }
+
+    if (items.length === 1) {
+      rowHeight = "80vh";
+    } else if (items.length === 2) {
       cols = 2;
-    } else if (itemsLength === 5 || itemsLength === 6) {
-      cols += 1;
-    } else if (itemsLength >= 10 && itemsLength <= 12) {
-      cols += 1;
-    } else if (itemsLength >= 17 && itemsLength <= 20) {
-      cols += 1;
-    } else if (itemsLength >= 26 && itemsLength <= 30) {
-      cols += 1;
-    } else if (itemsLength >= 37 && itemsLength <= 42) {
-      cols += 1;
-    }
-
-    if (windowWidth < 700) {
-      if (itemsLength <= 4) {
+      rows = 1;
+      aspect = null;
+      gridElement.style.marginTop = "40px";
+      if (windowWidth < 810) {
+        gridElement.style.marginTop = "0px";
+        aspect = 4 / 3;
         cols = 1;
-        rows = itemsLength;
-        colWidth = "29vh";
-      } else if (itemsLength > 4 && itemsLength <= 6) {
+        rows = 2;
+        colWidth = "53vh";
+      }
+    } else if (items.length === 3) {
+      if (windowWidth < 623) {
         cols = 1;
-        rows = itemsLength;
-        colWidth = "19vh";
-      } else if (itemsLength > 4) {
+        rows = 3;
+        colWidth = "36vh";
+        aspect = null;
+      }
+    } else if (items.length === 4) {
+      if (windowWidth < 520) {
+        cols = 1;
+        rows = 4;
+        colWidth = "26vh";
+        aspect = null;
+      }
+    } else if (items.length === 5 || items.length === 6) {
+      cols = 3;
+      rows = 2;
+      aspect = 4 / 2;
+      if (windowWidth < 660) {
         cols = 2;
-        rows = Math.ceil(itemsLength / 2);
-        colWidth = "17vh";
+        rows = 3;
+        colWidth = "26.5vh";
+        aspect = 2 / 3;
       }
     } else {
-      colWidth = "1fr";
+      cols = 3;
+      rows = 3;
+      aspect = 4 / 3;
+      if (windowWidth < 660) {
+        cols = 2;
+        rows = 4;
+        colWidth = "21vh";
+        aspect = 2 / 3;
+      }
     }
 
     if (gridElement) {
       gridElement.style.setProperty("--column-width", colWidth);
+      gridElement.style.setProperty("--row-height", rowHeight);
+      gridElement.style.setProperty("--aspect", aspect);
     }
     return { rows, cols };
   }
@@ -77,8 +202,11 @@
       clearInterval(interval);
     }
     interval = setInterval(() => {
+      if (items.length === 9) {
+        items = [];
+      }
       items = [...items, `Tile ${items.length + 1}`];
-    }, 400);
+    }, 500);
   };
 
   const add1 = () => {
@@ -125,22 +253,28 @@
     <button on:click={add1}>add 1</button>
     <button on:click={remove1}>remove 1</button>
     <button on:click={clear}>clear</button>
+    {windowWidth}
   </div>
 </div>
 
 <style>
+  .page-layout {
+    height: 100vh;
+    /* place-content: center; */
+  }
   .video-grid {
+    /* margin-top: 50%; */
     display: grid;
     gap: 10px;
     padding: 10px;
-    grid-template-rows: repeat(var(--rows), 1fr);
+    grid-template-rows: repeat(var(--rows), var(--row-height, 1fr));
     grid-template-columns: repeat(var(--cols, 1), var(--column-width, 1fr));
     justify-content: center;
     align-items: center;
-    max-height: 77vh;
-    aspect-ratio: 4 / 3;
+    max-height: 84vh;
+    aspect-ratio: var(--aspect);
     border: 5px solid rgba(255, 94, 0, 0.212);
-    background-color: rgba(255, 94, 0, 0.144);
+    /* background-color: rgba(255, 94, 0, 0.144); */
     margin: auto;
   }
 
