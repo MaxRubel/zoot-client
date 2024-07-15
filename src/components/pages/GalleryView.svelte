@@ -8,10 +8,10 @@
   export let localVideo;
   export let update_screen_sharer;
 
+  let colWidth = "1fr";
   let selfView = null;
   let grid;
   let windowWidth;
-  let colWidth = "1fr";
   let gridElement;
 
   const unsubscribe = userState.subscribe((value) => {
@@ -43,7 +43,7 @@
           gridElement.style.marginTop = "40px";
         }
 
-        if (windowWidth < 1340) {
+        if (windowWidth < 840) {
           if (gridElement) {
             gridElement.style.marginTop = "0px";
           }
@@ -52,12 +52,15 @@
           rows = 2;
           colWidth = "53vh";
         }
+        if (windowWidth < 550) {
+          colWidth = "66vw";
+        }
         break;
       case 3:
         if (windowWidth < 1000) {
           cols = 1;
           rows = 3;
-          colWidth = "36vh";
+          colWidth = "32vh";
           aspect = null;
         }
         break;
@@ -65,7 +68,7 @@
         if (windowWidth < 750) {
           cols = 1;
           rows = 4;
-          colWidth = "26vh";
+          colWidth = "24vh";
           aspect = null;
         }
         break;
@@ -73,17 +76,17 @@
         cols = 3;
         rows = 2;
         aspect = 4 / 2;
-        if (windowWidth < 1100) {
+        if (windowWidth < 961) {
           cols = 2;
           rows = 3;
-          colWidth = "26.5vh";
+          colWidth = "32vh";
         }
         break;
       case 6:
         cols = 3;
         rows = 2;
         aspect = 4 / 2;
-        if (windowWidth < 1100) {
+        if (windowWidth < 961) {
           cols = 2;
           rows = 3;
           colWidth = "26.5vh";
@@ -154,13 +157,13 @@
 </script>
 
 <div class="top">
+  <div class="fixed">{windowWidth}</div>
   <div
     class="video-grid top"
     bind:this={gridElement}
     style="--rows: {grid.rows}; --cols: {grid.cols}"
   >
     <LocalVideoGallery {localVideo} />
-
     {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
       <PeerMediaGallery {connection} {peerId} {update_screen_sharer} />
     {/each}
@@ -176,10 +179,16 @@
     grid-template-columns: repeat(var(--cols, 1), var(--column-width, 1fr));
     justify-content: center;
     align-items: center;
-    max-height: 87vh;
+    max-height: 83vh;
     aspect-ratio: var(--aspect);
     /* border: 5px solid rgba(255, 94, 0, 0.212); */
     /* background-color: rgba(255, 94, 0, 0.144); */
     margin: auto;
+    /* padding-bottom: 1000px; */
+  }
+
+  .fixed {
+    position: fixed;
+    z-index: 100;
   }
 </style>

@@ -1,7 +1,7 @@
 <script>
   import MicOffRed from "../../assets/MicOffRed.svelte";
   import { peerStates } from "../../../stores/media/peerStates";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
 
   export let connection;
   export let peerId;
