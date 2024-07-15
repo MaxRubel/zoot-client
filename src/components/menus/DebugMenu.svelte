@@ -1,7 +1,4 @@
 <script>
-  import GearIcon from "../../assets/GearIcon.svelte";
-
-  let isExpanded = false;
   export let sendTestMessage;
   export let testConnection;
   export let showPeerConnections;
