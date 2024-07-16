@@ -7,7 +7,6 @@
   import CameraOn from "../../assets/CameraOn.svelte";
   import { onDestroy, onMount } from "svelte";
   import { userState } from "../../../stores/media/userState";
-  import App from "../../App.svelte";
 
   export let handleMic;
   export let handleCamera;
@@ -15,21 +14,28 @@
 
   let user_state;
   let smallButton = false;
+  let mediumButton = false;
 
   const unsubscribe = userState.subscribe((value) => {
     user_state = value;
   });
 
   const handleResize = () => {
-    if (window.innerWidth < 513) {
+    if (window.innerWidth < 550) {
       smallButton = true;
     } else {
       smallButton = false;
+    }
+    if (window.innerWidth >= 550 && window.innerWidth <= 827) {
+      mediumButton = true;
+    } else {
+      mediumButton = false;
     }
   };
 
   onMount(() => {
     window.addEventListener("resize", handleResize);
+    handleResize();
   });
   onMount(() => {
     handleResize();
@@ -37,34 +43,11 @@
   onDestroy(unsubscribe);
 </script>
 
-<div class="bottom-tool-bar-container">
-  {#if !smallButton}
-    <div id="marginLeft"></div>
-    <div class="mid-bottom centered">
-      <button class="clear" on:click={handleMic}>
-        {#if user_state.audioOn}
-          <MicIcon />Mute Mic
-        {:else}
-          <MicOff />Activate Mic
-        {/if}
-      </button>
-      <button class="clear" on:click={handleCamera}>
-        {#if user_state.videoOn}
-          <CameraOn />Stop Video
-        {:else}
-          <CameraOff />Start Video
-        {/if}
-      </button>
-      <button class="clear" on:click={handleScreenShare}>
-        <ShareScreen />Share Screen
-      </button>
-    </div>
-    <div class="centered leave-room">
-      <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a>
-    </div>
-  {:else}
-    <div class="small-container">
-      <div class="top-row">
+<div class="zzz">
+  {#if !smallButton && !mediumButton}
+    <div class="bottom-tool-bar-container">
+      <div id="marginLeft"></div>
+      <div class="mid-bottom centered">
         <button class="clear" on:click={handleMic}>
           {#if user_state.audioOn}
             <MicIcon />Mute Mic
@@ -83,17 +66,84 @@
           <ShareScreen />Share Screen
         </button>
       </div>
-      <div class="centered leave-room">
-        <a href="/"
-          ><button class="clear red small-long"><BackIcon />Leave Room</button
-          ></a
+      <div class="leave-room">
+        <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a
         >
+      </div>
+    </div>
+  {/if}
+  {#if mediumButton}
+    <div class="medium-mid">
+      <button class="clear" on:click={handleMic}>
+        {#if user_state.audioOn}
+          <MicIcon />Mute Mic
+        {:else}
+          <MicOff />Activate Mic
+        {/if}
+      </button>
+      <button class="clear" on:click={handleCamera}>
+        {#if user_state.videoOn}
+          <CameraOn />Stop Video
+        {:else}
+          <CameraOff />Start Video
+        {/if}
+      </button>
+      <button class="clear" on:click={handleScreenShare}>
+        <ShareScreen />Share Screen
+      </button>
+
+      <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a>
+    </div>
+  {/if}
+  {#if smallButton}
+    <div class="bottom-tool-bar-container">
+      <div class="small-container">
+        <div class="top-row">
+          <button class="clear vsmol" on:click={handleMic}>
+            {#if user_state.audioOn}
+              <MicIcon />Mute Mic
+            {:else}
+              <MicOff />Activate Mic
+            {/if}
+          </button>
+          <button class="clear vsmol" on:click={handleCamera}>
+            {#if user_state.videoOn}
+              <CameraOn />Stop Video
+            {:else}
+              <CameraOff />Start Video
+            {/if}
+          </button>
+          <button class="clear vsmol" on:click={handleScreenShare}>
+            <ShareScreen />Share Screen
+          </button>
+        </div>
+        <div class="centered leave-room">
+          <a href="/"
+            ><button class="clear red small-long"><BackIcon />Leave Room</button
+            ></a
+          >
+        </div>
       </div>
     </div>
   {/if}
 </div>
 
 <style>
+  .medium-mid {
+    background-color: #11151d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    width: 100%;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 100;
+  }
   .small-container {
     position: fixed;
     display: flex;
@@ -101,11 +151,12 @@
     align-items: center;
     justify-content: center;
     margin: auto;
-    left: 46%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    bottom: -40px;
+    bottom: -50px;
     z-index: 30;
     place-content: center;
+    z-index: 100;
   }
   .top-row {
     display: flex;
@@ -116,20 +167,29 @@
   .bottom-tool-bar-container {
     background-color: #11151d;
     display: grid;
-    grid-template-columns: minmax(100px, 1fr) 4fr 1fr;
-    backdrop-filter: blur(10px);
+    grid-template-columns: 1fr 4fr 1fr;
+    justify-content: space-between;
+    align-items: center;
     position: fixed;
     bottom: 0;
-    left: 50p;
-    right: 50;
+    left: 0;
+    right: 0;
     height: 80px;
-    width: 100vw;
-    min-width: 350px;
-    z-index: 30;
+    width: 100%;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 200;
   }
 
   #marginLeft {
+    height: 100%;
     grid-column: 1;
+  }
+
+  .leave-room {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   .clear {
@@ -176,7 +236,7 @@
     }
 
     .clear {
-      width: 120px;
+      min-width: 115px;
       padding: 2px;
     }
 
@@ -190,8 +250,15 @@
   }
 
   .small-long {
-    height: 55px;
+    display: flex;
+    align-items: center;
+    padding: 0px;
+    height: 53px;
     margin-top: 8px;
-    width: 380px;
+    width: 390px;
+  }
+
+  .vsmol {
+    height: 53px;
   }
 </style>

@@ -1,5 +1,6 @@
 <script>
   import { onDestroy, onMount } from "svelte";
+  import BottomToolBar from "../menus/BottomToolBar.svelte";
 
   let windowWidth = 0;
   let gridElement;
@@ -256,6 +257,7 @@
     <button on:click={clear}>clear</button>
     {windowWidth}
   </div>
+  <!-- <BottomToolBar /> -->
 </div>
 
 <style>
@@ -297,7 +299,7 @@
 
   .fixed {
     position: fixed;
-    bottom: 30px;
+    bottom: 70px;
     left: 30px;
   }
 </style>
