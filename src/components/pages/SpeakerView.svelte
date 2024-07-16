@@ -87,13 +87,18 @@
     </button>
 
     <div class="scroll-container" bind:this={scrollContainer}>
-      <LocalVideoSmall {iAmSpeaking} localVideo={videoStream1} />
+      <LocalVideoSmall
+        {iAmSpeaking}
+        localVideo={videoStream1}
+        screen_sharer_id={null}
+      />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMediaSmall
           {connection}
           {peerId}
           {iAmSpeaking}
           {update_screen_sharer}
+          screen_sharer_id={null}
         />
       {/each}
     </div>
