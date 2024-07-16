@@ -78,7 +78,7 @@
   let user_state = {};
   let screen_sharer_id = null;
   let windowWidth;
-  console.log(audioContext);
+
   //----Svelte Stores-----
 
   const unsubscribe = peerConnectionsStore.subscribe((value) => {
@@ -101,8 +101,6 @@
   const unsubscribe4 = audioContextStore.subscribe((value) => {
     audioContext = value;
   });
-
-  console.log(audioContext);
 
   //Audio Context Modal
   if (!audioContext) {
@@ -155,6 +153,7 @@
       chan.close();
     });
   };
+
   window.addEventListener("beforeunload", (e) => {
     cleanup();
   });
@@ -220,7 +219,6 @@
     unsubscribe4();
     broadcastToRoom(dataChannels, "I am leaving");
     clearPeerStates();
-    // ws.send(`3&${roomId}&${myId}&&`);
     stopAnalyzingAudioLevels();
     updateUserState("sharing_screen", null);
     cleanup();
