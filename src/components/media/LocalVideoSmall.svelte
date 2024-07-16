@@ -53,8 +53,6 @@
       videoElement.srcObject = localVideo;
     }
   }
-
-  $: console.log(screen_sharer_id);
 </script>
 
 <div
