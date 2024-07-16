@@ -157,7 +157,7 @@
 </script>
 
 <div class="top">
-  <div class="fixed">{windowWidth}</div>
+  <!-- <div class="fixed">{windowWidth}</div> -->
   <div
     class="video-grid top"
     bind:this={gridElement}
@@ -179,16 +179,13 @@
     grid-template-columns: repeat(var(--cols, 1), var(--column-width, 1fr));
     justify-content: center;
     align-items: center;
-    max-height: 83vh;
+    max-height: 86vh;
     aspect-ratio: var(--aspect);
-    /* border: 5px solid rgba(255, 94, 0, 0.212); */
-    /* background-color: rgba(255, 94, 0, 0.144); */
     margin: auto;
-    /* padding-bottom: 1000px; */
   }
 
-  .fixed {
+  /* .fixed {
     position: fixed;
     z-index: 100;
-  }
+  } */
 </style>

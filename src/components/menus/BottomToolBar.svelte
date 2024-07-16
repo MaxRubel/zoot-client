@@ -66,7 +66,7 @@
           <ShareScreen />Share Screen
         </button>
       </div>
-      <div class="leave-room">
+      <div class="leave-room2">
         <a href="/"><button class="clear red"><BackIcon />Leave Room</button></a
         >
       </div>
@@ -186,10 +186,11 @@
     grid-column: 1;
   }
 
-  .leave-room {
+  .leave-room2 {
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     align-items: center;
+    /* background-color: #4347d9; */
   }
 
   .clear {
