@@ -78,12 +78,7 @@
   let user_state = {};
   let screen_sharer_id = null;
   let windowWidth;
-
-  //Audio Context Modal
-  if (!audioContext) {
-    confirmAudio = true;
-  }
-
+  console.log(audioContext);
   //----Svelte Stores-----
 
   const unsubscribe = peerConnectionsStore.subscribe((value) => {
@@ -106,6 +101,13 @@
   const unsubscribe4 = audioContextStore.subscribe((value) => {
     audioContext = value;
   });
+
+  console.log(audioContext);
+
+  //Audio Context Modal
+  if (!audioContext) {
+    confirmAudio = true;
+  }
 
   const alignUserSelection = () => {
     user_state.audioOn

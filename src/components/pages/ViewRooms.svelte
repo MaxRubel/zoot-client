@@ -1,13 +1,18 @@
 <script>
   import { navigate } from "svelte-routing";
   import { clientId } from "../../../stores/auth_store";
-  import { createAudioContext } from "../../../stores/media/audioContext";
+  import {
+    audioContextStore,
+    createAudioContext,
+  } from "../../../stores/media/audioContext";
   import { fade } from "svelte/transition";
   import { onMount } from "svelte";
+  import { get } from "svelte/store";
 
   let rooms = [];
   let myId = null;
   let isFetching = true;
+  let audioContext = get(audioContextStore);
 
   clientId.subscribe((value) => {
     myId = value;
@@ -28,6 +33,10 @@
   });
 
   const createRoom = () => {
+    if (!audioContext) {
+      createAudioContext();
+    }
+
     navigate("/rooms/new");
   };
 
@@ -74,6 +83,9 @@
                     <button
                       class="not-button"
                       on:click={() => {
+                        if (!audioContext) {
+                          createAudioContext();
+                        }
                         goToRoom(room.id);
                       }}
                     >
