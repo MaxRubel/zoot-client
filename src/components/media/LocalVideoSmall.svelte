@@ -7,6 +7,7 @@
 
   export let iAmSpeaking;
   export let localVideo;
+  export let screen_sharer_id;
 
   let myId;
   let loudest;
@@ -56,7 +57,10 @@
 
 <div
   class="peer-media-square"
-  style="display: {user_state.hideSelf ? 'none' : 'block'};"
+  style="
+  display: {user_state.hideSelf ? 'none' : 'block'};
+  height: {screen_sharer_id ? '70px' : '140px'};
+"
 >
   <div class="border" bind:this={square}></div>
   <div class="media-container">

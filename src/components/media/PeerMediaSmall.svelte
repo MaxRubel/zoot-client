@@ -17,6 +17,7 @@
   export let peerId;
   export let iAmSpeaking;
   export let update_screen_sharer;
+  export let screen_sharer_id;
 
   let videoElement;
   let square;
@@ -176,7 +177,10 @@
   }
 </script>
 
-<div class="peer-media-square">
+<div
+  class="peer-media-square"
+  style="height: {screen_sharer_id ? '70px' : '140px'};"
+>
   <div class="border" bind:this={square}></div>
   <div class="media-container">
     <video

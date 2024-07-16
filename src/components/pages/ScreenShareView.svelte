@@ -1,6 +1,4 @@
 <script>
-  import { onDestroy } from "svelte";
-  import { userState } from "../../../stores/media/userState";
   import LefttArrow from "../../assets/LefttArrow.svelte";
   import RightArrow from "../../assets/RightArrow.svelte";
   import LocalVideoSmall from "../media/LocalVideoSmall.svelte";
@@ -16,6 +14,10 @@
 
   let presenter = null;
   let presenterId;
+  let scrollContainer;
+  let rightArrowButton;
+  let leftArrowButton;
+  let showButtons = false;
 
   function scrollLeft() {
     const container = document.querySelector(".scroll-container");
@@ -26,6 +28,16 @@
     const container = document.querySelector(".scroll-container");
     container.scrollBy({ left: 450, behavior: "smooth" });
   }
+
+  const handleMouseEnter = () => {
+    if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {
+      showButtons = true;
+    }
+  };
+
+  const handleMouseLeave = () => {
+    showButtons = false;
+  };
 
   const iAmSpeaking = (id) => {
     presenterId = id;
@@ -53,24 +65,46 @@
 </script>
 
 <div class="presenter-view-container">
-  <div class="scroll-wrapper">
-    <button class="scroll-button left-scroll centered" on:click={scrollLeft}>
+  <div
+    class="scroll-wrapper"
+    role="region"
+    aria-label="Scrollable content"
+    tabindex="-1"
+    on:mouseenter={handleMouseEnter}
+    on:mouseleave={handleMouseLeave}
+  >
+    <button
+      class="scroll-button left-scroll centered"
+      bind:this={leftArrowButton}
+      on:click={scrollLeft}
+      class:visible={showButtons}
+    >
       <LefttArrow />
     </button>
 
-    <div class="scroll-container">
-      <LocalVideoSmall {iAmSpeaking} localVideo={videoStream1} />
+    <div class="scroll-container" bind:this={scrollContainer}>
+      <LocalVideoSmall
+        {iAmSpeaking}
+        localVideo={videoStream1}
+        {screen_sharer_id}
+      />
       {#each Object.entries(peerConnections) as [peerId, connection] (peerId)}
         <PeerMediaSmall
           {connection}
           {peerId}
           {iAmSpeaking}
           {update_screen_sharer}
+          {screen_sharer_id}
         />
       {/each}
     </div>
 
-    <button class="scroll-button right-scroll centered" on:click={scrollRight}>
+    <button
+      class="scroll-button right-scroll centered"
+      bind:this={rightArrowButton}
+      on:click={scrollRight}
+      class:visible={showButtons}
+    >
       <RightArrow />
     </button>
   </div>
@@ -106,7 +140,6 @@
     padding-bottom: 12px;
     margin-bottom: 12px;
     justify-content: center;
-    border-bottom: 1px solid rgb(104, 104, 104);
   }
 
   .scroll-button {
@@ -141,5 +174,27 @@
     height: 80vh;
     display: flex;
     justify-content: center;
+  }
+
+  .scroll-button {
+    display: flex;
+    height: 70px;
+    width: 44px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-55%);
+    background-color: rgba(24, 59, 90, 0.6);
+    border: none;
+    padding: 15px 5px;
+    cursor: pointer;
+    z-index: 100;
+    transition: all ease 2s;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+  }
+
+  .visible {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
   }
 </style>
