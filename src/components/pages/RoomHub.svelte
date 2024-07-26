@@ -130,7 +130,7 @@
   // const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
   let ws;
   try {
-    ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
+    ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
   } catch {
     console.error("Unable to connect to websocket");
   }

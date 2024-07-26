@@ -1,4 +1,4 @@
-const endpoint = import.meta.env.VITE_LOCAL_SERVER
+const endpoint = import.meta.env.VITE_PUBLIC_SERVER
 // const endpoint = import.meta.env.VITE_PUBLIC_SERVER
 
 const createNewRoom = (payload) =>

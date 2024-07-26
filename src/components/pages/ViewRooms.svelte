@@ -19,7 +19,7 @@
   });
 
   // const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
-  const ws = new WebSocket(import.meta.env.VITE_LOCAL_WS);
+  const ws = new WebSocket(import.meta.env.VITE_PUBLIC_WS);
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "'" && e.ctrlKey) {
